@@ -1,5 +1,5 @@
 ---
-title: 'Case Study 00: This is a template'
+title: 'Case Study 01: This is a template'
 author: "Author 1 and Author 2"
 date: "March 00, 2015"
 output:
