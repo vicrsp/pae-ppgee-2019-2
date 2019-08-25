@@ -24,7 +24,7 @@ if (!require(GGally, quietly = TRUE)){
       }
 ```
 ## Summary
-O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média \mu = 50 e variância \sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância \alpha = 0,01 e \alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média $\mu = 50 e variância $\sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01 e $\alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
 ### 1. The easy way
 Use [RStudio](http://rstudio.com/) as your editor, open the **.Rmd** file and click the _Knit PDF_ button at the top of the editor.
