@@ -1,6 +1,6 @@
 ---
-title: 'Case Study 01: This is a template'
-author: "Author 1 and Author 2"
+title: 'Estudo de caso: Grupo D 3'
+author: "Gilmar and Maressa Nunes R. Tavares and Victor"
 date: "March 00, 2015"
 output:
   pdf_document:
@@ -24,9 +24,7 @@ if (!require(GGally, quietly = TRUE)){
       }
 ```
 ## Summary
-This document provides a template for the Case Study reports. Reports should always start a short executive summary (call it an _Abstract_ if you want) to give the reader a general idea of the topic under investigation, the kind of analysis performed, the results obtained, and the general recommendations of the authors.
-
-There are (at least) two ways to render this document to **pdf** in R: one easy and one... well, less easy.
+O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média \mu = 50 e variância \sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância \alpha = 0,01 e \alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
 ### 1. The easy way
 Use [RStudio](http://rstudio.com/) as your editor, open the **.Rmd** file and click the _Knit PDF_ button at the top of the editor.
