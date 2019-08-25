@@ -1,6 +1,6 @@
 ---
-title: 'Estudo de Caso 01'
-author: "Victor Ruela, Maressa Nunes, Gilmar"
+title: 'Estudo de caso: Grupo D 3'
+author: "Gilmar and Maressa Nunes R. Tavares and Victor"
 date: "3 de Setembro, 2019"
 output:
   pdf_document:
@@ -40,9 +40,9 @@ if (!require(boot, quietly = TRUE)){
 ```
 ## Descrição do Problema
 Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto uma análise estatística deve ser feita para investigar os ganhos de desempenho obtidos em relação à versão atual. Espera-se que sejam testados a média e variância dos custos de execução
+O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média $\mu = 50 e variância $\sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01 e $\alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
 Para simular a geração de dados da nova versão, a biblioteca $ExpDE$ [@expDE:online] será utilizada. Ela é declarada da seguinte forma: 
-
 ```{r datageneration}
 # Set-up the data generating procedure
 mre <- list(name = "recombination_bin", cr = 0.9)
