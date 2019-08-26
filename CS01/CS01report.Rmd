@@ -24,29 +24,30 @@ if (!require(GGally, quietly = TRUE)){
       }
 ```
 ## Summary
-O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média $\mu = 50 e variância $\sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01 e $\alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média \mu = 50 e variância \sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância \alpha = 0,01 e \alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
-### 1. The easy way
-Use [RStudio](http://rstudio.com/) as your editor, open the **.Rmd** file and click the _Knit PDF_ button at the top of the editor.
+<!-- ### 1. The easy way -->
+<!-- Use [RStudio](http://rstudio.com/) as your editor, open the **.Rmd** file and click the _Knit PDF_ button at the top of the editor. -->
 
-### 2. The slightly-less-easy way
-If you're using any other R editor (such as the basic [R](http://cran.r-project.org) editor), you have to use the _render()_ function from the **rmarkdown** package:
+<!-- ### 2. The slightly-less-easy way -->
+<!-- If you're using any other R editor (such as the basic [R](http://cran.r-project.org) editor), you have to use the _render()_ function from the **rmarkdown** package: -->
 
-```{r, eval=F}
-install.packages("devtools")                    # you only have to install it once
-library(devtools)
-install_github("rstudio/rmarkdown")             # you only have to install it once
-library(rmarkdown)
-render("report_template.Rmd","pdf_document")    # this renders the pdf
-```
+<!-- ```{r, eval=F} -->
+<!-- install.packages("devtools")                    # you only have to install it once -->
+<!-- library(devtools) -->
+<!-- install_github("rstudio/rmarkdown")             # you only have to install it once -->
+<!-- library(rmarkdown) -->
+<!-- render("report_template.Rmd","pdf_document")    # this renders the pdf -->
+<!-- ``` -->
 
 ## Experimental design
-A section detailing the experimental setup. This is the place where you will define your test hypotheses, e.g.:
-$$\begin{cases} H_0: \mu = 10&\\H_1: \mu<10\end{cases}$$
+### Teste da média
+Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar os resultados das duas versões do software. Inicialmente, o teste foi executado para as médias do custo computacional, assim, para verificar se a nova versão é melhor que a anterior, formulou-se as seguintes hipóteses:
+$$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
 
-including the reasons behind your choices of the value for $H_0$ and the directionality (or not) of $H_1$. 
+Como a média da população para a primeira versão é \mu = 50, considourou-se como hipótese nula (H_0) a ausência de melhoria do software, isto é, a segunda versão apresenta a mesma performace da versão anterior, com média igual \mu = 50. Por outro lado, a hipótese alternativa considera que houve melhorias entre as versões, portanto, a média é menor que 50 (H_1). 
 
-This is also the place where you should discuss (whenever necessary) your definitions of minimally relevant effects ($\delta^*$), sample size calculations, choice of power and significance levels, and any other relevant information about specificities in your data collection procedures.
+
 
 ### Description of the data collection
 Whenever needed, you can also include an (optional) subsection describing the actual data collection, how it was performed, any adaptations or unexpected events that may have occurred, etc. Subsections like this can also be used for the sample size calculations or any other aspect that requires a longer discussion.
