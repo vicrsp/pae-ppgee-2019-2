@@ -38,15 +38,31 @@ if (!require(boot, quietly = TRUE)){
   install.packages("boot")
 }
 ```
-## Sumário
-O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01$ e $\alpha = 0,05$, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+<<<<<<< HEAD
+## Summary
+O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média \mu = 50 e variância \sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância \alpha = 0,01 e \alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+
+<!-- ### 1. The easy way -->
+<!-- Use [RStudio](http://rstudio.com/) as your editor, open the **.Rmd** file and click the _Knit PDF_ button at the top of the editor. -->
+
+<!-- ### 2. The slightly-less-easy way -->
+<!-- If you're using any other R editor (such as the basic [R](http://cran.r-project.org) editor), you have to use the _render()_ function from the **rmarkdown** package: -->
+
+<!-- ```{r, eval=F} -->
+<!-- install.packages("devtools")                    # you only have to install it once -->
+<!-- library(devtools) -->
+<!-- install_github("rstudio/rmarkdown")             # you only have to install it once -->
+<!-- library(rmarkdown) -->
+<!-- render("report_template.Rmd","pdf_document")    # this renders the pdf -->
+<!-- ``` -->
 
 ## Experimental design
 ### Teste da média
 Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar os resultados das duas versões do software. Inicialmente, o teste foi executado para as médias do custo computacional, assim, para verificar se a nova versão é melhor que a anterior, formulou-se as seguintes hipóteses:
 $$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
-Como a média da população para a primeira versão é $\mu = 50$, considourou-se como hipótese nula (H_0) a ausência de melhoria do software, isto é, a segunda versão apresenta a mesma performace da versão anterior, com média igual $\mu = 50$. Por outro lado, a hipótese alternativa considera que houve melhorias entre as versões, portanto, a média é menor que 50 (H_1). 
 
+Como a média da população para a primeira versão é $\mu = 50$, considourou-se como hipótese nula (H_0) a ausência de melhoria do software, isto é, a segunda versão apresenta a mesma performace da versão anterior, com média igual $\mu = 50$. Por outro lado, a hipótese alternativa considera que houve melhorias entre as versões, portanto, a média é menor que 50 (H_1). 
+=======
 ## Descrição do Problema
 Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto uma análise estatística deve ser feita para investigar os ganhos de desempenho obtidos em relação à versão atual. Espera-se que sejam testados a média e variância dos custos de execução
 
@@ -96,7 +112,7 @@ $$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
 
 Para este teste, são estabelecidos os seguintes objetivos:
 
-* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
+* Nível de significância desejado $\alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
 * Usar as mesmas observações coletadas para o teste da média.
 
 Como estamos interessados em saber se existem ganhos em termos de variância média, e dado que a variância populacional da versão atual é $\sigma^{2} = 100$, define-se a seguinte hipótese nula e alternativa:
@@ -148,5 +164,58 @@ print(c("N = ", N), quote = FALSE)
 Victor - Reporter
 Maressa - Coordenadora
 Gilmar - Verificador e Monitor
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 13248d0f7c3de85f8b9820e1c247167be79c24c1
+
+
+
+
+## Exploratory Data Analysis
+The first step is to load and preprocess the data. For instance,
+```{r loaddata}
+data(mtcars)
+fc<-c(2,8:11)
+for (i in 1:length(fc)){mtcars[,fc[i]]<-as.factor(mtcars[,fc[i]])}
+levels(mtcars$am) <- c("Automatic","Manual")
+```
+
+To get an initial feel for the relationships between the relevant variables of your experiment it is frequently interesting to perform some preliminary (exploratory) analysis. This is frequently referred to as _getting a feel_ of your data, and can suggest procedures (such as outlier investigation or data transformations) to experienced experimenters.
+
+```{r pairs,fig.width=8,echo=TRUE,message=FALSE,fig.cap="Exploring the effect of car transmission on mpg values"}
+library(GGally,quietly = T, warn.conflicts = F) # This is just me getting fancy.
+                                                # There are much simpler ways ;-)
+ggpairs(data=mtcars,columns=c(1,9),title="MPG by transmission type",
+        upper=list(combo="box"),lower=list(combo="facethist"),
+        diag=list(continuous="density",discrete="bar"))
+```
+
+
+Your preliminary analysis should be described together with the plots. In this example, two facts are immediately clear from the plots: first, **mpg** tends to correlate well with many of the other variables, most intensely with **drat** (positively) and **wt** (negatively). It is also clear that many of the variables are highly correlated (e.g., **wt** and **disp**). Second, it seems like manual transmission models present larger values of **mpg** than the automatic ones. In the next section a linear model will be fit to the data in order to investigate the significance and magnitude of this possible effect.
+
+## Statistical Analysis
+Your statistical analysis should come here. This is the place where you should fit your statistical model, get the results of your significance test, your effect size estimates and confidence intervals.
+
+```{r fitmodel,results='hold'}
+model<-aov(mpg~am*disp,data=mtcars)
+summary(model)
+```
+
+### Checking Model Assumptions
+The assumptions of your test should also be validated, and possible effects of violations should also be explored.
+```{r resplots,fig.width=8,echo=TRUE,message=FALSE, fig.cap = "Residual plots for the anova model"}
+par(mfrow=c(2,2), mai=.3*c(1,1,1,1))
+plot(model,pch=16,lty=1,lwd=2)
+```
+
 
 ## Referências

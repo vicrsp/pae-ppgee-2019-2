@@ -5,6 +5,7 @@ date: "3 de Setembro, 2019"
 output:
   pdf_document:
     fig_caption: yes
+    number_sections: true
     
 bibliography: refsCS01.bib
 csl: ieee.csl
@@ -38,12 +39,34 @@ if (!require(boot, quietly = TRUE)){
   install.packages("boot")
 }
 ```
-## Descrição do Problema
-Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto uma análise estatística deve ser feita para investigar os ganhos de desempenho obtidos em relação à versão atual. Espera-se que sejam testados a média e variância dos custos de execução
-O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média $\mu = 50 e variância$ $\sigma = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01$ e $\alpha = 0,05$, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
-## Planejamento do Experimento
-### Geraçao dos dados
+## Summary
+O presente trabalho tem realizou o delineament e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01$ e $\alpha = 0,05$, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+
+## Planejamento do experimento
+
+Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar o desempenho das duas versões do software em relação à média e à variância do custo de execução. 
+
+### Objetivo do experimento
+
+Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto realizou-se uma análise estatística para investigar os ganhos de desempenho obtidos em relação à versão atual. 
+
+Inicialmente, o teste foi executado para as médias do custo, assim, para verificar se a nova versão é melhor que a anterior, formulou-se as seguintes hipóteses:
+
+$$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
+
+Como a média da população para a primeira versão é $\mu = 50$, considourou-se como hipótese nula ($H_0$) a ausência de melhoria do software, isto é, a segunda versão apresenta a mesma performance da versão anterior, com média igual $\mu = 50.$ Por outro lado, a hipótese alternativa considera que houve melhorias entre as versões, portanto, a média é menor que 50 ($H_1$). 
+
+Por outro lado, para a variância o experimento foi realizado com base nas seguintes hipóteses:
+
+$$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2} < 100\end{cases}$$
+
+Assim como no teste da média, nesse caso adotou-se como hipótese nula (H_0) a ausência de melhoria do software, mantendo os resultados de variância da versão anterior ($sigma^{2} = 100$). Enquanto a hipótese alternativa considera que houve melhorias entre as versões, portanto, a variância é menor que 100 (H_1). 
+
+
+
+### Descrição da coleta de dados
+
 Para simular a geração de dados da nova versão, a biblioteca $ExpDE$ [@expDE:online] será utilizada. Ela é declarada da seguinte forma: 
 ```{r datageneration}
 # Set-up the data generating procedure
@@ -75,6 +98,16 @@ get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
 As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados.
 
 
+## Análise Exploratória dos Dados
+
+
+## Análise Estatística
+
+### Validação das premissas
+
+
+### Resultados
+
 ### Teste do custo médio
 Para este teste, são estabelecidos os seguintes objetivos:
 
@@ -98,7 +131,6 @@ Como estamos interessados em saber se existem ganhos em termos de variância mé
 $$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2}<100\end{cases}$$
 
 
-## Análise Exploratória dos Dados
 
 ## Análise Estatística
 ### Teste sobre a média do custo
