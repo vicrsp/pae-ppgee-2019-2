@@ -39,6 +39,10 @@ if (!require(car, quietly = TRUE)){
 if (!require(boot, quietly = TRUE)){
   install.packages("boot")
 }
+
+if (!require(EnvStats, quietly = TRUE)){
+  install.packages("EnvStats")
+}
 ```
 ## Descrição do Problema
 Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto uma análise estatística deve ser feita para investigar os ganhos de desempenho obtidos em relação à versão atual. Espera-se que sejam testados a média e variância dos custos de execução
@@ -138,35 +142,31 @@ print(c("N = ", N), quote = FALSE)
 
 ### Teste sobre a variância do custo
 #### Teste de Hipoteses
-Para a variância, e assumindo que a população é modelada por uma distribuição normal, a estatística de teste irá seguir uma distribuição chi-quadrado com $N - 1$ graus de liberdade. Entretanto, conforme visto na análise exploratória, a nova versão do sistema não segue uma distribuição normal. Portanto, uma alternativa é aplicar alguma transformação aos dados que os leve à normalidade. Uma possibilidade é o uso da transformação logarítimica:
-
-```{r logtransformation}
-data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
-# Plot a Normal qq-plot (ggplot2)
-qqPlot(log(data.mean.test), las = 1, pch = 16)
-```
-
-```{r shapirologtransf}
-# Perform shapiro-test on the transformed data, to validate the normal distribution hypothesis
-shapiro.test(data.mean.test)
-shapiro.test(log(data.mean.test))
-```
-
-```{r histogramlogtransf}
-p2 <- ggplot(as.data.frame(log(data.mean.test)), aes(x = log(data.mean.test)))
-p2 + geom_histogram(bins = 10)
-```
-
-Logo, como o p-valor do teste Shapiro é maior que 0.1 para a transformação logarítimca, podemos afirmar que a população pode ser modelada por uma distribuição normal. Portanto, podemos aplicar o teste usual descrito anteriormente:
-
+Para a variância, e dado que a população é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste irá seguir uma distribuição chi-quadrado com $n-1$ graus de liberdade [@montgomery2007applied]. O teste da variância pode ser executado com a função `varTest` do pacote \textit{EnvStats} [@EnvStats:book].
 ```{r vartest}
-var.chi.squared <- (N-1)*var(data.mean.test)/current_var
-print(var.chi.squared)
-```
+data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
+sig_level_sd <- 0.05
+ci_sd <- 1 - sig_level_sd
 
-A hipótese nula é rejeitada se o `var.chi.squared` está na região crítica.
+varTest(x = data.mean.test, alternative = "less",
+        sigma.squared =  current_var, conf.level = ci_sd)
+```
+Logo, a hipótese nula é rejeitada, sendo possível declarar que a variância da nova versão do software é significativamente inferior à atual (com um intervalo de confiança de 95%).
 
 #### Calculo do intervalo de confianca
+Como temos uma hipótese unilateral, precisamos definir somente um intervalo superior para o nível de significância de desejadado $\alpha = 0.95$. De acordo com [@montgomery2007applied], para $n-1$ graus de liberdade e significância $\alpha$, ele pode ser calculado por:
+\begin{equation} 
+\sigma^2_{Upper} = \frac{(n-1)S^2}{\chi{^2}_{(\alpha,n-1)}} 
+\end{equation}
+
+```{r vartest_ci_calc}
+sig_level_sd <- 0.05
+ci_sd <- 1 - sig_level_sd
+var.upper.ci <- (N-1)*var(data.mean.test)/qchisq(sig_level_sd, N-1)
+print(var.upper.ci)
+```
+Logo, o intervalo de confiança é [0, 40.26176], para um nível de confiança de 95%.
+
 #### Validaçao das premissas
 
 ### Discussão e Conclusões

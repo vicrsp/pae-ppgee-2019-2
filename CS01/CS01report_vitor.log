@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6930 64-bit) (preloaded format=pdflatex 2019.2.2)  29 AUG 2019 20:59
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6930 64-bit) (preloaded format=pdflatex 2019.2.2)  31 AUG 2019 18:21
 entering extended mode
 **./CS01report_vitor.tex
 (CS01report_vitor.tex
@@ -768,67 +768,51 @@ LaTeX Font Info:    Try loading font information for TS1+lmr on input line 200.
 
 ("C:\Users\Victor\AppData\Local\Programs\MiKTeX 2.9\tex/latex/lm\ts1lmr.fd"
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-) [2]
-<CS01report_vitor_files/figure-latex/logtransformation-1.pdf, id=85, 469.755pt 
-x 325.215pt>
-File: CS01report_vitor_files/figure-latex/logtransformation-1.pdf Graphic file 
-(type pdf)
-<use CS01report_vitor_files/figure-latex/logtransformation-1.pdf>
-Package pdftex.def Info: CS01report_vitor_files/figure-latex/logtransformation-
-1.pdf  used on input line 319.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[3 <./CS01report_vitor_files/figure-latex/logtransformation-1.pdf>]
-<CS01report_vitor_files/figure-latex/histogramlogtransf-1.pdf, id=104, 469.755p
-t x 325.215pt>
-File: CS01report_vitor_files/figure-latex/histogramlogtransf-1.pdf Graphic file
- (type pdf)
-<use CS01report_vitor_files/figure-latex/histogramlogtransf-1.pdf>
-Package pdftex.def Info: CS01report_vitor_files/figure-latex/histogramlogtransf
--1.pdf  used on input line 361.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[4 <./CS01report_vitor_files/figure-latex/histogramlogtransf-1.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 409.
-[5]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 409.
+) [2] [3]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 397.
+[4]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 397.
 (CS01report_vitor.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 409.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 409.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 397.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 397.
 Package rerunfilecheck Info: File `CS01report_vitor.out' has not changed.
 (rerunfilecheck)             Checksum: E20FB13A383CEB1295BC181BE21AC58B;2219.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 409.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 397.
  ) 
 Here is how much of TeX's memory you used:
- 12907 strings out of 492946
- 192802 string characters out of 3125823
+ 12912 strings out of 492946
+ 192412 string characters out of 3125823
  301937 words of memory out of 3000000
- 16554 multiletter control sequences out of 15000+200000
- 38674 words of font info for 57 fonts, out of 3000000 for 9000
+ 16548 multiletter control sequences out of 15000+200000
+ 43363 words of font info for 62 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  32i,7n,38p,981b,382s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/lm/lm-math
-ex.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/lm/lm
--mathsy.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/
-lm/lm-ts1.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvip
-s/lm/lm-ec.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvi
-ps/lm/lm-rm.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dv
-ips/lm/lm-mathit.enc}<C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/t
+it.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/lm/lm
+-ec.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/lm/l
+m-mathex.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips
+/lm/lm-mathsy.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/
+dvips/lm/lm-ts1.enc}{C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/en
+c/dvips/lm/lm-rm.enc}<C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/t
 ype1/public/lm/lmbx10.pfb><C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fo
 nts/type1/public/lm/lmbx12.pfb><C:/Users/Victor/AppData/Local/Programs/MiKTeX 2
 .9/fonts/type1/public/lm/lmex10.pfb><C:/Users/Victor/AppData/Local/Programs/MiK
 TeX 2.9/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Victor/AppData/Local/Program
-s/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Users/Victor/AppData/Local/Pro
-grams/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C:/Users/Victor/AppData/Local
-/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmr7.pfb><C:/Users/Victor/AppData/Lo
-cal/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmri12.pfb><C:/Users/Victor/AppDa
-ta/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Victor/
-AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb><C:/Users/Vic
-tor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmtk10.pfb><C:/User
-s/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmtt10.pfb><C:
-/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmtti10.p
-fb>
-Output written on CS01report_vitor.pdf (5 pages, 281950 bytes).
+s/MiKTeX 2.9/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Victor/AppData/Local/Pro
+grams/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Users/Victor/AppData/Local
+/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C:/Users/Victor/AppData/L
+ocal/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmr7.pfb><C:/Users/Victor/AppDat
+a/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Users/Victor/A
+ppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmri12.pfb><C:/Users/Vic
+tor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.pfb><C:/User
+s/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb><C:/
+Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmtk10.pfb
+><C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmtt1
+0.pfb><C:/Users/Victor/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/
+lmtti10.pfb>
+Output written on CS01report_vitor.pdf (4 pages, 294515 bytes).
 PDF statistics:
- 189 PDF objects out of 1000 (max. 8388607)
- 46 named destinations out of 1000 (max. 500000)
- 8299 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 184 PDF objects out of 1000 (max. 8388607)
+ 48 named destinations out of 1000 (max. 500000)
+ 10337 words of extra memory for PDF output out of 12000 (max. 10000000)
 

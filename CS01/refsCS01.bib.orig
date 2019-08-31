@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @misc{expDE:online,
 author = {Felipe Campelo, Moises Botelho},
 title = {CRAN - Package ExpDE - Modular Differential Evolution for Experimenting with Operators},
@@ -21,13 +22,23 @@ howPublished={\url{https://github.com/fcampelo/Design-and-Analysis-of-Experiment
 year={2018},
 note={Version 2.12. Creative Commons BY-NC-SA 4.0.},
 }
+=======
+---
+- id: expDE:online,
+author: Felipe Campelo, Moises Botelho,
+title: CRAN - Package ExpDE - Modular Differential Evolution for Experimenting with Operators,
+howpublished: \url{https://cran.r-project.org/web/packages/ExpDE/index.html,
+month: 01,
+year: 2018,
+note: Acessada em 25/08/2019
 
-@Book{EnvStats:book,
-  title = {EnvStats: An R Package for Environmental Statistics},
-  author = {Steven P. Millard},
-  year = {2013},
-  publisher = {Springer},
-  address = {New York},
-  isbn = {978-1-4614-8455-4},
-  url = {http://www.springer.com},
-}
+---
+-id: montgomery09,
+   AUTHOR : D.C. Montgomery and G.C. Runger,
+   TITLE : Estatística aplicada e probabilidade para engenheiros,
+   ADDRESS: Rio de Janeiro,
+   PUBLISHER: LTC,
+   YEAR: 2009,
+   EDITION: 4
+---
+>>>>>>> 0c6f8f75eab2659250e9bc94b9d13553aec54bb6
