@@ -5,10 +5,11 @@ date: "3 de Setembro, 2019"
 output:
   pdf_document:
     fig_caption: yes
-    number_sections: true
-    
-bibliography: refsCS01.bib
+    number_sections: yes
+  html_document:
+    df_print: paged
 csl: ieee.csl
+bibliography: refsCS01.bib
 ---
 
 ```{r setup,results='hide',warning=FALSE,echo=FALSE, message=FALSE, include=FALSE}
@@ -45,7 +46,7 @@ O presente trabalho tem realizou o delineament e executou os testes estatístico
 
 # Planejamento do experimento
 
-Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar o desempenho das duas versões do software em relação à média e à variância do custo de execução. 
+Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar o desempenho das duas versões do software em relação à média e à variância do custo de execução. Essa etapa é fundamental, pois trata-se de uma abordagem que fornece resultados importantes em análises de sistemas complexos, além disso, os testes servem para validar a teoria que está por trás dele [@montgomery09].
 
 ## Objetivo do experimento
 
@@ -70,7 +71,7 @@ Os dois testes foram realizados com os mesmos dados coletados os dados de acordo
 
 ### Descrição da coleta de dados
 
-Para coletar os dados referente à nova versão do software, foi executada uma simulação no software R utilizando a biblioteca $ExpDE$ [@expDE:online]. A coleta de dados foi declarada da seguinte forma: 
+Para coletar os dados referente à nova versão do software, foi executada uma simulação no software R utilizando a biblioteca $ExpDE$ [@expDE]. A coleta de dados foi declarada da seguinte forma: 
 
 ```{r datageneration}
 # Set-up the data generating procedure
@@ -103,86 +104,79 @@ As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar 
 
 Com base nas amostras coletadas referente à segunda versão do software, foi realizada uma análise exploratória dos dados a fim de validar as premissas dos testes que foram realizados em seguida, conforme apresentado na seção seguinte.
 
-## Análise Exploratória dos Dados
+# Análise Exploratória dos Dados
+
+Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema, é importante realizar uma análise preliminar dos dados [@medri]. destaca que a análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo. 
+
+Para a realização das análises foi feita uma amostra de 30 elementos da população, pois essa quantidade já é suficiente boa para amostrar o comportamento dos dados [@viali].
+
+```{r summary statistic}
+
+N <- 30
+
+my.sample <- numeric(N)
+for (i in seq(N)){
+my.sample[i] <- ExpDE(mpo, mmu, mre, mse, mst, mpr,
+showpars = list(show.iters = "none"))$Fbest
+}
+
+summary(my.sample)
+
+var(my.sample)
+
+```
+
+```{r summary var}
+
+var(my.sample)
+
+```
 
 
+Pela análise dos dados verifica-se que a variância do novo software aparenta ser significamente menor que a versão anterior, enquanto em relação à média a diferença foi mais discreta. Para concluir com maior precisão sobre os dados, os testes estatísticos serão apresentados com detalhes nas seções seguintes.
+
+No contexto da análise exploratória, é válido realizar o teste de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil.
+
+```{R plot, echo=FALSE, fig.width = 5}
+
+boxplot(my.sample, horizontal = TRUE)
+
+```
+
+```{R plot1, echo=FALSE, fig.width = 5}
+
+suppressPackageStartupMessages(library(car))
+qqPlot(my.sample, las = 1, pch = 16)
+
+```
+
+Pela análise do boxplot e do gráfico quantil X quantil, verifica-se que, embora o valor máximo observado (65.08) apresenta-se como um outlier no boxplot, ele não interfere na normalidade dos dados. Sendo assim, é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
 
 
+# Resultados
 
-## Análise Estatística
+## Validação das premissas
 
-### Validação das premissas
-
-
-### Resultados
-
-### Teste do custo médio
-Para este teste, são estabelecidos os seguintes objetivos:
-
-* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
-* Efeito relevante mínimo de $\delta^* = 4$
-* Potência desejada $\pi = 1 - \beta = 0.8$
-
-Como estamos interessados em saber se existem ganhos em termos do custo médio, e dado que a média populacional da versão atual é $\mu_0 = 50$, define-se a seguinte hipótese nula e alternativa:
-
-$$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
+## Teste do custo médio
 
 ### Teste da variância do custo
 
-Para este teste, são estabelecidos os seguintes objetivos:
+# Análise Estatística
+## Teste sobre a média do custo
+### Cálculo do tamanho amostral
 
-* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
-* Usar as mesmas observações coletadas para o teste da média.
+### Teste de Hipoteses
+### Calculo do intervalo de confianca
+### Validaçao das premissas
 
-Como estamos interessados em saber se existem ganhos em termos de variância média, e dado que a variância populacional da versão atual é $\sigma^{2} = 100$, define-se a seguinte hipótese nula e alternativa:
+## Teste sobre a variância do custo
+### Teste de Hipoteses
+### Calculo do intervalo de confianca
+### Validaçao das premissas
 
-$$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2}<100\end{cases}$$
+# Discussão e Conclusões
 
-
-
-## Análise Estatística
-### Teste sobre a média do custo
-#### Cálculo do tamanho amostral
-Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa unilateral para a média amostral, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
-```{r calcsamplesize}
-# define current system parameters
-current_mu <- 50
-current_var <- 100
-
-# define mean cost test parameters
-sig_level_mean <- 0.01
-delta <- 4
-beta <- 0.2
-pi <- 1 - beta
-ci_mean <- 1 - sig_level_mean
-
-# use the function inivisble() to supress the function console output
-invisible(sample_size_calc <- power.t.test(delta = delta,
-                           sd = sqrt(current_var),
-                           sig.level = sig_level_mean,
-                           power = pi,
-                           alternative = "one.sided",
-                           type = "one.sample"))
-# round to the next integer
-N <- ceiling(sample_size_calc$n)
-```
-Resultando em um tamanho amostral de:
-```{r viewsamplesize, echo=FALSE}
-print(c("N = ", N), quote = FALSE)
-```
-
-#### Teste de Hipoteses
-#### Calculo do intervalo de confianca
-#### Validaçao das premissas
-
-### Teste sobre a variância do custo
-#### Teste de Hipoteses
-#### Calculo do intervalo de confianca
-#### Validaçao das premissas
-
-### Discussão e Conclusões
-
-## Divisão das Atividades
+# Divisão das Atividades
 
 Victor - Reporter
 Maressa - Coordenadora
@@ -202,42 +196,9 @@ Gilmar - Verificador e Monitor
 
 
 
-## Exploratory Data Analysis
-The first step is to load and preprocess the data. For instance,
-```{r loaddata}
-data(mtcars)
-fc<-c(2,8:11)
-for (i in 1:length(fc)){mtcars[,fc[i]]<-as.factor(mtcars[,fc[i]])}
-levels(mtcars$am) <- c("Automatic","Manual")
-```
-
-To get an initial feel for the relationships between the relevant variables of your experiment it is frequently interesting to perform some preliminary (exploratory) analysis. This is frequently referred to as _getting a feel_ of your data, and can suggest procedures (such as outlier investigation or data transformations) to experienced experimenters.
-
-```{r pairs,fig.width=8,echo=TRUE,message=FALSE,fig.cap="Exploring the effect of car transmission on mpg values"}
-library(GGally,quietly = T, warn.conflicts = F) # This is just me getting fancy.
-                                                # There are much simpler ways ;-)
-ggpairs(data=mtcars,columns=c(1,9),title="MPG by transmission type",
-        upper=list(combo="box"),lower=list(combo="facethist"),
-        diag=list(continuous="density",discrete="bar"))
-```
 
 
-Your preliminary analysis should be described together with the plots. In this example, two facts are immediately clear from the plots: first, **mpg** tends to correlate well with many of the other variables, most intensely with **drat** (positively) and **wt** (negatively). It is also clear that many of the variables are highly correlated (e.g., **wt** and **disp**). Second, it seems like manual transmission models present larger values of **mpg** than the automatic ones. In the next section a linear model will be fit to the data in order to investigate the significance and magnitude of this possible effect.
-
-## Statistical Analysis
-Your statistical analysis should come here. This is the place where you should fit your statistical model, get the results of your significance test, your effect size estimates and confidence intervals.
-
-```{r fitmodel,results='hold'}
-model<-aov(mpg~am*disp,data=mtcars)
-summary(model)
-```
-
-### Checking Model Assumptions
-The assumptions of your test should also be validated, and possible effects of violations should also be explored.
-```{r resplots,fig.width=8,echo=TRUE,message=FALSE, fig.cap = "Residual plots for the anova model"}
-par(mfrow=c(2,2), mai=.3*c(1,1,1,1))
-plot(model,pch=16,lty=1,lwd=2)
-```
+# Referências
 
 
-## Referências
+
