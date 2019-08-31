@@ -70,12 +70,12 @@ variancia_a<-100
 
 #Atividade 2: Tamanho amostral
 #Calculo do tamanho amostral usando a função power.t.test:
-(sample_size <- power.t.test(delta = delta,
+sample_size <- power.t.test(delta = delta,
                              sd = sqrt(variancia_a),
                              sig.level = alpha,
                              power = pi,
                              alternative = "one.sided",
-                             type = "one.sample"))
+                             type = "one.sample")
 
 N <- ceiling(sample_size$n)
 print(c("Tamanho amostral calculado: ", N), quote = FALSE)
@@ -101,12 +101,18 @@ hist(my_samples)
 qqnorm(my_samples, las = 1)
 qqline(my_samples)
 
-#teste
-(my_teste<-t.test(my_samples, mu=50, alternative = "less", conf.level = 0.99))
-
+#teste para custo médio
+my_teste<-t.test(my_samples, 
+                  mu=50,                 #hipotese nula
+                  alternative = "less",  #hipotese alternativa
+                  conf.level = 0.99)
+my_teste
 #Atividade 4: Calculo do intervalo de confiança
-intervalo<-my_teste$conf.int
-
+(teste_intervalo<-t.test(my_samples,
+                        mu = media_a,
+                        conf.level=1-alpha))
+intervalo<-teste_intervalo$conf.int
+intervalo
 #Atividade 5: Validação e discussão
 #reamostragem:
 N2<-999
@@ -122,7 +128,8 @@ qqline(my_means)
 
 #Atividade 6: Discussão sobre potencia do teste
 #intervalo superior unilateral de confiança
-(intervalo_conf_max<-(N-1)*var(my_samples)/qchisq(p = 0.01, df = N-1))
+intervalo_conf_max<-(N-1)*var(my_samples)/qchisq(p = 0.01, df = N-1)
+intervalo_conf_max
 
 #calculo da potencia
 (pontencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), sig.level = alpha, type = "one.sample", alternative = "one.sided"))
