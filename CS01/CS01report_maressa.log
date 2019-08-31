@@ -525,8 +525,7 @@ Package: titling 2009/09/04 v2.1d maketitle typesetting
 \thanksmarkwidth=\skip48
 \thanksmargin=\skip49
 \droptitle=\skip50
-)
-No file CS01report_maressa.aux.
+) (./CS01report_maressa.aux)
 \openout1 = `CS01report_maressa.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 128.
@@ -606,6 +605,7 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 128.
 LaTeX Info: Redefining \pageref on input line 128.
 LaTeX Info: Redefining \nameref on input line 128.
+(./CS01report_maressa.out) (./CS01report_maressa.out)
 \@outlinefile=\write4
 \openout4 = `CS01report_maressa.out'.
 
@@ -674,15 +674,15 @@ File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 209.
 [2]
-<CS01report_maressa_files/figure-latex/plot-1.pdf, id=36, 361.35pt x 325.215pt>
-
+<CS01report_maressa_files/figure-latex/plot-1.pdf, id=119, 361.35pt x 325.215pt
+>
 File: CS01report_maressa_files/figure-latex/plot-1.pdf Graphic file (type pdf)
 <use CS01report_maressa_files/figure-latex/plot-1.pdf>
 Package pdftex.def Info: CS01report_maressa_files/figure-latex/plot-1.pdf  used
  on input line 307.
 (pdftex.def)             Requested size: 361.34912pt x 325.2142pt.
-<CS01report_maressa_files/figure-latex/plot1-1.pdf, id=37, 361.35pt x 325.215pt
->
+<CS01report_maressa_files/figure-latex/plot1-1.pdf, id=120, 361.35pt x 325.215p
+t>
 File: CS01report_maressa_files/figure-latex/plot1-1.pdf Graphic file (type pdf)
 
 <use CS01report_maressa_files/figure-latex/plot1-1.pdf>
@@ -697,24 +697,15 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 383.
 (./CS01report_maressa.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 383.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 383.
-
-Package rerunfilecheck Warning: File `CS01report_maressa.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `CS01report_maressa.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  4F2543F1F75827F10849ACFE66C5D458;3984.
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
+Package rerunfilecheck Info: File `CS01report_maressa.out' has not changed.
+(rerunfilecheck)             Checksum: 4F2543F1F75827F10849ACFE66C5D458;3984.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 383.
  ) 
 Here is how much of TeX's memory you used:
- 10714 strings out of 494553
- 154495 string characters out of 6175770
- 221900 words of memory out of 5000000
- 14205 multiletter control sequences out of 15000+600000
+ 10743 strings out of 494553
+ 154992 string characters out of 6175770
+ 223260 words of memory out of 5000000
+ 14228 multiletter control sequences out of 15000+600000
  42870 words of font info for 42 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  28i,7n,32p,469b,364s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -736,10 +727,10 @@ X/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/ASUS/AppData/Roaming/Ti
 nyTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/Users/ASUS/AppData/Roamin
 g/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/ASUS/AppData/Ro
 aming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on CS01report_maressa.pdf (5 pages, 251088 bytes).
+Output written on CS01report_maressa.pdf (5 pages, 252369 bytes).
 PDF statistics:
- 152 PDF objects out of 1000 (max. 8388607)
- 127 compressed objects within 2 object streams
+ 219 PDF objects out of 1000 (max. 8388607)
+ 194 compressed objects within 2 object streams
  50 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 187 words of extra memory for PDF output out of 10000 (max. 10000000)
 
