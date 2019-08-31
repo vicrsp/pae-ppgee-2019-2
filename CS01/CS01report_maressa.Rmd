@@ -106,11 +106,51 @@ Com base nas amostras coletadas referente à segunda versão do software, foi re
 
 # Análise Exploratória dos Dados
 
-Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema, é importante realizar uma análise preliminar dos dados [@medri]. destaca que a análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo.
+Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema, é importante realizar uma análise preliminar dos dados [@medri]. destaca que a análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo. 
+
+Para a realização das análises foi feita uma amostra de 30 elementos da população, pois essa quantidade já é suficiente boa para amostrar o comportamento dos dados [@viali].
+
+```{r summary statistic}
+
+N <- 30
+
+my.sample <- numeric(N)
+for (i in seq(N)){
+my.sample[i] <- ExpDE(mpo, mmu, mre, mse, mst, mpr,
+showpars = list(show.iters = "none"))$Fbest
+}
+
+summary(my.sample)
+
+var(my.sample)
+
+```
+
+```{r summary var}
+
+var(my.sample)
+
+```
 
 
+Pela análise dos dados verifica-se que a variância do novo software aparenta ser significamente menor que a versão anterior, enquanto em relação à média a diferença foi mais discreta. Para concluir com maior precisão sobre os dados, os testes estatísticos serão apresentados com detalhes nas seções seguintes.
 
+No contexto da análise exploratória, é válido realizar o teste de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil.
 
+```{R plot, echo=FALSE, fig.width = 5}
+
+boxplot(my.sample, horizontal = TRUE)
+
+```
+
+```{R plot1, echo=FALSE, fig.width = 5}
+
+suppressPackageStartupMessages(library(car))
+qqPlot(my.sample, las = 1, pch = 16)
+
+```
+
+Pela análise do boxplot e do gráfico quantil X quantil, verifica-se que, embora o valor máximo observado (65.08) apresenta-se como um outlier no boxplot, ele não interfere na normalidade dos dados. Sendo assim, é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
 
 
 # Resultados
@@ -154,44 +194,6 @@ Gilmar - Verificador e Monitor
 
 
 
-
-
-# Exploratory Data Analysis
-The first step is to load and preprocess the data. For instance,
-```{r loaddata}
-data(mtcars)
-fc<-c(2,8:11)
-for (i in 1:length(fc)){mtcars[,fc[i]]<-as.factor(mtcars[,fc[i]])}
-levels(mtcars$am) <- c("Automatic","Manual")
-```
-
-To get an initial feel for the relationships between the relevant variables of your experiment it is frequently interesting to perform some preliminary (exploratory) analysis. This is frequently referred to as _getting a feel_ of your data, and can suggest procedures (such as outlier investigation or data transformations) to experienced experimenters.
-
-```{r pairs,fig.width=8,echo=TRUE,message=FALSE,fig.cap="Exploring the effect of car transmission on mpg values"}
-library(GGally,quietly = T, warn.conflicts = F) # This is just me getting fancy.
-                                                # There are much simpler ways ;-)
-ggpairs(data=mtcars,columns=c(1,9),title="MPG by transmission type",
-        upper=list(combo="box"),lower=list(combo="facethist"),
-        diag=list(continuous="density",discrete="bar"))
-```
-
-
-Your preliminary analysis should be described together with the plots. In this example, two facts are immediately clear from the plots: first, **mpg** tends to correlate well with many of the other variables, most intensely with **drat** (positively) and **wt** (negatively). It is also clear that many of the variables are highly correlated (e.g., **wt** and **disp**). Second, it seems like manual transmission models present larger values of **mpg** than the automatic ones. In the next section a linear model will be fit to the data in order to investigate the significance and magnitude of this possible effect.
-
-# Statistical Analysis
-Your statistical analysis should come here. This is the place where you should fit your statistical model, get the results of your significance test, your effect size estimates and confidence intervals.
-
-```{r fitmodel,results='hold'}
-model<-aov(mpg~am*disp,data=mtcars)
-summary(model)
-```
-
-## Checking Model Assumptions
-The assumptions of your test should also be validated, and possible effects of violations should also be explored.
-```{r resplots,fig.width=8,echo=TRUE,message=FALSE, fig.cap = "Residual plots for the anova model"}
-par(mfrow=c(2,2), mai=.3*c(1,1,1,1))
-plot(model,pch=16,lty=1,lwd=2)
-```
 
 
 # Referências
