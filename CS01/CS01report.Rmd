@@ -1,11 +1,12 @@
 ---
 title: 'Estudo de caso: Grupo D 3'
-author: "Gilmar and Maressa Nunes R. Tavares and Victor"
+author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
 date: "3 de Setembro, 2019"
 output:
   pdf_document:
     fig_caption: yes
-    
+    number_sections: yes
+  
 bibliography: refsCS01.bib
 csl: ieee.csl
 ---
@@ -37,36 +38,52 @@ if (!require(car, quietly = TRUE)){
 if (!require(boot, quietly = TRUE)){
   install.packages("boot")
 }
+
+if (!require(EnvStats, quietly = TRUE)){
+  install.packages("EnvStats")
+}
 ```
-<<<<<<< HEAD
-## Summary
-O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média \mu = 50 e variância \sigma = 100, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância \alpha = 0,01 e \alpha = 0,05, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
-<!-- ### 1. The easy way -->
-<!-- Use [RStudio](http://rstudio.com/) as your editor, open the **.Rmd** file and click the _Knit PDF_ button at the top of the editor. -->
+# Summary
+O presente trabalho tem realizou o delineamento e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste t com nível de significância $\alpha = 0,01$ e $\alpha = 0,05$, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
 
-<!-- ### 2. The slightly-less-easy way -->
-<!-- If you're using any other R editor (such as the basic [R](http://cran.r-project.org) editor), you have to use the _render()_ function from the **rmarkdown** package: -->
+# Planejamento do experimento
 
-<!-- ```{r, eval=F} -->
-<!-- install.packages("devtools")                    # you only have to install it once -->
-<!-- library(devtools) -->
-<!-- install_github("rstudio/rmarkdown")             # you only have to install it once -->
-<!-- library(rmarkdown) -->
-<!-- render("report_template.Rmd","pdf_document")    # this renders the pdf -->
-<!-- ``` -->
+Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar o desempenho das duas versões do software em relação à média e à variância do custo de execução. Essa etapa é fundamental, pois trata-se de uma abordagem que fornece resultados importantes em análises de sistemas complexos, além disso, os testes servem para validar a teoria que está por trás dele [@montgomery2007applied].
 
-## Experimental design
-### Teste da média
-Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar os resultados das duas versões do software. Inicialmente, o teste foi executado para as médias do custo computacional, assim, para verificar se a nova versão é melhor que a anterior, formulou-se as seguintes hipóteses:
+## Objetivo do experimento
+
+Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto realizou-se uma análise estatística para investigar os ganhos de desempenho obtidos em relação à versão atual. 
+
+Inicialmente, o teste foi executado para as médias do custo, assim, para verificar se a nova versão é melhor que a anterior, formulou-se as seguintes hipóteses:
+
 $$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
+Como a média da população para a primeira versão é $\mu = 50$, considourou-se como hipótese nula ($H_0$) a ausência de melhoria do software, isto é, a segunda versão apresenta a mesma performance da versão anterior, com média igual $\mu = 50.$ Por outro lado, a hipótese alternativa considera que houve melhorias entre as versões, portanto, a média é menor que 50 ($H_1$). 
 
-Como a média da população para a primeira versão é $\mu = 50$, considourou-se como hipótese nula (H_0) a ausência de melhoria do software, isto é, a segunda versão apresenta a mesma performace da versão anterior, com média igual $\mu = 50$. Por outro lado, a hipótese alternativa considera que houve melhorias entre as versões, portanto, a média é menor que 50 (H_1). 
-=======
-## Descrição do Problema
-Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto uma análise estatística deve ser feita para investigar os ganhos de desempenho obtidos em relação à versão atual. Espera-se que sejam testados a média e variância dos custos de execução
+Além disso, para o teste da média foram definidos os seguintes objetivos: 
 
-Para simular a geração de dados da nova versão, a biblioteca $ExpDE$ [@expDE:online] foi utilizada. Ela é declarada da seguinte forma: 
+* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
+* Efeito relevante mínimo de $\delta^* = 4$
+* Potência desejada $\pi = 1 - \beta = 0.8$
+
+
+Por outro lado, para a variância o experimento foi realizado com base nas seguintes hipóteses:
+
+$$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2} < 100\end{cases}$$
+
+Assim como no teste da média, neste caso adotou-se como hipótese nula $(H_0)$ a ausência de melhoria do software, mantendo os resultados de variância da versão anterior ($\sigma^{2} = 100$). Enquanto a hipótese alternativa considera que houve melhorias entre as versões, portanto, a variância é menor que 100 $(H_1)$. 
+
+Em relação aos objetivos, o teste da variância considerou: 
+
+* $\alpha = 0.05$
+* $1 - \alpha = 0.95$
+
+Os dois testes foram realizados com os mesmos dados coletados os dados de acordo com a descrição da próxima seção.
+
+### Descrição da coleta de dados
+
+Para coletar os dados referente à nova versão do software, foi executada uma simulação no software R utilizando a biblioteca $ExpDE$ [@expDE:online]. A coleta de dados foi declarada da seguinte forma: 
+
 ```{r datageneration}
 # Set-up the data generating procedure
 mre <- list(name = "recombination_bin", cr = 0.9)
@@ -94,37 +111,15 @@ get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
 
 ```
 
-As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados.
-
-## Planejamento do Experimento
-### Teste do custo médio
-Para este teste, são estabelecidos os seguintes objetivos:
-
-* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
-* Efeito relevante mínimo de $\delta^* = 4$
-* Potência desejada $\pi = 1 - \beta = 0.8$
-
-Como estamos interessados em saber se existem ganhos em termos do custo médio, e dado que a média populacional da versão atual é $\mu_0 = 50$, define-se a seguinte hipótese nula e alternativa:
-
-$$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
-
-### Teste da variância do custo
-
-Para este teste, são estabelecidos os seguintes objetivos:
-
-* Nível de significância desejado $\alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
-* Usar as mesmas observações coletadas para o teste da média.
-
-Como estamos interessados em saber se existem ganhos em termos de variância média, e dado que a variância populacional da versão atual é $\sigma^{2} = 100$, define-se a seguinte hipótese nula e alternativa:
-
-$$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2}<100\end{cases}$$
+As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados, sendo elas para coletar uma única amostra ou $n$ amostras, respectivamente.
 
 
-## Análise Exploratória dos Dados
 
-## Análise Estatística
-### Teste sobre a média do custo
-#### Cálculo do tamanho amostral
+# Resultados
+
+## Teste sobre a média do custo
+
+### Cálculo do tamanho amostral
 Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa unilateral para a média amostral, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
 ```{r calcsamplesize}
 # define current system parameters
@@ -153,13 +148,115 @@ Resultando em um tamanho amostral de:
 print(c("N = ", N), quote = FALSE)
 ```
 
-### Teste sobre a variância do custo
+### Análise Exploratória dos Dados
 
-### Validação das Premissas
+Com base nas amostras coletadas referente à segunda versão do software, foi realizada uma análise exploratória dos dados a fim de validar as premissas dos testes que foram realizados em seguida, conforme apresentado na seção seguinte.
 
-### Discussão e Conclusões
+Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema, é importante realizar uma análise preliminar dos dados [@medri]. destaca que a análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo. 
 
-## Divisão das Atividades
+```{r summary_statistic}
+data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
+summary(data.mean.test)
+```
+
+```{r summary_var}
+var(data.mean.test)
+```
+
+
+Pela análise dos dados verifica-se que a variância do novo software aparenta ser significamente menor que a versão anterior, enquanto em relação à média a diferença foi mais discreta. Para concluir com maior precisão sobre os dados, os testes estatísticos serão apresentados com detalhes nas seções seguintes.
+
+No contexto da análise exploratória, é válido realizar o teste de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil.
+
+```{r plot, echo=FALSE, fig.width = 5}
+boxplot(data.mean.test, horizontal = TRUE)
+```
+
+```{r plot1, echo=FALSE, fig.width = 5}
+suppressPackageStartupMessages(library(car))
+qqPlot(data.mean.test, las = 1, pch = 16)
+```
+
+```{r shapiro}
+shapiro.test(data.mean.test)
+```
+
+
+Pela análise do boxplot e do gráfico quantil X quantil, verifica-se que, embora o valor máximo observado (65.08) apresenta-se como um outlier no boxplot, ele não interfere na normalidade dos dados. Além da análise gráfica, o teste de Shapiro-Wilk também comprova a normalidade dos dados, pois o p-valor do teste é maior que 0.05, logo, o teste falhou em rejeitar a hipótese nula de que os dados têm distribuição normal, o histograma dos dados apresentado a seguir também coorrobora com essa conclusão.
+
+```{r plot3, echo=FALSE, fig.width = 5}
+hist(data.mean.test)
+```
+
+Sendo assim, partindo da premissa de normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
+
+
+### Teste de Hipoteses
+
+Para testar a hipotese nula para o custo médio utilizou-se a função t.teste, sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para $N$ amostras. O teste esta descrito a seguir.
+
+````{r summary funcao t test}
+#teste para custo médio:
+mean.t.teste <- t.test(data.mean.test, 
+                  mu=current_mu,                 #hipotese nula
+                  alternative = "less",  #hipotese alternativa
+                  conf.level = ci_mean)
+````
+
+O teste da média resultou em:
+````{r resultado teste t}
+mean.t.teste
+````
+### Calculo do intervalo de confianca
+
+Para o cálculo do intervalo de confiança utilizou-se a função t.test para o teste da hipotese nula, conforme mostrado a seguir.
+
+````{r intervalo de confiança}
+mean.intervalo.ci <- t.test(data.mean.test,
+                  mu = current_mu,
+                  conf.level=ci_mean)$conf.int
+
+````
+
+A função resultou no intervalo:
+````{r resultado intervalo de confiança}
+mean.intervalo.ci
+````
+
+Como o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$), não há evidência suficiente para se rejeitar a hipótese nula.
+
+### Validação de premissas
+
+## Teste sobre a variância do custo
+### Teste de Hipoteses
+Para a variância, e dado que a população é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste irá seguir uma distribuição chi-quadrado com $n-1$ graus de liberdade [@montgomery2007applied]. O teste da variância pode ser executado com a função `varTest` do pacote \textit{EnvStats} [@EnvStats:book].
+```{r vartest}
+sig_level_sd <- 0.05
+ci_sd <- 1 - sig_level_sd
+
+varTest(x = data.mean.test, alternative = "less",
+        sigma.squared =  current_var, conf.level = ci_sd)
+```
+Logo, a hipótese nula é rejeitada, sendo possível declarar que a variância da nova versão do software é significativamente inferior à atual (com um intervalo de confiança de 95%).
+
+### Calculo do intervalo de confianca
+Como temos uma hipótese unilateral, precisamos definir somente um intervalo superior para o nível de significância de desejadado $\alpha = 0.95$. De acordo com [@montgomery2007applied], para $n-1$ graus de liberdade e significância $\alpha$, ele pode ser calculado por:
+\begin{equation} 
+\sigma^2_{Upper} = \frac{(n-1)S^2}{\chi{^2}_{(\alpha,n-1)}} 
+\end{equation}
+
+```{r vartest_ci_calc}
+sig_level_sd <- 0.05
+ci_sd <- 1 - sig_level_sd
+var.upper.ci <- (N-1)*var(data.mean.test)/qchisq(sig_level_sd, N-1)
+print(var.upper.ci)
+```
+Logo, o intervalo de confiança é [0, 40.26176], para um nível de confiança de 95%.
+### Validaçao das premissas
+
+# Discussão e Conclusões
+
+# Divisão das Atividades
 
 Victor - Reporter
 Maressa - Coordenadora
@@ -175,47 +272,13 @@ Gilmar - Verificador e Monitor
 
 
 
->>>>>>> 13248d0f7c3de85f8b9820e1c247167be79c24c1
 
 
 
 
-## Exploratory Data Analysis
-The first step is to load and preprocess the data. For instance,
-```{r loaddata}
-data(mtcars)
-fc<-c(2,8:11)
-for (i in 1:length(fc)){mtcars[,fc[i]]<-as.factor(mtcars[,fc[i]])}
-levels(mtcars$am) <- c("Automatic","Manual")
-```
-
-To get an initial feel for the relationships between the relevant variables of your experiment it is frequently interesting to perform some preliminary (exploratory) analysis. This is frequently referred to as _getting a feel_ of your data, and can suggest procedures (such as outlier investigation or data transformations) to experienced experimenters.
-
-```{r pairs,fig.width=8,echo=TRUE,message=FALSE,fig.cap="Exploring the effect of car transmission on mpg values"}
-library(GGally,quietly = T, warn.conflicts = F) # This is just me getting fancy.
-                                                # There are much simpler ways ;-)
-ggpairs(data=mtcars,columns=c(1,9),title="MPG by transmission type",
-        upper=list(combo="box"),lower=list(combo="facethist"),
-        diag=list(continuous="density",discrete="bar"))
-```
 
 
-Your preliminary analysis should be described together with the plots. In this example, two facts are immediately clear from the plots: first, **mpg** tends to correlate well with many of the other variables, most intensely with **drat** (positively) and **wt** (negatively). It is also clear that many of the variables are highly correlated (e.g., **wt** and **disp**). Second, it seems like manual transmission models present larger values of **mpg** than the automatic ones. In the next section a linear model will be fit to the data in order to investigate the significance and magnitude of this possible effect.
-
-## Statistical Analysis
-Your statistical analysis should come here. This is the place where you should fit your statistical model, get the results of your significance test, your effect size estimates and confidence intervals.
-
-```{r fitmodel,results='hold'}
-model<-aov(mpg~am*disp,data=mtcars)
-summary(model)
-```
-
-### Checking Model Assumptions
-The assumptions of your test should also be validated, and possible effects of violations should also be explored.
-```{r resplots,fig.width=8,echo=TRUE,message=FALSE, fig.cap = "Residual plots for the anova model"}
-par(mfrow=c(2,2), mai=.3*c(1,1,1,1))
-plot(model,pch=16,lty=1,lwd=2)
-```
+# Referências
 
 
-## Referências
+
