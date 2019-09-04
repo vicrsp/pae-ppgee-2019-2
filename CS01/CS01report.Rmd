@@ -93,7 +93,7 @@ mse <- list(name = "selection_standard")
 mst <- list(names = "stop_maxeval", maxevals = 10000)
 mpr <- list(name = "sphere", xmin = -seq(1, 20), xmax = 20 + 5 * seq(5, 24))
 
-set.seed(1234) # to generate always the same results
+#set.seed(1235) # to generate always the same results
 
 # define functions for data generation
 get.single.sample <- function(mpo, mmu, mre, mse, mst, mpr){
@@ -102,11 +102,18 @@ get.single.sample <- function(mpo, mmu, mre, mse, mst, mpr){
 }
 
 get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
-  my.sample <- numeric(N)
-  for (i in seq(N)){
-    my.sample[i] <- get.single.sample(mpo, mmu, mre, mse, mst, mpr)
+  if(!file.exists('CS01data.csv')){
+    my.sample <- numeric(N)
+    for (i in seq(N)){
+      my.sample[i] <- get.single.sample(mpo, mmu, mre, mse, mst, mpr)
+    }
+
+    write.csv(my.sample, file = 'CS01data.csv', row.names = FALSE)
+    return(my.sample)
   }
-  return(my.sample)
+  else{
+      return(read.csv('CS01data.csv')$x)  
+  }
 }
 
 ```
@@ -173,8 +180,12 @@ boxplot(data.mean.test, horizontal = TRUE)
 ```
 
 ```{r plot1, echo=FALSE, fig.width = 5}
-suppressPackageStartupMessages(library(car))
-qqPlot(data.mean.test, las = 1, pch = 16)
+qqPlot(data.mean.test, las = 1, pch = 16, add.line = TRUE)
+#qqnorm(data.mean.test, las = 1)
+#qqline(data.mean.test)
+
+#p3 <- ggplot(as.data.frame(data.mean.test), aes(sample = data.mean.test))
+#p3 + geom_qq() + geom_qq_line()
 ```
 
 ```{r shapiro}
@@ -197,10 +208,10 @@ Para testar a hipotese nula para o custo médio utilizou-se a função t.teste, 
 
 ````{r summary funcao t test}
 #teste para custo médio:
-mean.t.teste <- t.test(data.mean.test, 
+(mean.t.teste <- t.test(data.mean.test, 
                   mu=current_mu,                 #hipotese nula
                   alternative = "less",  #hipotese alternativa
-                  conf.level = ci_mean)
+                  conf.level = ci_mean))
 ````
 
 O teste da média resultou em:
