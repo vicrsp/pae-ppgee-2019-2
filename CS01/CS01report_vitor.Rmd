@@ -5,6 +5,8 @@ date: "3 de Setembro, 2019"
 output:
   pdf_document:
     fig_caption: yes
+    number_sections: true
+
     
 bibliography: refsCS01.bib
 csl: ieee.csl
@@ -36,6 +38,10 @@ if (!require(car, quietly = TRUE)){
 
 if (!require(boot, quietly = TRUE)){
   install.packages("boot")
+}
+
+if (!require(EnvStats, quietly = TRUE)){
+  install.packages("EnvStats")
 }
 ```
 ## Descrição do Problema
@@ -73,7 +79,6 @@ get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
 ```
 
 As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados.
-
 
 ### Teste do custo médio
 Para este teste, são estabelecidos os seguintes objetivos:
@@ -137,7 +142,31 @@ print(c("N = ", N), quote = FALSE)
 
 ### Teste sobre a variância do custo
 #### Teste de Hipoteses
+Para a variância, e dado que a população é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste irá seguir uma distribuição chi-quadrado com $n-1$ graus de liberdade [@montgomery2007applied]. O teste da variância pode ser executado com a função `varTest` do pacote \textit{EnvStats} [@EnvStats:book].
+```{r vartest}
+data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
+sig_level_sd <- 0.05
+ci_sd <- 1 - sig_level_sd
+
+varTest(x = data.mean.test, alternative = "less",
+        sigma.squared =  current_var, conf.level = ci_sd)
+```
+Logo, a hipótese nula é rejeitada, sendo possível declarar que a variância da nova versão do software é significativamente inferior à atual (com um intervalo de confiança de 95%).
+
 #### Calculo do intervalo de confianca
+Como temos uma hipótese unilateral, precisamos definir somente um intervalo superior para o nível de significância de desejadado $\alpha = 0.95$. De acordo com [@montgomery2007applied], para $n-1$ graus de liberdade e significância $\alpha$, ele pode ser calculado por:
+\begin{equation} 
+\sigma^2_{Upper} = \frac{(n-1)S^2}{\chi{^2}_{(\alpha,n-1)}} 
+\end{equation}
+
+```{r vartest_ci_calc}
+sig_level_sd <- 0.05
+ci_sd <- 1 - sig_level_sd
+var.upper.ci <- (N-1)*var(data.mean.test)/qchisq(sig_level_sd, N-1)
+print(var.upper.ci)
+```
+Logo, o intervalo de confiança é [0, 40.26176], para um nível de confiança de 95%.
+
 #### Validaçao das premissas
 
 ### Discussão e Conclusões
@@ -148,56 +177,6 @@ Victor - Reporter
 Maressa - Coordenadora
 Gilmar - Verificador e Monitor
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Exploratory Data Analysis
-The first step is to load and preprocess the data. For instance,
-```{r loaddata}
-data(mtcars)
-fc<-c(2,8:11)
-for (i in 1:length(fc)){mtcars[,fc[i]]<-as.factor(mtcars[,fc[i]])}
-levels(mtcars$am) <- c("Automatic","Manual")
-```
-
-To get an initial feel for the relationships between the relevant variables of your experiment it is frequently interesting to perform some preliminary (exploratory) analysis. This is frequently referred to as _getting a feel_ of your data, and can suggest procedures (such as outlier investigation or data transformations) to experienced experimenters.
-
-```{r pairs,fig.width=8,echo=TRUE,message=FALSE,fig.cap="Exploring the effect of car transmission on mpg values"}
-library(GGally,quietly = T, warn.conflicts = F) # This is just me getting fancy.
-                                                # There are much simpler ways ;-)
-ggpairs(data=mtcars,columns=c(1,9),title="MPG by transmission type",
-        upper=list(combo="box"),lower=list(combo="facethist"),
-        diag=list(continuous="density",discrete="bar"))
-```
-
-
-Your preliminary analysis should be described together with the plots. In this example, two facts are immediately clear from the plots: first, **mpg** tends to correlate well with many of the other variables, most intensely with **drat** (positively) and **wt** (negatively). It is also clear that many of the variables are highly correlated (e.g., **wt** and **disp**). Second, it seems like manual transmission models present larger values of **mpg** than the automatic ones. In the next section a linear model will be fit to the data in order to investigate the significance and magnitude of this possible effect.
-
-## Statistical Analysis
-Your statistical analysis should come here. This is the place where you should fit your statistical model, get the results of your significance test, your effect size estimates and confidence intervals.
-
-```{r fitmodel,results='hold'}
-model<-aov(mpg~am*disp,data=mtcars)
-summary(model)
-```
-
-### Checking Model Assumptions
-The assumptions of your test should also be validated, and possible effects of violations should also be explored.
-```{r resplots,fig.width=8,echo=TRUE,message=FALSE, fig.cap = "Residual plots for the anova model"}
-par(mfrow=c(2,2), mai=.3*c(1,1,1,1))
-plot(model,pch=16,lty=1,lwd=2)
-```
 
 
 ## Referências

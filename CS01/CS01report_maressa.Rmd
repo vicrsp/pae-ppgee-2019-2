@@ -148,9 +148,28 @@ boxplot(my.sample, horizontal = TRUE)
 suppressPackageStartupMessages(library(car))
 qqPlot(my.sample, las = 1, pch = 16)
 
+
+```
+```{r shapiro}
+
+shapiro.test(my.sample)
+
 ```
 
-Pela análise do boxplot e do gráfico quantil X quantil, verifica-se que, embora o valor máximo observado (65.08) apresenta-se como um outlier no boxplot, ele não interfere na normalidade dos dados. Sendo assim, é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
+
+Pela análise do boxplot e do gráfico quantil X quantil, verifica-se que, embora o valor máximo observado (65.08) apresenta-se como um outlier no boxplot, ele não interfere na normalidade dos dados. Além da análise gráfica, o teste de Shapiro-Wilk também comprova a normalidade dos dados, pois o p-valor do teste é maior que 0.05, logo, o teste falhou em rejeitar a hipótese nula de que os dados têm distribuição normal, o histograma dos dados apresentado a seguir também coorrobora com essa conclusão.
+
+
+```{r plot3, echo=FALSE, fig.width = 5}
+
+hist(my.sample)
+
+```
+
+
+Sendo assim, partindo da premissa de normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
+
+
 
 
 # Resultados
