@@ -62,7 +62,7 @@ Como a média da população para a primeira versão é $\mu = 50$, considerou-s
 
 Além disso, para o teste da média foram definidos os seguintes objetivos: 
 
-* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
+* Nível de significância desejado $\alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
 * Efeito relevante mínimo de $\delta^* = 4$
 * Potência desejada $\pi = 1 - \beta = 0.8$
 
