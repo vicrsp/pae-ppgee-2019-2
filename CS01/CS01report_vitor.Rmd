@@ -60,8 +60,6 @@ mse <- list(name = "selection_standard")
 mst <- list(names = "stop_maxeval", maxevals = 10000)
 mpr <- list(name = "sphere", xmin = -seq(1, 20), xmax = 20 + 5 * seq(5, 24))
 
-set.seed(1234) # to generate always the same results
-
 # define functions for data generation
 get.single.sample <- function(mpo, mmu, mre, mse, mst, mpr){
   generator <- ExpDE(mpo, mmu, mre, mse, mst, mpr, showpars = list(show.iters = "none"))
@@ -69,11 +67,18 @@ get.single.sample <- function(mpo, mmu, mre, mse, mst, mpr){
 }
 
 get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
-  my.sample <- numeric(N)
-  for (i in seq(N)){
-    my.sample[i] <- get.single.sample(mpo, mmu, mre, mse, mst, mpr)
+  if(!file.exists('CS01data.csv')){
+    my.sample <- numeric(N)
+    for (i in seq(N)){
+      my.sample[i] <- get.single.sample(mpo, mmu, mre, mse, mst, mpr)
+    }
+
+    write.csv(my.sample, file = 'CS01data.csv', row.names = FALSE)
+    return(my.sample)
   }
-  return(my.sample)
+  else{
+      return(read.csv('CS01data.csv')$x)  
+  }
 }
 
 ```
@@ -131,10 +136,8 @@ invisible(sample_size_calc <- power.t.test(delta = delta,
 # round to the next integer
 N <- ceiling(sample_size_calc$n)
 ```
-Resultando em um tamanho amostral de:
-```{r viewsamplesize, echo=FALSE}
-print(c("N = ", N), quote = FALSE)
-```
+Resultando em um tamanho amostral de `r N`.
+
 
 #### Teste de Hipoteses
 #### Calculo do intervalo de confianca
@@ -142,30 +145,33 @@ print(c("N = ", N), quote = FALSE)
 
 ### Teste sobre a variância do custo
 #### Teste de Hipoteses
-Para a variância, e dado que a população é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste irá seguir uma distribuição chi-quadrado com $n-1$ graus de liberdade [@montgomery2007applied]. O teste da variância pode ser executado com a função `varTest` do pacote \textit{EnvStats} [@EnvStats:book].
-```{r vartest}
+Para a variância, dado que a população não é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste não irá seguir uma distribuição chi-quadrado, logo é necessário aplicar uma transformação que leve os dados à normalidade ou utilizar técnicas não-paramétricas. Uma transformação possível é a logarítimica:
+
+
+```{r lognormal}
 data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
-sig_level_sd <- 0.05
-ci_sd <- 1 - sig_level_sd
 
-varTest(x = data.mean.test, alternative = "less",
-        sigma.squared =  current_var, conf.level = ci_sd)
+qqPlot(log(data.mean.test), pch = 16, las = 1, add.line = TRUE)
 ```
-Logo, a hipótese nula é rejeitada, sendo possível declarar que a variância da nova versão do software é significativamente inferior à atual (com um intervalo de confiança de 95%).
 
-#### Calculo do intervalo de confianca
-Como temos uma hipótese unilateral, precisamos definir somente um intervalo superior para o nível de significância de desejadado $\alpha = 0.95$. De acordo com [@montgomery2007applied], para $n-1$ graus de liberdade e significância $\alpha$, ele pode ser calculado por:
-\begin{equation} 
-\sigma^2_{Upper} = \frac{(n-1)S^2}{\chi{^2}_{(\alpha,n-1)}} 
-\end{equation}
-
-```{r vartest_ci_calc}
-sig_level_sd <- 0.05
-ci_sd <- 1 - sig_level_sd
-var.upper.ci <- (N-1)*var(data.mean.test)/qchisq(sig_level_sd, N-1)
-print(var.upper.ci)
+```{r shapirolog}
+shapiro.test(log(data.mean.test))
 ```
-Logo, o intervalo de confiança é [0, 40.26176], para um nível de confiança de 95%.
+
+Pelo gráfico quantil-quantil e p-valor baixo obtido no teste de Shapiro, conclui-se que esta transformação não é capaz de levar os dados à normalidade. Logo, neste trabalho, será usado a técnica de bootstraping para a estimativa do intervalo de confiança e execução do teste de hipóteses [@bootstrap:book]. Será utilizado o pacote \textit{boot} [@bootcran:online] para a sua execução.
+
+```{r bootstrapping}
+# run the boootstrapping
+set.seed(12345) # set a fixed seed to yield the same results for bootstrapping always
+data.var.test.boot <- boot(data.mean.test, statistic = function(x, i){var(x[i])}, R=1000)
+
+# define the desired significance level and CI
+sig_level_sd <- 0.05
+ci_sd <- 1 - 2 * sig_level_sd
+(test.boot.var <- boot.ci(data.var.test.boot, conf = ci_sd, type = "bca"))
+```
+
+É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade interior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
 
 #### Validaçao das premissas
 
