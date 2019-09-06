@@ -231,7 +231,7 @@ mean.t.teste$conf.int
 
 ```
 
-O valor da media retornado pelo t teste é facilmente verificado dentro do intervalo de confiança calculado, reafirmando, desta maneira, que é provavel a não rejeição da hipotese nula.
+O valor da media retornado pelo t teste é facilmente verificado dentro do intervalo de confiança calculado, afirmando, desta maneira, uma possivel não rejeição da hipotese nula.
 
 ### Validação de premissas
 
