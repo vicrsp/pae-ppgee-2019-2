@@ -201,7 +201,7 @@ Com base no gráfico quantil X quantil e no teste de Shapiro Wilk verifica-se qu
 hist(data.mean.test)
 ```
 
-Sendo assim, partindo da premissa de normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
+Sendo assim, partindo da premissa de não normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
 
 
 ### Teste de Hipoteses
