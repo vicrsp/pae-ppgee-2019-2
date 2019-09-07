@@ -6,7 +6,10 @@ output:
   pdf_document:
     fig_caption: yes
     number_sections: yes
-  
+header-includes:
+  \usepackage{float}
+  \floatplacement{figure}{H}
+
 bibliography: refsCS01.bib
 csl: ieee.csl
 ---
@@ -45,7 +48,7 @@ if (!require(EnvStats, quietly = TRUE)){
 ```
 
 # Summary
-O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma^{2} = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste t com nível de significância $\alpha = 0.01$ e $\alpha = 0.05$, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma^{2} = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o testes de hipóteses com nível de significância $\alpha = 0.01$ e $\alpha = 0.05$ para a média e variância, respectivamente. Após os testes verificou-se que o novo sistema possui variância significativamente inferior à versão atual, porém não podemos afirmar o mesmo para a média com a significância especificada. 
 
 # Planejamento do experimento
 
@@ -118,9 +121,7 @@ get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
 
 ```
 
-As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados, sendo elas para coletar uma única amostra ou $n$ amostras, respectivamente.
-
-
+As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados, sendo elas para coletar uma única amostra ou $n$ amostras, respectivamente. É importante notar também que o método `get.n.samples` carrega os valores de um arquivo especificado, se existente, de forma a garantir a replicabilidade dos resultados.
 
 # Resultados
 
@@ -177,17 +178,11 @@ Pela análise dos dados verifica-se que a variância do novo software aparenta s
 
 Outras análises importantes no contexto da análise exploratória, é de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil e do teste de Shapiro Wilk.
 
-```{r plot, echo=FALSE, fig.width = 5}
-boxplot(data.mean.test, horizontal = TRUE)
-```
+```{r plot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot e gráfico quantil-quantil das amostras"}
+par(mfrow=c(1,2))
+boxplot(data.mean.test, horizontal = TRUE, main="Boxplot")
+qqPlot(data.mean.test, las = 1, pch = 16, add.line = TRUE, main="Normal Q-Q plot")
 
-```{r plot1, echo=FALSE, fig.width = 5}
-qqPlot(data.mean.test, las = 1, pch = 16, add.line = TRUE)
-#qqnorm(data.mean.test, las = 1)
-#qqline(data.mean.test)
-
-#p3 <- ggplot(as.data.frame(data.mean.test), aes(sample = data.mean.test))
-#p3 + geom_qq() + geom_qq_line()
 ```
 
 ```{r shapiro}
@@ -204,7 +199,7 @@ Sendo assim, partindo da premissa de não normalidade dos dados relacionados ao 
 
 ### Teste de Hipoteses
 
-Mesmo havendo falha na aceitação da hipotese de normalidade dos dados, para testar a hipotese nula para a média utilizou-se a função t.teste. É possivel a utilização deste teste devido normalidade alcançada por uma reamostragem, verificado pelo o teorema do limite central. 
+Mesmo havendo falha na aceitação da hipotese de normalidade dos dados, para testar a hipotese nula para a média utilizou-se o teste t (função `t.teste`). É possivel a utilização deste teste devido normalidade alcançada por uma reamostragem, verificado pelo o teorema do limite central. 
 
 A análise foi realizada sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para `r N` amostras. O teste esta descrito a seguir.
 
@@ -216,22 +211,21 @@ A análise foi realizada sobre os dados amostrados usando a função get.n.sampl
                   conf.level = ci_mean))
 ```
 
-O t teste retorna que a hipotese alternativa é verdadeira para uma média maior que 50. Porém, pode-se verifcar que o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$). Desta maneira não há evidência suficiente para se rejeitar a hipótese nula.
+O teste t retorna que a hipotese alternativa é verdadeira para uma média maior que 50. Porém, pode-se verifcar que o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$). Desta maneira não há evidência suficiente para se rejeitar a hipótese nula.
 
 ### Calculo do intervalo de confianca
 
-O intervalo de confiança é retornado pela função t.test, conforme mostrado a seguir.
+O intervalo de confiança é retornado pela função `t.test`, conforme mostrado a seguir.
 
 ```{r intervalo de confiança}
 mean.t.teste$conf.int
-
 ```
 
-O valor da media retornado pelo t teste é facilmente verificado dentro do intervalo de confiança calculado, afirmando, desta maneira, uma possivel não rejeição da hipotese nula.
+O valor da media retornado pelo teste t é facilmente verificado dentro do intervalo de confiança calculado, afirmando, desta maneira, a não rejeição da hipotese nula.
 
 ### Validação de premissas
 
-Para validação das premissas utilizadas no t teste, realizou-se uma reamostragem dos dado, conforme descrito a seguir.
+Para validação das premissas utilizadas no teste t, realizou-se uma reamostragem dos dados, conforme descrito a seguir.
 
 ```{r validacao}
 #reamostragem:
@@ -248,23 +242,23 @@ A media para a reamostragem é dada por:
 
 ```{r media reamostragem}
 mean(means.re)
-
 ```
 
 Graficamente:
 
-```{r grafico reamostragem normal}
-#normal
-qqnorm(means.re, las = 1, pch = 16)
-qqline(means.re)
-
+```{r grafico_reamostragem_normal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para reamostragem da média"}
+qqPlot(means.re, las = 1, pch = 16, add.line = TRUE)
 ```
+
+Analisando o gráfico quantil-quantil para a reamostragem, é fácil atestar a normalidade da distribuição da média.
 
 ### Potencia do teste
 
 Para determinar a potência do teste, primeiramente definiu-se o intervalo superior de confiança, a partir do $\chi^2$, para a variância, conforme equação mostrada.
 
-$$\sigma^2 \leq \frac{(N-1)s^2}{\chi^{2(N-1)}_\alpha}$$
+\begin{equation} 
+\sigma^2 \leq \frac{(N-1)s^2}{\chi^{2(N-1)}_\alpha}
+\end{equation} 
 
 O calculo do intervalo superior foi realizado da seguinte maneira.
 
@@ -275,7 +269,7 @@ intervalo_conf_max
 
 ```
 
-Com o valor retornado, foi possivel realizar o teste de potência, utilizando a função power.t.test, conforme descrito abaixo.
+Com o valor retornado, foi possivel realizar o teste de potência, utilizando a função `power.t.test`, conforme descrito abaixo.
 
 ```{r potencia}
 #calculo da potencia
@@ -289,7 +283,7 @@ A variância encontrada na análise exploratória é substancialmente menor que 
 Para a variância, dado que a população não é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste não irá seguir uma distribuição chi-quadrado, logo é necessário aplicar uma transformação que leve os dados à normalidade ou utilizar técnicas não-paramétricas. Uma transformação possível é a logarítimica:
 
 
-```{r lognormal}
+```{r lognormal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
 qqPlot(log(data.mean.test), pch = 16, las = 1, add.line = TRUE)
 ```
 
@@ -312,28 +306,15 @@ ci_sd <- 1 - 2 * sig_level_sd
 
 É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade interior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
 
-# Discussão e Conclusões
+# Conclusão
+Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma nova versão de um software, em relação à média e variância dos custos. Através de uma análise exploratória, foi possível constatar que as amostras da nova versão não seguem uma distribuição normal. Partindo desta premissa, testes de hipóteses foram realizados e, para os níveis de significância especificados, é possível concluir que a variância é significativamente inferior, porém o mesmo não pode ser afirmado para a média.
+
 
 # Divisão das Atividades
 
-Victor - Reporter
-Maressa - Coordenadora
-Gilmar - Verificador e Monitor
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* Victor - Reporter
+* Maressa - Coordenadora
+* Gilmar - Verificador e Monitor
 
 
 # Referências
