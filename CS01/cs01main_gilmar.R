@@ -104,15 +104,12 @@ qqline(my_samples)
 #teste para custo médio
 my_teste<-t.test(my_samples, 
                   mu=50,                 #hipotese nula
-                  alternative = "less",  #hipotese alternativa
+                  alternative = "greater",  #hipotese alternativa
                   conf.level = 0.99)
 my_teste
 #Atividade 4: Calculo do intervalo de confiança
-(teste_intervalo<-t.test(my_samples,
-                        mu = media_a,
-                        conf.level=1-alpha))
-intervalo<-teste_intervalo$conf.int
-intervalo
+my_teste$conf.int
+
 #Atividade 5: Validação e discussão
 #reamostragem:
 N2<-999

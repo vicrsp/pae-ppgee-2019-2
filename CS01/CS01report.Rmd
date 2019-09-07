@@ -58,11 +58,11 @@ Para a versão atual de um dado sistema, sabe-se que sua distribuição de custo
 Inicialmente o teste foi executado para as médias do custo, assim, para verificar se a nova versão é melhor que a anterior, foram formuladas as seguintes hipóteses:
 
 $$\begin{cases} H_0: \mu < 50&\\H_1: \mu \geq 50\end{cases}$$
-Como a média da população para a primeira versão é $\mu = 50$, considerou-se como hipótese alternativa ($H_1$) a ausência de melhoria do software, isto é, a segunda versão apresenta uma performance pior ou igual à versão anterior, com média igual $\mu \geq 50.$ Por outro lado, a hipótese nula, complementar à alternativa, considera que houve melhorias entre as versões, portanto, a média é menor que 50 ($H_1$). 
+Como a média da população para a primeira versão é $\mu = 50$, considerou-se como hipótese alternativa ($H_1$) a ausência de melhoria do software, isto é, a segunda versão apresenta uma performance pior ou igual à versão anterior, com média maior ou igual a 50, $\mu \geq 50$. Por outro lado, a hipótese nula, complementar à alternativa, considera que houve melhorias entre as versões, portanto, a média é menor que 50 ($H_0$). 
 
 Além disso, para o teste da média foram definidos os seguintes objetivos: 
 
-* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
+* Nível de significância desejado $\alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
 * Efeito relevante mínimo de $\delta^* = 4$
 * Potência desejada $\pi = 1 - \beta = 0.8$
 
@@ -128,7 +128,7 @@ As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar 
 
 ### Cálculo do tamanho amostral
 
-Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa unilateral para a média amostral, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
+Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa maior ou igual a média $\mu$, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
 
 ```{r calcsamplesize}
 # define current system parameters
@@ -153,7 +153,9 @@ invisible(sample_size_calc <- power.t.test(delta = delta,
 N <- ceiling(sample_size_calc$n)
 ```
 
-Resultando em um tamanho amostral de `r N`. Definido o tamanho da amostra, procedeu-se a coleta da amostra que foi utilizada em todos os testes nas próximas seções.
+Resultando em um tamanho amostral de `r N`. 
+
+Definido o tamanho da amostra, procedeu-se a coleta da amostra que foi utilizada em todos os testes nas próximas seções.
 
 ### Análise Exploratória dos Dados
 
@@ -206,39 +208,85 @@ Sendo assim, partindo da premissa de não normalidade dos dados relacionados ao 
 
 ### Teste de Hipoteses
 
-Para testar a hipotese nula para o custo médio utilizou-se a função t.teste, sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para $N$ amostras. O teste esta descrito a seguir.
+Mesmo havendo falha na aceitação da hipotese de normalidade dos dados, para testar a hipotese nula para a média utilizou-se a função t.teste. É possivel a utilização deste teste devido normalidade alcançada por uma reamostragem, verificado pelo o teorema do limite central. 
 
-````{r summary funcao t test}
+A análise foi realizada sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para `r N` amostras. O teste esta descrito a seguir.
+
+```{r summary funcao t test}
 #teste para custo médio:
 (mean.t.teste <- t.test(data.mean.test, 
-                  mu=current_mu,                 #hipotese nula
-                  alternative = "less",  #hipotese alternativa
+                  mu=current_mu,            #hipotese nula
+                  alternative = "greater",  #hipotese alternativa
                   conf.level = ci_mean))
-````
+```
 
-O teste da média resultou em:
-````{r resultado teste t}
-mean.t.teste
-````
+O t teste retorna que a hipotese alternativa é verdadeira para uma média maior que 50. Porém, pode-se verifcar que o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$). Desta maneira não há evidência suficiente para se rejeitar a hipótese nula.
+
 ### Calculo do intervalo de confianca
 
-Para o cálculo do intervalo de confiança utilizou-se a função t.test para o teste da hipotese nula, conforme mostrado a seguir.
+O intervalo de confiança é retornado pela função t.test, conforme mostrado a seguir.
 
-````{r intervalo de confiança}
-mean.intervalo.ci <- t.test(data.mean.test,
-                  mu = current_mu,
-                  conf.level=ci_mean)$conf.int
+```{r intervalo de confiança}
+mean.t.teste$conf.int
 
-````
+```
 
-A função resultou no intervalo:
-````{r resultado intervalo de confiança}
-mean.intervalo.ci
-````
-
-Como o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$), não há evidência suficiente para se rejeitar a hipótese nula.
+O valor da media retornado pelo t teste é facilmente verificado dentro do intervalo de confiança calculado, afirmando, desta maneira, uma possivel não rejeição da hipotese nula.
 
 ### Validação de premissas
+
+Para validação das premissas utilizadas no t teste, realizou-se uma reamostragem dos dado, conforme descrito a seguir.
+
+```{r validacao}
+#reamostragem:
+N2<-999
+means.re<-numeric(N2)
+for(i in seq(N2)){
+  means_sample<-sample(data.mean.test, replace = TRUE)
+  means.re[i]<-mean(means_sample)
+}
+
+```
+
+A media para a reamostragem é dada por:
+
+```{r media reamostragem}
+mean(means.re)
+
+```
+
+Graficamente:
+
+```{r grafico reamostragem normal}
+#normal
+qqnorm(means.re, las = 1, pch = 16)
+qqline(means.re)
+
+```
+
+### Potencia do teste
+
+Para determinar a potência do teste, primeiramente definiu-se o intervalo superior de confiança, a partir do $\chi^2$, para a variância, conforme equação mostrada.
+
+$$\sigma^2 \leq \frac{(N-1)s^2}{\chi^{2(N-1)}_\alpha}$$
+
+O calculo do intervalo superior foi realizado da seguinte maneira.
+
+```{r intevalo superior confianca}
+#intervalo superior unilateral de confiança
+intervalo_conf_max<-(N-1)*var(data.mean.test)/qchisq(p = 0.01, df = N-1)
+intervalo_conf_max
+
+```
+
+Com o valor retornado, foi possivel realizar o teste de potência, utilizando a função power.t.test, conforme descrito abaixo.
+
+```{r potencia}
+#calculo da potencia
+(potencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), sig.level = 0.01, type = "one.sample", alternative = "one.sided"))
+```
+
+A variância encontrada na análise exploratória é substancialmente menor que a variancia determinada para a versão do software anterior, $\sigma=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. No resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
 
 ## Teste sobre a variância do custo
 ### Teste de Hipoteses
