@@ -199,10 +199,6 @@ Pela análise do boxplot verificou-se que os dados são assimétricos positivos,
 
 Com base no gráfico quantil X quantil e no teste de Shapiro Wilk verifica-se que o teste falhou em aceitar a hipótese de normalidade dos dados, pois o p-valor do teste é menor que 0.05 (0.007161).
 
-```{r plot3, echo=FALSE, fig.width = 5}
-hist(data.mean.test)
-```
-
 Sendo assim, partindo da premissa de não normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
 
 
