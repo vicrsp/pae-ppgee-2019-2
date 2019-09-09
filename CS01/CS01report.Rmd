@@ -272,7 +272,9 @@ Com o valor retornado, foi possivel realizar o teste de potência, utilizando a 
 
 ```{r potencia}
 #calculo da potencia
-(potencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), sig.level = 0.01, type = "one.sample", alternative = "one.sided"))
+(potencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), 
+sig.level = 0.01, type = "one.sample", 
+alternative = "one.sided"))
 ```
 
 A variância encontrada na análise exploratória é substancialmente menor que a variância obtida para a versão anterior do software, $\sigma=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. Sendo assim, o resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
@@ -303,7 +305,7 @@ ci_sd <- 1 - 2 * sig_level_sd
 (test.boot.var <- boot.ci(data.var.test.boot, conf = ci_sd, type = "bca"))
 ```
 
-É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade inferior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
+É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade inferior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, não há evidências para rejeitar a hipótese nula, pois a variância é significativamente inferior à versão atual do software.
 
 # Conclusão
 Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma nova versão de um software, em relação à média e variância dos custos. Através de uma análise exploratória, foi possível constatar que as amostras da nova versão não seguem uma distribuição normal. Partindo desta premissa, testes de hipóteses foram realizados e, para os níveis de significância especificados, é possível concluir que a variância é significativamente inferior, porém o mesmo não pode ser afirmado para a média.
