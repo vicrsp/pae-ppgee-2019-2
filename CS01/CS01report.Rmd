@@ -48,7 +48,7 @@ if (!require(EnvStats, quietly = TRUE)){
 ```
 
 # Summary
-O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma^{2} = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o testes de hipóteses com nível de significância $\alpha = 0.01$ e $\alpha = 0.05$ para a média e variância, respectivamente. Após os testes verificou-se que o novo sistema possui variância significativamente inferior à versão atual, porém não podemos afirmar o mesmo para a média com a significância especificada. 
+O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma^{2} = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste de hipótese com nível de significância $\alpha = 0.01$ e $\alpha = 0.05$ para a média e variância, respectivamente. Após os testes verificou-se que o novo sistema possui variância significativamente inferior à versão atual, porém, não podemos afirmar o mesmo para a média com a significância especificada. 
 
 # Planejamento do experimento
 
@@ -160,9 +160,9 @@ Definido o tamanho da amostra, procedeu-se a coleta da amostra que foi utilizada
 
 ### Análise Exploratória dos Dados
 
-Com base nas amostras coletadas referente à segunda versão do software, foi realizada uma análise exploratória dos dados a fim de validar as premissas dos testes que foram para a média e variância.
+Com base nas amostras coletadas referente à segunda versão do software, foi realizada uma análise exploratória dos dados a fim de validar as premissas dos testes que foram executados para a média e variância.
 
-Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema, é importante realizar uma análise preliminar dos dados. [@Medri] destaca que a análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo. 
+Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema é importante realizar uma análise preliminar dos dados.  A análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo [@Medri]. 
 
 ```{r summary_statistic}
 data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
@@ -172,7 +172,6 @@ summary(data.mean.test)
 ```{r summary_var}
 var(data.mean.test)
 ```
-
 
 Pela análise dos dados verifica-se que a variância do novo software aparenta ser significamente menor que a versão anterior, por outro lado, em relação à média a diferença foi mais discreta. Para concluir com maior precisão sobre os dados, os testes estatísticos serão apresentados com detalhes nas seções seguintes.
 
@@ -192,28 +191,28 @@ shapiro.test(data.mean.test)
 
 Pela análise do boxplot verificou-se que os dados são assimétricos positivos, pois há um deslocamento da mediana em direção ao primeiro quartil, além disso, observam-se três pontos considerados como outliers da amostra.
 
-Com base no gráfico quantil X quantil e no teste de Shapiro Wilk verifica-se que o teste falhou em aceitar a hipótese de normalidade dos dados, pois o p-valor do teste é menor que 0.05 (0.007161).
+Com base no gráfico quantil X quantil e no teste de Shapiro Wilk verifica-se que o teste falhou em aceitar a hipótese de normalidade dos dados, pois o p-valor do teste é menor que 0.05 (p-value = 0.007161).
 
 Sendo assim, partindo da premissa de não normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
 
 
-### Teste de Hipoteses
+### Teste de Hipóteses
 
-Mesmo havendo falha na aceitação da hipotese de normalidade dos dados, para testar a hipotese nula para a média utilizou-se o teste t (função `t.teste`). É possivel a utilização deste teste devido normalidade alcançada por uma reamostragem, verificado pelo o teorema do limite central. 
+Mesmo havendo falha na aceitação da hipótese de normalidade dos dados, para testar a hipótese nula para a média utilizou-se o teste t (função `t.teste`). É possivel a utilização deste teste devido à normalidade alcançada por uma reamostragem maior, verificado pelo teorema do limite central, como será descrito na validação das premissas (seção 3.1.5). 
 
-A análise foi realizada sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para `r N` amostras. O teste esta descrito a seguir.
+A análise foi realizada sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para `r N` amostras. O teste está descrito a seguir.
 
 ```{r summary funcao t test}
 #teste para custo médio:
 (mean.t.teste <- t.test(data.mean.test, 
-                  mu=current_mu,            #hipotese nula
-                  alternative = "greater",  #hipotese alternativa
+                  mu=current_mu,            #hipótese nula
+                  alternative = "greater",  #hipótese alternativa
                   conf.level = ci_mean))
 ```
 
-O teste t retorna que a hipotese alternativa é verdadeira para uma média maior que 50. Porém, pode-se verifcar que o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$). Desta maneira não há evidência suficiente para se rejeitar a hipótese nula.
+O teste t retorna que a hipótese alternativa é verdadeira para uma média maior que 50. Porém, pode-se verifcar que o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$). Desta maneira não há evidência suficiente para se rejeitar a hipótese nula.
 
-### Calculo do intervalo de confianca
+### Cálculo do intervalo de confiança
 
 O intervalo de confiança é retornado pela função `t.test`, conforme mostrado a seguir.
 
@@ -221,7 +220,7 @@ O intervalo de confiança é retornado pela função `t.test`, conforme mostrado
 mean.t.teste$conf.int
 ```
 
-O valor da media retornado pelo teste t é facilmente verificado dentro do intervalo de confiança calculado, afirmando, desta maneira, a não rejeição da hipotese nula.
+O valor da média retornado pelo teste t é facilmente verificado dentro do intervalo de confiança calculado, que vai de 47.43 a infinito, confirmando, desta maneira, a não rejeição da hipótese nula.
 
 ### Validação de premissas
 
@@ -238,21 +237,21 @@ for(i in seq(N2)){
 
 ```
 
-A media para a reamostragem é dada por:
+A média para a reamostragem é dada por:
 
-```{r media reamostragem}
+```{r média reamostragem}
 mean(means.re)
 ```
 
 Graficamente:
 
-```{r grafico_reamostragem_normal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para reamostragem da média"}
+```{r gráfico_reamostragem_normal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para reamostragem da média"}
 qqPlot(means.re, las = 1, pch = 16, add.line = TRUE)
 ```
 
 Analisando o gráfico quantil-quantil para a reamostragem, é fácil atestar a normalidade da distribuição da média.
 
-### Potencia do teste
+### Potência do teste
 
 Para determinar a potência do teste, primeiramente definiu-se o intervalo superior de confiança, a partir do $\chi^2$, para a variância, conforme equação mostrada.
 
@@ -260,7 +259,7 @@ Para determinar a potência do teste, primeiramente definiu-se o intervalo super
 \sigma^2 \leq \frac{(N-1)s^2}{\chi^{2(N-1)}_\alpha}
 \end{equation} 
 
-O calculo do intervalo superior foi realizado da seguinte maneira.
+O cálculo do intervalo superior foi realizado da seguinte maneira.
 
 ```{r intevalo superior confianca}
 #intervalo superior unilateral de confiança
@@ -276,11 +275,11 @@ Com o valor retornado, foi possivel realizar o teste de potência, utilizando a 
 (potencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), sig.level = 0.01, type = "one.sample", alternative = "one.sided"))
 ```
 
-A variância encontrada na análise exploratória é substancialmente menor que a variancia determinada para a versão do software anterior, $\sigma=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. No resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
+A variância encontrada na análise exploratória é substancialmente menor que a variância obtida para a versão anterior do software, $\sigma=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. Sendo assim, o resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
 
 ## Teste sobre a variância do custo
-### Teste de Hipoteses
-Para a variância, dado que a população não é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste não irá seguir uma distribuição chi-quadrado, logo é necessário aplicar uma transformação que leve os dados à normalidade ou utilizar técnicas não-paramétricas. Uma transformação possível é a logarítimica:
+### Teste de Hipóteses
+Para a variância, dado que a população não é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste não irá seguir uma distribuição chi-quadrado, logo, é necessário aplicar uma transformação que leve os dados à normalidade ou utilizar técnicas não-paramétricas. Uma transformação possível é a logarítimica:
 
 
 ```{r lognormal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
@@ -291,7 +290,7 @@ qqPlot(log(data.mean.test), pch = 16, las = 1, add.line = TRUE)
 shapiro.test(log(data.mean.test))
 ```
 
-Pelo gráfico quantil-quantil e p-valor baixo obtido no teste de Shapiro, conclui-se que esta transformação não é capaz de levar os dados à normalidade. Logo, neste trabalho, será usado a técnica de bootstraping para a estimativa do intervalo de confiança e execução do teste de hipóteses [@bootstrap:book]. Será utilizado o pacote $boot$ [@bootcran:online] para a sua execução.
+Pelo gráfico quantil-quantil e p-valor baixo obtido no teste de Shapiro, conclui-se que esta transformação não é capaz de levar os dados à normalidade. Logo, neste trabalho, foi usado a técnica de bootstraping para a estimativa do intervalo de confiança e execução do teste de hipóteses [@bootstrap:book]. Foi utilizado o pacote $boot$ [@bootcran:online] para a sua execução.
 
 ```{r bootstrapping}
 # run the boootstrapping
@@ -304,7 +303,7 @@ ci_sd <- 1 - 2 * sig_level_sd
 (test.boot.var <- boot.ci(data.var.test.boot, conf = ci_sd, type = "bca"))
 ```
 
-É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade interior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
+É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade inferior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
 
 # Conclusão
 Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma nova versão de um software, em relação à média e variância dos custos. Através de uma análise exploratória, foi possível constatar que as amostras da nova versão não seguem uma distribuição normal. Partindo desta premissa, testes de hipóteses foram realizados e, para os níveis de significância especificados, é possível concluir que a variância é significativamente inferior, porém o mesmo não pode ser afirmado para a média.
