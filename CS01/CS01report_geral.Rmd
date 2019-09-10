@@ -1,0 +1,203 @@
+---
+title: 'Estudo de caso: Grupo D 3'
+author: "Gilmar and Maressa Nunes R. Tavares and Victor"
+date: "3 de Setembro, 2019"
+output:
+  pdf_document:
+    fig_caption: yes
+    
+bibliography: refsCS01.bib
+csl: ieee.csl
+---
+
+```{r setup,results='hide',warning=FALSE,echo=FALSE, message=FALSE, include=FALSE}
+# A few initial definitions just to make sure all required packages are installed. Change as needed.
+# NOTE: It may echo some weird messages to the PDF on the first compile (package installation messages). Run twice and the problem will (hopefully) go away.
+if (!require(ggplot2, quietly = TRUE)){
+      install.packages("ggplot2")
+      }
+if (!require(devtools, quietly = TRUE)){
+      install.packages("devtools")
+      }
+ if (!require(broom, quietly = TRUE)){
+       devtools::install_github("dgrtwo/broom")
+      }
+if (!require(GGally, quietly = TRUE)){
+      install.packages("GGally")
+}
+
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
+
+if (!require(car, quietly = TRUE)){
+  install.packages("car")
+}
+
+if (!require(boot, quietly = TRUE)){
+  install.packages("boot")
+}
+```
+## Descrição do Problema
+Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto uma análise estatística deve ser feita para investigar os ganhos de desempenho obtidos em relação à versão atual. Espera-se que sejam testados a média e variância dos custos de execução
+O presente trabalho tem como objetivo delinear e executar testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição do custo computacional com média $\mu = 50 e variância$ $\sigma = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste z com nível de significância $\alpha = 0,01$ e $\alpha = 0,05$, para os testes de média e variância, respectivamente. Após os testes verificou-se que.....
+
+## Planejamento do Experimento
+### Geraçao dos dados
+Para simular a geração de dados da nova versão, a biblioteca $ExpDE$ [@expDE:online] será utilizada. Ela é declarada da seguinte forma: 
+```{r datageneration}
+# Set-up the data generating procedure
+mre <- list(name = "recombination_bin", cr = 0.9)
+mmu <- list(name = "mutation_rand", f = 2)
+mpo <- 100
+mse <- list(name = "selection_standard")
+mst <- list(names = "stop_maxeval", maxevals = 10000)
+mpr <- list(name = "sphere", xmin = -seq(1, 20), xmax = 20 + 5 * seq(5, 24))
+
+set.seed(1234) # to generate always the same results
+
+# define functions for data generation
+get.single.sample <- function(mpo, mmu, mre, mse, mst, mpr){
+  generator <- ExpDE(mpo, mmu, mre, mse, mst, mpr, showpars = list(show.iters = "none"))
+  return(generator$Fbest)
+}
+
+get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
+  my.sample <- numeric(N)
+  for (i in seq(N)){
+    my.sample[i] <- get.single.sample(mpo, mmu, mre, mse, mst, mpr)
+  }
+  return(my.sample)
+}
+
+```
+
+As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados.
+
+
+### Teste do custo médio
+Para este teste, são estabelecidos os seguintes objetivos:
+
+* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
+* Efeito relevante mínimo de $\delta^* = 4$
+* Potência desejada $\pi = 1 - \beta = 0.8$
+
+Como estamos interessados em saber se existem ganhos em termos do custo médio, e dado que a média populacional da versão atual é $\mu_0 = 50$, define-se a seguinte hipótese nula e alternativa:
+
+$$\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}$$
+
+### Teste da variância do custo
+
+Para este teste, são estabelecidos os seguintes objetivos:
+
+* Nível de significância desejado $alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
+* Usar as mesmas observações coletadas para o teste da média.
+
+Como estamos interessados em saber se existem ganhos em termos de variância média, e dado que a variância populacional da versão atual é $\sigma^{2} = 100$, define-se a seguinte hipótese nula e alternativa:
+
+$$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2}<100\end{cases}$$
+
+
+## Análise Exploratória dos Dados
+
+## Análise Estatística
+### Teste sobre a média do custo
+#### Cálculo do tamanho amostral
+Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa unilateral para a média amostral, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
+```{r calcsamplesize}
+# define current system parameters
+current_mu <- 50
+current_var <- 100
+
+# define mean cost test parameters
+sig_level_mean <- 0.01
+delta <- 4
+beta <- 0.2
+pi <- 1 - beta
+ci_mean <- 1 - sig_level_mean
+
+# use the function inivisble() to supress the function console output
+invisible(sample_size_calc <- power.t.test(delta = delta,
+                           sd = sqrt(current_var),
+                           sig.level = sig_level_mean,
+                           power = pi,
+                           alternative = "one.sided",
+                           type = "one.sample"))
+# round to the next integer
+N <- ceiling(sample_size_calc$n)
+```
+Resultando em um tamanho amostral de:
+```{r viewsamplesize, echo=FALSE}
+print(c("N = ", N), quote = FALSE)
+```
+
+#### Teste de Hipoteses
+#### Calculo do intervalo de confianca
+#### Validaçao das premissas
+
+### Teste sobre a variância do custo
+#### Teste de Hipoteses
+#### Calculo do intervalo de confianca
+#### Validaçao das premissas
+
+### Discussão e Conclusões
+
+## Divisão das Atividades
+
+Victor - Reporter
+Maressa - Coordenadora
+Gilmar - Verificador e Monitor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Exploratory Data Analysis
+The first step is to load and preprocess the data. For instance,
+```{r loaddata}
+data(mtcars)
+fc<-c(2,8:11)
+for (i in 1:length(fc)){mtcars[,fc[i]]<-as.factor(mtcars[,fc[i]])}
+levels(mtcars$am) <- c("Automatic","Manual")
+```
+
+To get an initial feel for the relationships between the relevant variables of your experiment it is frequently interesting to perform some preliminary (exploratory) analysis. This is frequently referred to as _getting a feel_ of your data, and can suggest procedures (such as outlier investigation or data transformations) to experienced experimenters.
+
+```{r pairs,fig.width=8,echo=TRUE,message=FALSE,fig.cap="Exploring the effect of car transmission on mpg values"}
+library(GGally,quietly = T, warn.conflicts = F) # This is just me getting fancy.
+                                                # There are much simpler ways ;-)
+ggpairs(data=mtcars,columns=c(1,9),title="MPG by transmission type",
+        upper=list(combo="box"),lower=list(combo="facethist"),
+        diag=list(continuous="density",discrete="bar"))
+```
+
+
+Your preliminary analysis should be described together with the plots. In this example, two facts are immediately clear from the plots: first, **mpg** tends to correlate well with many of the other variables, most intensely with **drat** (positively) and **wt** (negatively). It is also clear that many of the variables are highly correlated (e.g., **wt** and **disp**). Second, it seems like manual transmission models present larger values of **mpg** than the automatic ones. In the next section a linear model will be fit to the data in order to investigate the significance and magnitude of this possible effect.
+
+## Statistical Analysis
+Your statistical analysis should come here. This is the place where you should fit your statistical model, get the results of your significance test, your effect size estimates and confidence intervals.
+
+```{r fitmodel,results='hold'}
+model<-aov(mpg~am*disp,data=mtcars)
+summary(model)
+```
+
+### Checking Model Assumptions
+The assumptions of your test should also be validated, and possible effects of violations should also be explored.
+```{r resplots,fig.width=8,echo=TRUE,message=FALSE, fig.cap = "Residual plots for the anova model"}
+par(mfrow=c(2,2), mai=.3*c(1,1,1,1))
+plot(model,pch=16,lty=1,lwd=2)
+```
+
+
+## Referências

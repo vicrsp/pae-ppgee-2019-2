@@ -1,3 +1,4 @@
+#Maressa Nunes
 if (!require(ExpDE, quietly = TRUE)){
   install.packages("ExpDE")
 }
@@ -134,7 +135,7 @@ qqPlot(log(data_mean_test), pch = 16, las = 1)
 qqPlot(sqrt(data_mean_test), pch = 16, las = 1)
 ## None of the cases lead to normality!
 
-boot.out <- boot(my.sample, statistic = function(x, i){var(x[i])}, R = 999)
+boot.out <- boot(data_mean_test, statistic = function(x, i){var(x[i])}, R = 999)
 (my.boot.var <- boot.ci(boot.out, conf = ci_sd, type = "bca"))
 
 ## From this test, we can assure with a 95% confidence interval that the new version will have much less variance
