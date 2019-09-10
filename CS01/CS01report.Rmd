@@ -42,9 +42,6 @@ if (!require(boot, quietly = TRUE)){
   install.packages("boot")
 }
 
-if (!require(EnvStats, quietly = TRUE)){
-  install.packages("EnvStats")
-}
 ```
 
 # Summary
@@ -177,10 +174,11 @@ Pela análise dos dados verifica-se que a variância do novo software aparenta s
 
 Outras análises importantes no contexto da análise exploratória, é de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil e do teste de Shapiro Wilk.
 
-```{r plot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot e gráfico quantil-quantil das amostras"}
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot e gráfico quantil-quantil das amostras"}
 par(mfrow=c(1,2))
 boxplot(data.mean.test, horizontal = TRUE, main="Boxplot")
-qqPlot(data.mean.test, las = 1, pch = 16, add.line = TRUE, main="Normal Q-Q plot")
+qqnorm(data.mean.test, las = 1, pch = 16, main="Normal Q-Q plot")
+qqline(data.mean.test)
 
 ```
 
@@ -209,18 +207,17 @@ A análise foi realizada sobre os dados amostrados usando a função get.n.sampl
                   alternative = "greater",  #hipótese alternativa
                   conf.level = ci_mean))
 ```
-
-O teste t retorna que a hipótese alternativa é verdadeira para uma média maior que 50. Porém, pode-se verifcar que o p-valor é maior do que o nível de significância estabelecido ($\alpha = 0.01$). Desta maneira não há evidência suficiente para se rejeitar a hipótese nula.
+Como a média amostral é 49.03614 e dado que estamos considerando um teste de cauda superior, a hipótese nula é rejeitada. Portanto, podemos afirmar que não houve ganho de desempenho na média do novo sistema para a significância estabelecida ($\alpha = 0.01$).
 
 ### Cálculo do intervalo de confiança
 
 O intervalo de confiança é retornado pela função `t.test`, conforme mostrado a seguir.
 
 ```{r intervalo de confiança}
-mean.t.teste$conf.int
+(mean.t.teste$conf.int)
 ```
 
-O valor da média retornado pelo teste t é facilmente verificado dentro do intervalo de confiança calculado, que vai de 47.43 a infinito, confirmando, desta maneira, a não rejeição da hipótese nula.
+O valor da média retornado pelo teste t é facilmente verificado dentro do intervalo de confiança calculado, que vai de 47.43 a infinito, confirmando, desta maneira, a rejeição da hipótese nula.
 
 ### Validação de premissas
 
@@ -239,14 +236,15 @@ for(i in seq(N2)){
 
 A média para a reamostragem é dada por:
 
-```{r média reamostragem}
+```{r mediareamostragem}
 mean(means.re)
 ```
 
 Graficamente:
 
-```{r gráfico_reamostragem_normal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para reamostragem da média"}
-qqPlot(means.re, las = 1, pch = 16, add.line = TRUE)
+```{r grafico_reamostragem_normal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para reamostragem da média"}
+qqnorm(means.re, las = 1, pch = 16)
+qqline(means.re)
 ```
 
 Analisando o gráfico quantil-quantil para a reamostragem, é fácil atestar a normalidade da distribuição da média.
@@ -273,8 +271,8 @@ Com o valor retornado, foi possivel realizar o teste de potência, utilizando a 
 ```{r potencia}
 #calculo da potencia
 (potencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), 
-sig.level = 0.01, type = "one.sample", 
-alternative = "one.sided"))
+                        sig.level = 0.01, type = "one.sample", 
+                        alternative = "one.sided"))
 ```
 
 A variância encontrada na análise exploratória é substancialmente menor que a variância obtida para a versão anterior do software, $\sigma=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. Sendo assim, o resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
@@ -285,7 +283,8 @@ Para a variância, dado que a população não é modelada por uma distribuiçã
 
 
 ```{r lognormal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
-qqPlot(log(data.mean.test), pch = 16, las = 1, add.line = TRUE)
+qqnorm(log(data.mean.test), pch = 16, las = 1)
+qqline(log(data.mean.test))
 ```
 
 ```{r shapirolog}
@@ -313,7 +312,7 @@ Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma 
 
 # Divisão das Atividades
 
-* Victor - Reporter
+* Victor - Relator
 * Maressa - Coordenadora
 * Gilmar - Verificador e Monitor
 
