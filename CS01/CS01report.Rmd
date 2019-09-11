@@ -216,7 +216,7 @@ O intervalo de confiança da hipótese nula é calculado conforme equação most
 $$ \bar{X} + \frac{t_{\alpha}s}{\sqrt{N}} \leq \mu$$
 
 ```{r intervalo de confiança}
-t_a<-mean.t.teste$statistic
+t_a<-2.6603
 Lim_sup<-mean(data.mean.test)-sqrt((t_a*sd(data.mean.test)/sqrt(N))^2)
 ```
 
