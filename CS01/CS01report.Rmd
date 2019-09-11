@@ -57,8 +57,8 @@ Para a versão atual de um dado sistema, sabe-se que sua distribuição de custo
 
 Inicialmente o teste foi executado para as médias do custo, assim, para verificar se a nova versão é melhor que a anterior, foram formuladas as seguintes hipóteses:
 
-$$\begin{cases} H_0: \mu < 50&\\H_1: \mu \geq 50\end{cases}$$
-Como a média da população para a primeira versão é $\mu = 50$, considerou-se como hipótese alternativa ($H_1$) a ausência de melhoria do software, isto é, a segunda versão apresenta uma performance pior ou igual à versão anterior, com média maior ou igual a 50, $\mu \geq 50$. Por outro lado, a hipótese nula, complementar à alternativa, considera que houve melhorias entre as versões, portanto, a média é menor que 50 ($H_0$). 
+$$\begin{cases} H_0: \mu \geq 50&\\H_1: \mu < 50\end{cases}$$
+Como a média da população para a primeira versão é $\mu = 50$, considerou-se como hipótese alternativa ($H_1$) a presença de melhoria do software, isto é, a segunda versão apresenta uma performance melhor que a versão anterior, com média menor que 50, $\mu < 50$. Por outro lado, a hipótese nula, complementar à alternativa, considera que não houve melhorias entre as versões, portanto, a média é maior ou igual a 50 ($H_0$). 
 
 Além disso, para o teste da média foram definidos os seguintes objetivos: 
 
@@ -69,9 +69,9 @@ Além disso, para o teste da média foram definidos os seguintes objetivos:
 
 Por outro lado, para a variância o experimento foi realizado com base nas seguintes hipóteses:
 
-$$\begin{cases} H_0: \sigma^{2} < 100&\\H_1: \sigma^{2} \geq 100\end{cases}$$
+$$\begin{cases} H_0: \sigma^{2} \geq 100&\\H_1: \sigma^{2} < 100\end{cases}$$
 
-Assim como no teste da média, neste caso adotou-se como hipótese alternativa $(H_1)$ a ausência de melhoria do software, mantendo os resultados de variância da versão anterior ($\sigma^{2} = 100$). Enquanto a hipótese nula considera que houve melhorias entre as versões, portanto, a variância é menor que 100 $(H_0)$. 
+Assim como no teste da média, neste caso adotou-se como hipótese alternativa $(H_1)$ a presença de melhoria do software, com valores menores que a variância da versão anterior ($\sigma^{2} = 100$). Enquanto a hipótese nula considera que não houve melhorias entre as versões, portanto, a variância é maior ou igual a 100 $(H_0)$. 
 
 Em relação aos objetivos, o teste da variância considerou: 
 
@@ -126,7 +126,7 @@ As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar 
 
 ### Cálculo do tamanho amostral
 
-Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa maior ou igual a média $\mu$, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
+Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa menor que a média $\mu$, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
 
 ```{r calcsamplesize}
 # define current system parameters
@@ -172,7 +172,7 @@ var(data.mean.test)
 
 Pela análise dos dados verifica-se que a variância do novo software aparenta ser significamente menor que a versão anterior, por outro lado, em relação à média a diferença foi mais discreta. Para concluir com maior precisão sobre os dados, os testes estatísticos serão apresentados com detalhes nas seções seguintes.
 
-Outras análises importantes no contexto da análise exploratória, é de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil e do teste de Shapiro Wilk.
+Outra análise importante no contexto da análise exploratória, é a de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil e do teste de Shapiro Wilk.
 
 ```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot e gráfico quantil-quantil das amostras"}
 par(mfrow=c(1,2))
@@ -204,24 +204,27 @@ A análise foi realizada sobre os dados amostrados usando a função get.n.sampl
 #teste para custo médio:
 (mean.t.teste <- t.test(data.mean.test, 
                   mu=current_mu,            #hipótese nula
-                  alternative = "greater",  #hipótese alternativa
+                  alternative = "less",  #hipótese alternativa
                   conf.level = ci_mean))
 ```
-Como a média amostral é 49.03614 e dado que estamos considerando um teste de cauda superior, a hipótese nula é rejeitada. Portanto, podemos afirmar que não houve ganho de desempenho na média do novo sistema para a significância estabelecida ($\alpha = 0.01$).
+Analisando o p-valor retornado pelo teste t, p = `r mean.t.teste$p.value`, verifica-se que é maior que o nível de significancia $\alpha = 0.01$ determinado, portanto não há evidências para rejeitar a hipótese nula. Sendo assim, com base na amostra não é possível concluir que houve melhoria em relação à média do custo entre as duas versões.
 
 ### Cálculo do intervalo de confiança
 
-O intervalo de confiança é retornado pela função `t.test`, conforme mostrado a seguir.
+O intervalo de confiança da hipótese nula é calculado conforme equação mostrada abaixo.
+
+$$ \bar{X} + \frac{t_{\alpha}s}{\sqrt{N}} \leq \mu$$
 
 ```{r intervalo de confiança}
-(mean.t.teste$conf.int)
+t_a<-mean.t.teste$statistic
+Lim_sup<-mean(data.mean.test)-sqrt((t_a*sd(data.mean.test)/sqrt(N))^2)
 ```
 
-O valor da média retornado pelo teste t é facilmente verificado dentro do intervalo de confiança calculado, que vai de 47.43 a infinito, confirmando, desta maneira, a rejeição da hipótese nula.
+O intervalo de confiança da hipótese nula é de `r Lim_sup` a infinito. Sendo assim, como a média ($\mu = 50$) está contida nesse intervalo, corrobora com o teste anterior, que a média não é inferior à da versão anterior.
 
 ### Validação de premissas
 
-Para validação das premissas utilizadas no teste t, realizou-se uma reamostragem dos dados, conforme descrito a seguir.
+Para validação das premissas utilizadas no teste t, realizou-se uma reamostragem dos dados para uma amostra maior, conforme descrito a seguir.
 
 ```{r validacao}
 #reamostragem:
@@ -247,7 +250,7 @@ qqnorm(means.re, las = 1, pch = 16)
 qqline(means.re)
 ```
 
-Analisando o gráfico quantil-quantil para a reamostragem, é fácil atestar a normalidade da distribuição da média.
+Analisando o gráfico quantil-quantil para a reamostragem, é fácil atestar a normalidade da distribuição da média, atestando a normalidade dos dados com base no Teorema do Limite Central.
 
 ### Potência do teste
 
@@ -266,7 +269,7 @@ intervalo_conf_max
 
 ```
 
-Com o valor retornado, foi possivel realizar o teste de potência, utilizando a função `power.t.test`, conforme descrito abaixo.
+Com o valor retornado, foi possível realizar o teste de potência, utilizando a função `power.t.test`, conforme descrito abaixo.
 
 ```{r potencia}
 #calculo da potencia
@@ -275,7 +278,7 @@ Com o valor retornado, foi possivel realizar o teste de potência, utilizando a 
                         alternative = "one.sided"))
 ```
 
-A variância encontrada na análise exploratória é substancialmente menor que a variância obtida para a versão anterior do software, $\sigma=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. Sendo assim, o resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
+A variância encontrada na análise exploratória é substancialmente menor que a variância obtida para a versão anterior do software, $\sigma^2=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. Sendo assim, o resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
 
 ## Teste sobre a variância do custo
 ### Teste de Hipóteses
@@ -304,10 +307,10 @@ ci_sd <- 1 - 2 * sig_level_sd
 (test.boot.var <- boot.ci(data.var.test.boot, conf = ci_sd, type = "bca"))
 ```
 
-É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade inferior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, não há evidências para rejeitar a hipótese nula, pois a variância é significativamente inferior à versão atual do software.
+É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade inferior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
 
 # Conclusão
-Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma nova versão de um software, em relação à média e variância dos custos. Através de uma análise exploratória, foi possível constatar que as amostras da nova versão não seguem uma distribuição normal. Partindo desta premissa, testes de hipóteses foram realizados e, para os níveis de significância especificados, é possível concluir que a variância é significativamente inferior, porém o mesmo não pode ser afirmado para a média.
+Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma nova versão de um software, em relação à média e variância dos custos. Através de uma análise exploratória, foi possível constatar que as amostras da nova versão não seguem uma distribuição normal. Partindo desta premissa, testes de hipóteses foram realizados e, para os níveis de significância especificados, é possível concluir que a variância é significativamente inferior, porém o mesmo não pode ser afirmado para a média. De acordo com os testes realizados pode-se concluir que o software atual não possui ganho de desempenho considerável em relação ao software anterior.
 
 
 # Divisão das Atividades
