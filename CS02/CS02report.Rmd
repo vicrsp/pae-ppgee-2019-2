@@ -1,7 +1,7 @@
 ---
 title: 'Estudo de caso: Grupo D 3'
 author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
-date: "3 de Setembro, 2019"
+date: "30 de Setembro, 2019"
 output:
   pdf_document:
     fig_caption: yes
@@ -10,7 +10,7 @@ header-includes:
   \usepackage{float}
   \floatplacement{figure}{H}
 
-bibliography: refsCS01.bib
+bibliography: refsCS02.bib
 csl: ieee.csl
 ---
 
@@ -45,15 +45,15 @@ if (!require(GGally, quietly = TRUE)){
       install.packages("GGally")
 }
 
-if (!require(ExpDE, quietly = TRUE)){
-  install.packages("ExpDE")
-}
-
 if (!require(car, quietly = TRUE)){
   install.packages("car")
 }
 
 if (!require(boot, quietly = TRUE)){
+  install.packages("boot")
+}
+
+if (!require(dplyr, quietly = TRUE)){
   install.packages("boot")
 }
 
@@ -97,43 +97,35 @@ Os dois testes foram realizados com os mesmos dados coletados conforme a descri�
 
 ### Descrição da coleta de dados
 
-Para coletar os dados referente à nova versão do software, foi executada uma simulação no software R utilizando a biblioteca $ExpDE$ [@expDE:online]. A coleta de dados foi declarada da seguinte forma: 
-
-```{r datageneration}
-# Set-up the data generating procedure
-mre <- list(name = "recombination_bin", cr = 0.9)
-mmu <- list(name = "mutation_rand", f = 2)
-mpo <- 100
-mse <- list(name = "selection_standard")
-mst <- list(names = "stop_maxeval", maxevals = 10000)
-mpr <- list(name = "sphere", xmin = -seq(1, 20), xmax = 20 + 5 * seq(5, 24))
-
-#set.seed(1235) # to generate always the same results
-
-# define functions for data generation
-get.single.sample <- function(mpo, mmu, mre, mse, mst, mpr){
-  generator <- ExpDE(mpo, mmu, mre, mse, mst, mpr, showpars = list(show.iters = "none"))
-  return(generator$Fbest)
+```{r datapreprocessing}
+imc <- function(height, weight){
+  return(weight/(height^2))
 }
 
-get.n.samples <- function(mpo, mmu, mre, mse, mst, mpr, N){
-  if(!file.exists('CS01data.csv')){
-    my.sample <- numeric(N)
-    for (i in seq(N)){
-      my.sample[i] <- get.single.sample(mpo, mmu, mre, mse, mst, mpr)
-    }
+data.2016.2 <- read.csv('imc_20162.csv', header = T, sep = ",")
+data.2017.2 <- read.csv('CS01_20172.csv', header = T, sep = ";")
+data.2017.2 <- data.2017.2 %>% rename(Gender = Sex)
 
-    write.csv(my.sample, file = 'CS01data.csv', row.names = FALSE)
-    return(my.sample)
-  }
-  else{
-      return(read.csv('CS01data.csv')$x)  
-  }
-}
+# calculate the IMC
+data.2016.2$imc <- imc(data.2016.2$Height.m, data.2016.2$Weight.kg)
+data.2017.2$imc <- imc(data.2017.2$height.m, data.2017.2$Weight.kg)
+
+# remove undergraduate students for 2016.2 data
+data.2016.2 <- data.2016.2 %>% filter(Course == 'PPGEE')
+
+# remove unecessary columns and rename
+data.2016.2 <- data.2016.2 %>% select(Gender, imc)
+data.2017.2 <- data.2017.2 %>% select(Gender, imc)
+
+# split the 2016.2 data by gender and remove undergraduate students
+data.2016.2.Females <- data.2016.2 %>% filter(Gender == 'F') %>% select(imc)
+data.2016.2.Males <- data.2016.2 %>% filter(Gender == 'M') %>% select(imc)
+
+# split the 2017.2 data by gender
+data.2017.2.Females <- data.2017.2 %>% filter(Gender == 'F') %>% select(imc)
+data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
 
 ```
-
-As funções `get.single.sample` e `get.n.samples` foram criadas para facilitar o entendimento da função de geração de dados, sendo elas para coletar uma única amostra ou $n$ amostras, respectivamente. É importante notar também que o método `get.n.samples` carrega os valores de um arquivo especificado, se existente, de forma a garantir a replicabilidade dos resultados.
 
 # Resultados
 
