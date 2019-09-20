@@ -26,7 +26,7 @@ csl: ieee.csl
 3) Tamanho de efeito: 5 (de acordo com tamanho das faixas, primeiro resultado do google)  
    Numero de amostras conhecido: calcular a potencia e estimar nivel de significancia adequado (alpha = 0.05)
 4) Como melhorar: verificar aumento da potencia, levando a aumento da quantidade de amostras
-5) Discutir sobre diferencas na potencia entre homens e mulheres (menos mulheres na engenharia, poucas amostras)
+5) Discutir sobre diferencas na potencia entre h  omens e mulheres (menos mulheres na engenharia, poucas amostras)
 
 
 ```{r setup,results='hide',warning=FALSE,echo=FALSE, message=FALSE, include=FALSE}
@@ -57,45 +57,28 @@ if (!require(dplyr, quietly = TRUE)){
   install.packages("boot")
 }
 
+if (!require(pwr, quietly = TRUE)){
+  install.packages("pwr")
+}
+
 ```
 
 # Summary
-O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar uma nova versão de um software, em relação aos resultados obtidos na versão anterior. Tendo em vista que a última versão possui uma distribuição de custos com média $\mu = 50$ e variância $\sigma^{2} = 100$, dados da população, objetiva-se verificar se a nova versão apresenta resultados melhores para tais características. Para tanto, utilizou-se o teste de hipótese com nível de significância $\alpha = 0.01$ e $\alpha = 0.05$ para a média e variância, respectivamente. Após os testes verificou-se que o novo sistema possui variância significativamente inferior à versão atual, porém, não podemos afirmar o mesmo para a média com a significância especificada. 
+O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar as diferenças no IMC médio entre duas populações de estudantes de pós-graduação em Engenharia elétrica, nos semetres de 2016-2 e 2017-2. As sub-populações masculina e feminina foram analisadas separadamente. Após os testes verificou-se que ...
+
 
 # Planejamento do experimento
-
-Nesta seção são apresentados os detalhes do delineamento dos testes que foram executados para comparar o desempenho das duas versões do software em relação à média e à variância do custo de execução. Essa etapa é fundamental, pois trata-se de uma abordagem que fornece resultados importantes em análises de sistemas complexos, além disso, os testes servem para validar a teoria que está por trás dele [@montgomery2007applied].
-
 ## Objetivo do experimento
+O objetivo é estudar as diferenças entre o IMC médio entre duas turmas de estudantes de pós-graduação em Engenharia elétrica na UFMG, para dados coletados nos semestres de 2016-2 e 2017-2. A análise será dividada entre as duas sub-populações (homens e mulheres), uma vez que é experado diferenças no ICM e também no tamanho amostral. Portanto, para verificar estas diferenças, as seguintes hipóteses serão testadas:
 
-Para a versão atual de um dado sistema, sabe-se que sua distribuição de custos de execução possui média populacional de $\mu = 50$ e variância $\sigma^{2} = 100$. Uma nova versão desse software foi desenvolvida, portanto realizou-se uma análise estatística para investigar os ganhos de desempenho obtidos em relação à versão atual. 
+$$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
+Onde $\mu_{1}$ e $\mu_{2}$ são as turmas de 2016-7 e 2017-2, respectivamente. A mesma hipótese será testada separadamente para cada sub-população. 
 
-Inicialmente o teste foi executado para as médias do custo, assim, para verificar se a nova versão é melhor que a anterior, foram formuladas as seguintes hipóteses:
-
-$$\begin{cases} H_0: \mu \geq 50&\\H_1: \mu < 50\end{cases}$$
-Como a média da população para a primeira versão é $\mu = 50$, considerou-se como hipótese alternativa ($H_1$) a presença de melhoria do software, isto é, a segunda versão apresenta uma performance melhor que a versão anterior, com média menor que 50, $\mu < 50$. Por outro lado, a hipótese nula, complementar à alternativa, considera que não houve melhorias entre as versões, portanto, a média é maior ou igual a 50 ($H_0$). 
-
-Além disso, para o teste da média foram definidos os seguintes objetivos: 
-
-* Nível de significância desejado $\alpha = 0.01$. Logo, o nível de confiança desejado é $1 - \alpha = 0.99$
-* Efeito relevante mínimo de $\delta^* = 4$
-* Potência desejada $\pi = 1 - \beta = 0.8$
+Os testes serão realizados para um tamanho de efeito $\delta^* = 5$, visto que essa é a diferença de valor entre os níveis de classificação IMC encontrados na literatura [@tabelaimc:online].
 
 
-Por outro lado, para a variância o experimento foi realizado com base nas seguintes hipóteses:
-
-$$\begin{cases} H_0: \sigma^{2} \geq 100&\\H_1: \sigma^{2} < 100\end{cases}$$
-
-Assim como no teste da média, neste caso adotou-se como hipótese alternativa $(H_1)$ a presença de melhoria do software, com valores menores que a variância da versão anterior ($\sigma^{2} = 100$). Enquanto a hipótese nula considera que não houve melhorias entre as versões, portanto, a variância é maior ou igual a 100 $(H_0)$. 
-
-Em relação aos objetivos, o teste da variância considerou: 
-
-* $\alpha = 0.05$
-* $1 - \alpha = 0.95$
-
-Os dois testes foram realizados com os mesmos dados coletados conforme a descrição da próxima seção.
-
-### Descrição da coleta de dados
+## Análise Exploratória dos Dados
+Antes de iniciar a análise exploratória dos dados, é precisa realizar um breve pré-processamento dos dados, visto que os dados de cada ano possuem formatos ligeiramente diferentes. Por exemplo, para os dados de 2016-2, é necessário remover as linhas referentes aos alunos de graduação. Ambos os arquivos foram padronizados para possuir o mesmo nome de coluna, e uma nova coluna com o cálculo do IMC foi adicionada em cada. Novos datasets também foram criados contendo somente os dados de cada sexo e todos os dados, para auxiliar nas análises.
 
 ```{r datapreprocessing}
 imc <- function(height, weight){
@@ -107,8 +90,8 @@ data.2017.2 <- read.csv('CS01_20172.csv', header = T, sep = ";")
 data.2017.2 <- data.2017.2 %>% rename(Gender = Sex)
 
 # calculate the IMC
-data.2016.2$imc <- imc(data.2016.2$Height.m, data.2016.2$Weight.kg)
-data.2017.2$imc <- imc(data.2017.2$height.m, data.2017.2$Weight.kg)
+data.2016.2 <- data.2016.2 %>% mutate(imc = imc(Height.m, Weight.kg))
+data.2017.2 <- data.2017.2 %>% mutate(imc = imc(height.m, Weight.kg))
 
 # remove undergraduate students for 2016.2 data
 data.2016.2 <- data.2016.2 %>% filter(Course == 'PPGEE')
@@ -125,206 +108,183 @@ data.2016.2.Males <- data.2016.2 %>% filter(Gender == 'M') %>% select(imc)
 data.2017.2.Females <- data.2017.2 %>% filter(Gender == 'F') %>% select(imc)
 data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
 
+# create a single dataset
+data.all <- data.2016.2 %>% mutate(Class = '2016-2')
+data.all <- data.all %>% bind_rows(data.2017.2 %>% mutate(Class = '2017-2')) 
+
 ```
+Para ter uma ideia inicial dos dados, suas estatísticas básicas são calculadas: 
+```{r summary_statistic_2016}
+summary(data.2016.2)
+```
+```{r summary_statistic_2017}
+summary(data.2017.2)
+```
+É possível fazer as seguintes observações que a quantidade de amostras do sexo feminimo é bem menor do que a do masculino, o que pode afetar a potência dos testes a serem executados.
+
+Para melhor visualização, um gráfico boxplot é gerado na figura abaixo. Nele é possível ver que há alguns outliers nos valores de IMC em alguns anos, que verão ser removidos posteriormente. 
+
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados"}
+ggplot(data.all, aes(x=Class, y=imc, color=Gender)) + geom_boxplot()
+```
+
 
 # Resultados
 
-## Teste sobre a média do custo
+## Validação das premissas
 
-### Cálculo do tamanho amostral
+Para realizar as inferências estatísticas sobre o IMC das duas populações é necessário validar as premissas antes de executar o teste. Neste caso, como as variâncias das duas populações é desconhecida, utiliza-se a distribuição t para o teste de hipóteses e para os intervalos de confiança [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste t. Para facilitar as análises optou-se por separar o grupo na população feminina e masculina.
 
-Baseado nas informações preliminares do problema, $\sigma^{2} = 100$, $\delta^* = 4$ e $\pi = 0.8$, e dado que estamos considerando uma hipótese alternativa menor que a média $\mu$, o cálculo do tamanho amostral pode ser estimado com a função `power.t.test`:
+### Subpopulação Feminina
 
-```{r calcsamplesize}
-# define current system parameters
-current_mu <- 50
-current_var <- 100
+1 - Normalidade: 
 
-# define mean cost test parameters
-sig_level_mean <- 0.01
-delta <- 4
-beta <- 0.2
-pi <- 1 - beta
-ci_mean <- 1 - sig_level_mean
+Para avaliar a normalidade dos dados das duas subpopulações, utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$, como apresnetado a seguir.
 
-# use the function inivisble() to supress the function console output
-invisible(sample_size_calc <- power.t.test(delta = delta,
-                           sd = sqrt(current_var),
-                           sig.level = sig_level_mean,
-                           power = pi,
-                           alternative = "one.sided",
-                           type = "one.sample"))
-# round to the next integer
-N <- ceiling(sample_size_calc$n)
-```
-
-Resultando em um tamanho amostral de `r N`. 
-
-Definido o tamanho da amostra, procedeu-se a coleta da amostra que foi utilizada em todos os testes nas próximas seções.
-
-### Análise Exploratória dos Dados
-
-Com base nas amostras coletadas referente à segunda versão do software, foi realizada uma análise exploratória dos dados a fim de validar as premissas dos testes que foram executados para a média e variância.
-
-Antes de proceder com as análises estatíticas e realizar as inferências sobre o problema é importante realizar uma análise preliminar dos dados.  A análise exploratória tem o papel de extrair informações dos dados antes de realizar as inferências estatísticas, a fim de obter os modelos plausíveis para cada estudo [@Medri]. 
-
-```{r summary_statistic}
-data.mean.test <- get.n.samples(mpo, mmu, mre, mse, mst, mpr, N)
-summary(data.mean.test)
-```
-
-```{r summary_var}
-var(data.mean.test)
-```
-
-Pela análise dos dados verifica-se que a variância do novo software aparenta ser significamente menor que a versão anterior, por outro lado, em relação à média a diferença foi mais discreta. Para concluir com maior precisão sobre os dados, os testes estatísticos serão apresentados com detalhes nas seções seguintes.
-
-Outra análise importante no contexto da análise exploratória, é a de outliers, através de um boxplot, e o teste da normalidade dos dados por meio do gráfico quantil x quantil e do teste de Shapiro Wilk.
-
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot e gráfico quantil-quantil das amostras"}
+```{r plot_norm_fem, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
 par(mfrow=c(1,2))
-boxplot(data.mean.test, horizontal = TRUE, main="Boxplot")
-qqnorm(data.mean.test, las = 1, pch = 16, main="Normal Q-Q plot")
-qqline(data.mean.test)
 
-```
+library(car)
+qqPlot(data.2016.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2016.2", ylab = "IMC")
 
-```{r shapiro}
-shapiro.test(data.mean.test)
+qqPlot(data.2017.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2017.2", ylab = "IMC")
 ```
 
 
-Pela análise do boxplot verificou-se que os dados são assimétricos positivos, pois há um deslocamento da mediana em direção ao primeiro quartil, além disso, observam-se três pontos considerados como outliers da amostra.
-
-Com base no gráfico quantil X quantil e no teste de Shapiro Wilk verifica-se que o teste falhou em aceitar a hipótese de normalidade dos dados, pois o p-valor do teste é menor que 0.05 (p-value = 0.007161).
-
-Sendo assim, partindo da premissa de não normalidade dos dados relacionados ao custo médio do software é possível prosseguir com as análises estatísticas que serão apresentadas nas seções a seguir.
-
-
-### Teste de Hipóteses
-
-Mesmo havendo falha na aceitação da hipótese de normalidade dos dados, para testar a hipótese nula para a média utilizou-se o teste t (função `t.teste`). É possivel a utilização deste teste devido à normalidade alcançada por uma reamostragem maior, verificado pelo teorema do limite central, como será descrito na validação das premissas (seção 3.1.5). 
-
-A análise foi realizada sobre os dados amostrados usando a função get.n.samples, descrita na seção 2.1.1, para `r N` amostras. O teste está descrito a seguir.
-
-```{r summary funcao t test}
-#teste para custo médio:
-(mean.t.teste <- t.test(data.mean.test, 
-                  mu=current_mu,            #hipótese nula
-                  alternative = "less",  #hipótese alternativa
-                  conf.level = ci_mean))
-```
-Analisando o p-valor retornado pelo teste t, p = `r mean.t.teste$p.value`, verifica-se que é maior que o nível de significancia $\alpha = 0.01$ determinado, portanto não há evidências para rejeitar a hipótese nula. Sendo assim, com base na amostra não é possível concluir que houve melhoria em relação à média do custo entre as duas versões.
-
-### Cálculo do intervalo de confiança
-
-O intervalo de confiança da hipótese nula é calculado conforme equação mostrada abaixo.
-
-$$ \bar{X} + \frac{t_{\alpha}s}{\sqrt{N}} \leq \mu$$
-
-```{r intervalo de confiança}
-t_a<-mean.t.teste$statistic
-Lim_sup<-mean(data.mean.test)-sqrt((t_a*sd(data.mean.test)/sqrt(N))^2)
+```{r shapirofem}
+shapiro.test(data.2016.2.Females$imc)
+shapiro.test(data.2017.2.Females$imc)
 ```
 
-O intervalo de confiança da hipótese nula é de `r Lim_sup` a infinito. Sendo assim, como a média ($\mu = 50$) está contida nesse intervalo, corrobora com o teste anterior, que a média não é inferior à da versão anterior.
+Pela análise do teste de Shapiro-Wilk e do gráfico concluímos que não há evidências para rejeitar a normalidade dos dados de 2016.2, pois o p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os dados de 2017.2 apresentam um ponto fora dos limites e o p-valor foi inferior a 0.05, por isso, há evidências para rejeitar a normalidade dos dados.
 
-### Validação de premissas
-
-Para validação das premissas utilizadas no teste t, realizou-se uma reamostragem dos dados para uma amostra maior, conforme descrito a seguir.
-
-```{r validacao}
-#reamostragem:
-N2<-999
-means.re<-numeric(N2)
-for(i in seq(N2)){
-  means_sample<-sample(data.mean.test, replace = TRUE)
-  means.re[i]<-mean(means_sample)
-}
-
-```
-
-A média para a reamostragem é dada por:
-
-```{r mediareamostragem}
-mean(means.re)
-```
-
-Graficamente:
-
-```{r grafico_reamostragem_normal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para reamostragem da média"}
-qqnorm(means.re, las = 1, pch = 16)
-qqline(means.re)
-```
-
-Analisando o gráfico quantil-quantil para a reamostragem, é fácil atestar a normalidade da distribuição da média, atestando a normalidade dos dados com base no Teorema do Limite Central.
-
-### Potência do teste
-
-Para determinar a potência do teste, primeiramente definiu-se o intervalo superior de confiança, a partir do $\chi^2$, para a variância, conforme equação mostrada.
-
-\begin{equation} 
-\sigma^2 \leq \frac{(N-1)s^2}{\chi^{2(N-1)}_\alpha}
-\end{equation} 
-
-O cálculo do intervalo superior foi realizado da seguinte maneira.
-
-```{r intevalo superior confianca}
-#intervalo superior unilateral de confiança
-intervalo_conf_max<-(N-1)*var(data.mean.test)/qchisq(p = 0.01, df = N-1)
-intervalo_conf_max
-
-```
-
-Com o valor retornado, foi possível realizar o teste de potência, utilizando a função `power.t.test`, conforme descrito abaixo.
-
-```{r potencia}
-#calculo da potencia
-(potencia<-power.t.test(n = N, delta = delta, sd = sqrt(intervalo_conf_max), 
-                        sig.level = 0.01, type = "one.sample", 
-                        alternative = "one.sided"))
-```
-
-A variância encontrada na análise exploratória é substancialmente menor que a variância obtida para a versão anterior do software, $\sigma^2=100$. Isso bastaria para varificar que a potência do teste é grande o suficiente para validar as premissas apresentadas. Sendo assim, o resultado da potência do teste retorna, como esperado, um valor de `r potencia$power`, confirmando assim a veracidade dos testes realizados.
-
-## Teste sobre a variância do custo
-### Teste de Hipóteses
-Para a variância, dado que a população não é modelada por uma distribuição normal (vide análise exploratória), a estatística de teste não irá seguir uma distribuição chi-quadrado, logo, é necessário aplicar uma transformação que leve os dados à normalidade ou utilizar técnicas não-paramétricas. Uma transformação possível é a logarítimica:
-
+Diante disso, é necessário fazer uma transformação nos dados de 2017.2 para tentar normalizar os dados, a fim de possibilitar a realização dos testes estatísticos.
 
 ```{r lognormal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
-qqnorm(log(data.mean.test), pch = 16, las = 1)
-qqline(log(data.mean.test))
+qqnorm(log(data.2017.2.Females$imc), pch = 16, las = 1)
+qqline(log(data.2017.2.Females$imc))
 ```
 
 ```{r shapirolog}
-shapiro.test(log(data.mean.test))
+shapiro.test(log(data.2016.2.Females$imc))
 ```
 
-Pelo gráfico quantil-quantil e p-valor baixo obtido no teste de Shapiro, conclui-se que esta transformação não é capaz de levar os dados à normalidade. Logo, neste trabalho, foi usado a técnica de bootstraping para a estimativa do intervalo de confiança e execução do teste de hipóteses [@bootstrap:book]. Foi utilizado o pacote $boot$ [@bootcran:online] para a sua execução.
+Embora o gráfico dos quantis não deixe claro a normalidade o teste de Shapiro mostra que, após o ajuste logarítmico dos dados, não há evidências para rejeitar a normalidade.
 
-```{r bootstrapping}
-# run the boootstrapping
-set.seed(12345) # set a fixed seed to yield the same results for bootstrapping always
-data.var.test.boot <- boot(data.mean.test, statistic = function(x, i){var(x[i])}, R=1000)
+2- Igualdade de Variâncias:
 
-# define the desired significance level and CI
-sig_level_sd <- 0.05
-ci_sd <- 1 - 2 * sig_level_sd
-(test.boot.var <- boot.ci(data.var.test.boot, conf = ci_sd, type = "bca"))
+A segunda premissa a ser avaliada é a igualdade de variâncias das duas populações, homocedasticidade. Para tanto, utilizou-se o teste F com a função var.test e $\alpha = 0.05$, que tem como hipótese nula a igualdade da variância das duas amostras.
+
+``` {r vartesfem}
+var.test(data.2016.2.Females$imc,data.2017.2.Females$imc)
+```
+Pelo teste F conclui-se que não há evidências para rejeitar a hipótese nula de igualdade das variâncias das duas populações, portanto, as amostras são consideradas homocedásticas.
+
+3 - Independência
+
+Considerando que as populações referem-se a dois grupos distintos da pós-graduação, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
+
+``` {r chitestfem}
+data.chi.Female <- c(data.2016.2.Females$imc, data.2017.2.Females$imc)
+chisq.test(data.chi.Female)
+```
+Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor = 0.9813.
+
+Diante dessas análises, percebemos que provavlemente o tamanho pequeno das amostras de IMC feminino pode ter influenciado nas conclusões em relação às premissas. Portanto, esse fator pode influenciar também nos testes de hipóteses que serão apresentados nas próximas seções.
+
+### Subpopulação Masculina
+
+Assim como na validação das premissas da subpopulação feminina, foram realizados os testes para a subpopulação masculina, como descrito a seguir.
+
+1 - Normalidade: 
+
+Para validar a normalidade dos dados utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$.
+
+```{r plot_norm_male, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
+par(mfrow=c(1,2))
+
+library(car)
+qqPlot(data.2016.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2016.2", ylab = "IMC")
+
+qqPlot(data.2017.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2017.2", ylab = "IMC")
+
 ```
 
-É importante notar que o método acima calcula o intervalo de confiança para uma hipótese bilateral. Portanto, foi necessário ajustar o nível de confiança para 90%, de forma a ter uma taxa de erro de 0.05 em cada extremidade do intervalo. Como o interesse é somente no intervalo superior, podemos ignorar a extremidade inferior e assumir que a nova versão do software possui variância inferior a `r test.boot.var[["bca"]][5]` com 95% de confiança. Logo, a hipótese nula é rejeitada, pois a variância é significativamente inferior à versão atual do software.
 
-# Conclusão
-Neste trabalho foi feito um estudo estatístico dos ganhos de desempenho de uma nova versão de um software, em relação à média e variância dos custos. Através de uma análise exploratória, foi possível constatar que as amostras da nova versão não seguem uma distribuição normal. Partindo desta premissa, testes de hipóteses foram realizados e, para os níveis de significância especificados, é possível concluir que a variância é significativamente inferior, porém o mesmo não pode ser afirmado para a média. De acordo com os testes realizados pode-se concluir que o software atual não possui ganho de desempenho considerável em relação ao software anterior.
+```{r shapiro_male}
+shapiro.test(data.2016.2.Males$imc)
+shapiro.test(data.2017.2.Males$imc)
+```
+
+Pela análise do teste de Shapiro-Wilk e dos gráficos concluímos que não há evidências para rejeitar a hipótese nula para as duas amostras, pois em ambas o p-valor do teste foi superior a 0.05. Portanto, para a subpopulação masculina dos dois semestres os dados estão normalmente distribuídos.
+
+2- Igualdade de Variâncias:
+
+Para validar a igualdade de variâncias das duas amostras utilizou-se o teste F com $\alpha = 0.05$. A hipótese nula considera a igualdade da variância das duas amostras.
+
+``` {r vartes_male}
+var.test(data.2016.2.Males$imc,data.2017.2.Males$imc)
+```
+Pelo teste F conclui-se que as populações são homocedásticas, pois o p-valor foi superior a 0.05, logo, não há evidências para rejeitar a hipótese nula.
+
+3 - Independência
+
+Assim como na subpopulação feminina, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
+
+``` {r chitest_male}
+data.chi.male <- c(data.2016.2.Males$imc,data.2017.2.Males$imc)
+chisq.test(data.chi.male)
+```
+
+Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor = 0.9772.
+
+Ao contrário do que aconteceu com as amostras da subpopulação feminina, nesse caso o tamanho das amostras foram maiores, e por isso, não houve nenhum problema em relação às premissas do teste.
+
+# Resultados
+
+Nesta seção são apresentados os resultados do teste para as hipóteses estabelecidas anteriormente com $\alpha =0.05$. Os resultados estão subdivididos entre a população feminina e masculina devido às diferenças de IMC que existem entre eles.
+
+## Teste de Hipóteses Subpopulação Feminina
+
+```{r teste_Fem}
+#teste para custo médio:
+(mean.t.teste <- t.test(data.2016.2.Females,
+                  data.2017.2.Females,
+                   var.equal = TRUE))
+```
+
+
+## Teste de Hipóteses Subpopulação Masculina
+
+```{r teste_Male}
+#teste para custo médio:
+(mean.t.teste <- t.test(data.2016.2.Males,
+                  data.2017.2.Males,
+                   var.equal = TRUE))
+```
+
+
+``` {r powr_test_fem}
+
+pwr.t2n.test(n1 = 7, n2= 4, d = 0.3, sig.level = 0.05, power = NULL,
+    alternative = "two.sided")
+```
+
+``` {r powr_test_male}
+
+pwr.t2n.test(n1 = 21, n2= 21, d = 0.8, sig.level = 0.05, power = NULL,
+    alternative = "two.sided")
+```
+
+# Discussão e Conclusões
+Neste trabalho foi feito um estudo estatístico ...
 
 
 # Divisão das Atividades
 
-* Victor - Relator
-* Maressa - Coordenadora
-* Gilmar - Verificador e Monitor
+* Victor - Verificador e Monitor
+* Maressa - Relatora
+* Gilmar - Coordenador
 
 
 # Referências
