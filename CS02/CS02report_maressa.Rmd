@@ -44,6 +44,10 @@ if (!require(dplyr, quietly = TRUE)){
   install.packages("boot")
 }
 
+if (!require(pwr, quietly = TRUE)){
+      install.packages("pwr")
+      }
+
 ```
 
 # Summary
@@ -106,82 +110,151 @@ data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
 
 ## Validação das premissas
 
-Para realizar as inferências estatísticas sobre o IMC das duas populações é necessário validar as premissas antes de executar o teste. Neste caso, como as variâncias das duas populações é desconhecida, utiliza-se a distribuição t para o teste de hipóteses e para os intervalos de confiança [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste t.
+Para realizar as inferências estatísticas sobre o IMC das duas populações é necessário validar as premissas antes de executar o teste. Neste caso, como as variâncias das duas populações é desconhecida, utiliza-se a distribuição t para o teste de hipóteses e para os intervalos de confiança [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste t. Para facilitar as análises optou-se por separar o grupo na população feminina e masculina.
+
+### Subpopulação Feminina
 
 1 - Normalidade: 
 
-Para avaliar a normalidade dos dados das duas populações utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$
+Para avaliar a normalidade dos dados das duas subpopulações, utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$, como apresnetado a seguir.
 
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações"}
+```{r plot_norm_fem, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
 par(mfrow=c(1,2))
 
 library(car)
-qqPlot(data.2016.2$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Normal Q -Q plot")
-#qqline(data.2016.2$imc)
+qqPlot(data.2016.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2016.2", ylab = "IMC")
 
+qqPlot(data.2017.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2017.2", ylab = "IMC")
 ```
 
 
-```{r shapiro}
-shapiro.test(data.2016.2$imc)
-```
-Pela análise do teste de Shapiro-Wilk e do gráfico concluímos que há evidências de que os dados de 2016.2 não são normalmente distribuídos, pois o pvalordo teste de Shapiro Wilk foi menor que 0.05. 
-
-```{r plot_boxplot1, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações"}
-par(mfrow=c(1,2))
-
-library(car)
-qqPlot(data.2017.2$imc, dist='norm', envelope=.95, las = 1, pch = 16, main="Normal Q -Q plot")
+```{r shapirofem}
+shapiro.test(data.2016.2.Females$imc)
+shapiro.test(data.2017.2.Females$imc)
 ```
 
-```{r shapiro1}
-shapiro.test(data.2017.2$imc)
+Pela análise do teste de Shapiro-Wilk e do gráfico concluímos que não há evidências para rejeitar a normalidade dos dados de 2016.2, pois o p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os dados de 2017.2 apresentam um ponto fora dos limites e o p-valor foi inferior a 0.05, por isso, há evidências para rejeitar a normalidade dos dados.
+
+Diante disso, é necessário fazer uma transformação nos dados de 2017.2 para tentar normalizar os dados, a fim de possibilitar a realização dos testes estatísticos.
+
+```{r lognormal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
+qqnorm(log(data.2017.2.Females$imc), pch = 16, las = 1)
+qqline(log(data.2017.2.Females$imc))
 ```
-Por outro lado, não há evidências para rejeitar a normalidade dos dados de IMC coletados em 2017.2, pois p-valor foi maior que 0.05 (p-value = 0.3049); fato este que pode ser observado também no gráfico.
+
+```{r shapirolog}
+shapiro.test(log(data.2016.2.Females$imc))
+```
+
+Embora o gráfico dos quantis não deixe claro a normalidade o teste de Shapiro mostra que, após o ajuste logarítmico dos dados, não há evidências para rejeitar a normalidade.
 
 2- Igualdade de Variâncias:
 
 A segunda premissa a ser avaliada é a igualdade de variâncias das duas populações, homocedasticidade. Para tanto, utilizou-se o teste F com a função var.test e $\alpha = 0.05$, que tem como hipótese nula a igualdade da variância das duas amostras.
 
-``` {r vartes}
-var.test(data.2016.2$imc,data.2017.2$imc)
+``` {r vartesfem}
+var.test(data.2016.2.Females$imc,data.2017.2.Females$imc)
 ```
-Pelo teste F conclui-se que não há evidências para rejeitar a hipótese nula de igualdade das variâncias da população duas populações, portanto, as duas amostras são homocedásticas.
+Pelo teste F conclui-se que não há evidências para rejeitar a hipótese nula de igualdade das variâncias das duas populações, portanto, as amostras são consideradas homocedásticas.
 
 3 - Independência
 
-Considerando que as populações referem-se a dois grupos distintos da pós-graduação, sabe-se a priori, que as amostras são independentes. Para concluir em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
+Considerando que as populações referem-se a dois grupos distintos da pós-graduação, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
 
-``` {r chitest}
-data <- c(data.2016.2$imc, data.2017.2$imc)
-chisq.test(data)
+``` {r chitestfem}
+data.chi.Female <- c(data.2016.2.Females$imc, data.2017.2.Females$imc)
+chisq.test(data.chi.Female)
 ```
-Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o pvalor = 0.9565.
+Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor = 0.9813.
 
-## Teste do custo médio
+Diante dessas análises, percebemos que provavlemente o tamanho pequeno das amostras de IMC feminino pode ter influenciado nas conclusões em relação às premissas. Portanto, esse fator pode influenciar também nos testes de hipóteses que serão apresentados nas próximas seções.
 
-### Teste da variância do custo
+### Subpopulação Masculina
 
-# Análise Estatística
-## Teste sobre a média do custo
-### Cálculo do tamanho amostral
+Assim como na validação das premissas da subpopulação feminina, foram realizados os testes para a subpopulação masculina, como descrito a seguir.
 
-### Teste de Hipoteses
-### Calculo do intervalo de confianca
-### Validaçao das premissas
+1 - Normalidade: 
 
-## Teste sobre a variância do custo
-### Teste de Hipoteses
-### Calculo do intervalo de confianca
-### Validaçao das premissas
+Para validar a normalidade dos dados utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$.
+
+```{r plot_norm_male, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
+par(mfrow=c(1,2))
+
+library(car)
+qqPlot(data.2016.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2016.2", ylab = "IMC")
+
+qqPlot(data.2017.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2017.2", ylab = "IMC")
+
+```
+
+
+```{r shapiro_male}
+shapiro.test(data.2016.2.Males$imc)
+shapiro.test(data.2017.2.Males$imc)
+```
+
+Pela análise do teste de Shapiro-Wilk e dos gráficos concluímos que não há evidências para rejeitar a hipótese nula para as duas amostras, pois em ambas o p-valor do teste foi superior a 0.05. Portanto, para a subpopulação masculina dos dois semestres os dados estão normalmente distribuídos.
+
+2- Igualdade de Variâncias:
+
+Para validar a igualdade de variâncias das duas amostras utilizou-se o teste F com $\alpha = 0.05$. A hipótese nula considera a igualdade da variância das duas amostras.
+
+``` {r vartes_male}
+var.test(data.2016.2.Males$imc,data.2017.2.Males$imc)
+```
+Pelo teste F conclui-se que as populações são homocedásticas, pois o p-valor foi superior a 0.05, logo, não há evidências para rejeitar a hipótese nula.
+
+3 - Independência
+
+Assim como na subpopulação feminina, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
+
+``` {r chitest_male}
+data.chi.male <- c(data.2016.2.Males$imc,data.2017.2.Males$imc)
+chisq.test(data.chi.male)
+```
+
+Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor = 0.9772.
+
+Ao contrário do que aconteceu com as amostras da subpopulação feminina, nesse caso o tamanho das amostras foram maiores, e por isso, não houve nenhum problema em relação às premissas do teste.
+
+# Resultados
+
+Nesta seção são apresentados os resultados do teste para as hipóteses estabelecidas anteriormente com $\alpha =0.05$. Os resultados estão subdivididos entre a população feminina e masculina devido às diferenças de IMC que existem entre eles.
+
+## Teste de Hipóteses Subpopulação Feminina
+
+```{r teste_Fem}
+#teste para custo médio:
+(mean.t.teste <- t.test(data.2016.2.Females,
+                  data.2017.2.Females,
+                   var.equal = TRUE))
+```
+
+
+## Teste de Hipóteses Subpopulação Masculina
+
+```{r teste_Male}
+#teste para custo médio:
+(mean.t.teste <- t.test(data.2016.2.Males,
+                  data.2017.2.Males,
+                   var.equal = TRUE))
+```
+
+
+``` {r powr_test_fem}
+
+pwr.t2n.test(n1 = 7, n2= 4, d = 0.3, sig.level = 0.05, power = NULL,
+    alternative = "two.sided")
+```
+
+``` {r powr_test_male}
+
+pwr.t2n.test(n1 = 21, n2= 21, d = 0.8, sig.level = 0.05, power = NULL,
+    alternative = "two.sided")
+```
 
 # Discussão e Conclusões
 
-# Divisão das Atividades
-
-Victor - Reporter
-Maressa - Coordenadora
-Gilmar - Verificador e Monitor
 
 
 

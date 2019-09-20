@@ -1,0 +1,448 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Estudo de caso: Grupo D 3},
+            pdfauthor={Gilmar and Maressa Nunes R. Tavares and Victor},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Estudo de caso: Grupo D 3}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Gilmar and Maressa Nunes R. Tavares and Victor}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{3 de Setembro, 2019}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{summary}{%
+\section{Summary}\label{summary}}
+
+\hypertarget{planejamento-do-experimento}{%
+\section{Planejamento do
+experimento}\label{planejamento-do-experimento}}
+
+\hypertarget{objetivo-do-experimento}{%
+\subsection{Objetivo do experimento}\label{objetivo-do-experimento}}
+
+\[\begin{cases} H_0: \mu = 50&\\H_1: \mu<50\end{cases}\]
+
+\[\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2} < 100\end{cases}\]
+
+\hypertarget{descricao-da-coleta-de-dados}{%
+\subsubsection{Descrição da coleta de
+dados}\label{descricao-da-coleta-de-dados}}
+
+\hypertarget{descricao-da-coleta-de-dados-1}{%
+\subsubsection{Descrição da coleta de
+dados}\label{descricao-da-coleta-de-dados-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{imc <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(height, weight)\{}
+  \KeywordTok{return}\NormalTok{(weight}\OperatorTok{/}\NormalTok{(height}\OperatorTok{^}\DecValTok{2}\NormalTok{))}
+\NormalTok{\}}
+
+\NormalTok{data.}\FloatTok{2016.2}\NormalTok{ <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{'imc_20162.csv'}\NormalTok{, }\DataTypeTok{header =}\NormalTok{ T, }\DataTypeTok{sep =} \StringTok{","}\NormalTok{)}
+\NormalTok{data.}\FloatTok{2017.2}\NormalTok{ <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{'CS01_20172.csv'}\NormalTok{, }\DataTypeTok{header =}\NormalTok{ T, }\DataTypeTok{sep =} \StringTok{";"}\NormalTok{)}
+\NormalTok{data.}\FloatTok{2017.2}\NormalTok{ <-}\StringTok{ }\NormalTok{data.}\FloatTok{2017.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{Gender =}\NormalTok{ Sex)}
+
+\CommentTok{# calculate the IMC}
+\NormalTok{data.}\FloatTok{2016.2}\OperatorTok{$}\NormalTok{imc <-}\StringTok{ }\KeywordTok{imc}\NormalTok{(data.}\FloatTok{2016.2}\OperatorTok{$}\NormalTok{Height.m, data.}\FloatTok{2016.2}\OperatorTok{$}\NormalTok{Weight.kg)}
+\NormalTok{data.}\FloatTok{2017.2}\OperatorTok{$}\NormalTok{imc <-}\StringTok{ }\KeywordTok{imc}\NormalTok{(data.}\FloatTok{2017.2}\OperatorTok{$}\NormalTok{height.m, data.}\FloatTok{2017.2}\OperatorTok{$}\NormalTok{Weight.kg)}
+
+\CommentTok{# remove undergraduate students for 2016.2 data}
+\NormalTok{data.}\FloatTok{2016.2}\NormalTok{ <-}\StringTok{ }\NormalTok{data.}\FloatTok{2016.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(Course }\OperatorTok{==}\StringTok{ 'PPGEE'}\NormalTok{)}
+
+\CommentTok{# remove unecessary columns and rename}
+\NormalTok{data.}\FloatTok{2016.2}\NormalTok{ <-}\StringTok{ }\NormalTok{data.}\FloatTok{2016.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(Gender, imc)}
+\NormalTok{data.}\FloatTok{2017.2}\NormalTok{ <-}\StringTok{ }\NormalTok{data.}\FloatTok{2017.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(Gender, imc)}
+
+\CommentTok{# split the 2016.2 data by gender and remove undergraduate students}
+\NormalTok{data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Females <-}\StringTok{ }\NormalTok{data.}\FloatTok{2016.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(Gender }\OperatorTok{==}\StringTok{ 'F'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(imc)}
+\NormalTok{data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Males <-}\StringTok{ }\NormalTok{data.}\FloatTok{2016.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(Gender }\OperatorTok{==}\StringTok{ 'M'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(imc)}
+
+\CommentTok{# split the 2017.2 data by gender}
+\NormalTok{data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Females <-}\StringTok{ }\NormalTok{data.}\FloatTok{2017.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(Gender }\OperatorTok{==}\StringTok{ 'F'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(imc)}
+\NormalTok{data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Males <-}\StringTok{ }\NormalTok{data.}\FloatTok{2017.2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(Gender }\OperatorTok{==}\StringTok{ 'M'}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{analise-exploratoria-dos-dados}{%
+\section{Análise Exploratória dos
+Dados}\label{analise-exploratoria-dos-dados}}
+
+\hypertarget{resultados}{%
+\section{Resultados}\label{resultados}}
+
+\hypertarget{validacao-das-premissas}{%
+\subsection{Validação das premissas}\label{validacao-das-premissas}}
+
+Para realizar as inferências estatísticas sobre o IMC das duas
+populações é necessário validar as premissas antes de executar o teste.
+Neste caso, como as variâncias das duas populações é desconhecida,
+utiliza-se a distribuição t para o teste de hipóteses e para os
+intervalos de confiança {[}1{]}. A seguir são apresentados os testes
+realizados para validar as premissas exigidas pelo teste t. Para
+facilitar as análises optou-se por separar o grupo na população feminina
+e masculina.
+
+\hypertarget{subpopulacao-feminina}{%
+\subsubsection{Subpopulação Feminina}\label{subpopulacao-feminina}}
+
+1 - Normalidade:
+
+Para avaliar a normalidade dos dados das duas subpopulações, utilizou-se
+o gráfico quantil-quantil e o teste de Shapiro Wilk com
+\(\alpha = 0.05\), como apresnetado a seguir.
+
+\begin{verbatim}
+## [1] 6 1
+\end{verbatim}
+
+\begin{figure}
+\centering
+\includegraphics{CS02report_maressa_files/figure-latex/plot_norm_fem-1.pdf}
+\caption{Gráfico quantil-quantil das populações - Feminino}
+\end{figure}
+
+\begin{verbatim}
+## [1] 2 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{shapiro.test}\NormalTok{(data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Females}\OperatorTok{$}\NormalTok{imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  data.2016.2.Females$imc
+## W = 0.91974, p-value = 0.4674
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{shapiro.test}\NormalTok{(data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Females}\OperatorTok{$}\NormalTok{imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  data.2017.2.Females$imc
+## W = 0.7475, p-value = 0.03659
+\end{verbatim}
+
+Pela análise do teste de Shapiro-Wilk e do gráfico concluímos que não há
+evidências para rejeitar a normalidade dos dados de 2016.2, pois o
+p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os
+dados de 2017.2 apresentam um ponto fora dos limites, e por isso, há
+evidências para rejeitar a normalidade dos dados.
+
+2- Igualdade de Variâncias:
+
+A segunda premissa a ser avaliada é a igualdade de variâncias das duas
+populações, homocedasticidade. Para tanto, utilizou-se o teste F com a
+função var.test e \(\alpha = 0.05\), que tem como hipótese nula a
+igualdade da variância das duas amostras.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var.test}\NormalTok{(data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Females}\OperatorTok{$}\NormalTok{imc,data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Females}\OperatorTok{$}\NormalTok{imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  F test to compare two variances
+## 
+## data:  data.2016.2.Females$imc and data.2017.2.Females$imc
+## F = 2.2688, num df = 6, denom df = 3, p-value = 0.5353
+## alternative hypothesis: true ratio of variances is not equal to 1
+## 95 percent confidence interval:
+##   0.1539783 14.9715344
+## sample estimates:
+## ratio of variances 
+##           2.268827
+\end{verbatim}
+
+Pelo teste F conclui-se que não há evidências para rejeitar a hipótese
+nula de igualdade das variâncias das duas populações, portanto, as
+amostras são consideradas homocedásticas.
+
+3 - Independência
+
+Considerando que as populações referem-se a dois grupos distintos da
+pós-graduação, sabe-se a priori, que as amostras são independentes. Para
+concluir com precisão em relação à independência realizou-se o teste
+Qui-quadrado com \(\alpha = 0.05\).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data.chi.Female <-}\StringTok{ }\KeywordTok{c}\NormalTok{(data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Females}\OperatorTok{$}\NormalTok{imc, data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Females}\OperatorTok{$}\NormalTok{imc)}
+\KeywordTok{chisq.test}\NormalTok{(data.chi.Female)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Chi-squared test for given probabilities
+## 
+## data:  data.chi.Female
+## X-squared = 3.0047, df = 10, p-value = 0.9813
+\end{verbatim}
+
+Como era esperado, o teste Qui-quadrado reafirma a independência entre
+as duas amostras, como o pvalor = 0.9565.
+
+\hypertarget{subpopulacao-masculina}{%
+\subsubsection{Subpopulação Masculina}\label{subpopulacao-masculina}}
+
+Assim como na validação das premissas da subpopulação feminina, foram
+realizados os testes para a subpopulação masculina, como descrito a
+seguir.
+
+1 - Normalidade:
+
+Para validar a normalidade dos dados utilizou-se o gráfico
+quantil-quantil e o teste de Shapiro Wilk com \(\alpha = 0.05\).
+
+\begin{verbatim}
+## [1]  4 12
+\end{verbatim}
+
+\begin{figure}
+\centering
+\includegraphics{CS02report_maressa_files/figure-latex/plot_norm_male-1.pdf}
+\caption{Gráfico quantil-quantil das populações - Feminino}
+\end{figure}
+
+\begin{verbatim}
+## [1] 12  4
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{shapiro.test}\NormalTok{(data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Males}\OperatorTok{$}\NormalTok{imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  data.2016.2.Males$imc
+## W = 0.92833, p-value = 0.1275
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{shapiro.test}\NormalTok{(data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Males}\OperatorTok{$}\NormalTok{imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Shapiro-Wilk normality test
+## 
+## data:  data.2017.2.Males$imc
+## W = 0.96494, p-value = 0.6206
+\end{verbatim}
+
+Pela análise do teste de Shapiro-Wilk e dos gráficos concluímos que não
+há evidências para rejeitar a hipótese nula para as duas amostras, pois
+em ambas o p-valor do teste foi superior a 0.05. Portanto, para a
+subpopulação masculina dos dois semestres os dados estão normalmente
+distribuídos.
+
+2- Igualdade de Variâncias:
+
+Para validar a igualdade de variâncias das duas amostras utilizou-se o
+teste F com \(\alpha = 0.05\). A hipótese nula considera a igualdade da
+variância das duas amostras.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var.test}\NormalTok{(data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Males}\OperatorTok{$}\NormalTok{imc,data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Males}\OperatorTok{$}\NormalTok{imc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  F test to compare two variances
+## 
+## data:  data.2016.2.Males$imc and data.2017.2.Males$imc
+## F = 1.5839, num df = 20, denom df = 20, p-value = 0.3119
+## alternative hypothesis: true ratio of variances is not equal to 1
+## 95 percent confidence interval:
+##  0.6426853 3.9034665
+## sample estimates:
+## ratio of variances 
+##           1.583888
+\end{verbatim}
+
+Pelo teste F conclui-se que as populações são homocedásticas, pois o
+p-valor foi superior a 0.05, logo, não há evidências para rejeitar a
+hipótese nula.
+
+3 - Independência
+
+Assim como na subpopulação feminina, sabe-se a priori, que as amostras
+são independentes. Para concluir com precisão em relação à independência
+realizou-se o teste Qui-quadrado com \(\alpha = 0.05\).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data.chi.male <-}\StringTok{ }\KeywordTok{c}\NormalTok{(data.}\DecValTok{2016}\NormalTok{.}\FloatTok{2.}\NormalTok{Males}\OperatorTok{$}\NormalTok{imc,data.}\DecValTok{2017}\NormalTok{.}\FloatTok{2.}\NormalTok{Males}\OperatorTok{$}\NormalTok{imc)}
+\KeywordTok{chisq.test}\NormalTok{(data.chi.male)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Chi-squared test for given probabilities
+## 
+## data:  data.chi.male
+## X-squared = 24.96, df = 41, p-value = 0.9772
+\end{verbatim}
+
+Como era esperado, o teste Qui-quadrado reafirma a independência entre
+as duas amostras, como o pvalor = 0.9813.
+
+\hypertarget{discussao-e-conclusoes}{%
+\section{Discussão e Conclusões}\label{discussao-e-conclusoes}}
+
+\hypertarget{divisao-das-atividades}{%
+\section{Divisão das Atividades}\label{divisao-das-atividades}}
+
+Victor - Reporter Maressa - Coordenadora Gilmar - Verificador e Monitor
+
+\hypertarget{referencias}{%
+\section*{Referências}\label{referencias}}
+\addcontentsline{toc}{section}{Referências}
+
+\hypertarget{refs}{}
+\leavevmode\hypertarget{ref-montgomery2007applied}{}%
+{[}1{]} D. C. Montgomery and G. C. Runger, \emph{Applied statistics and
+probability for engineers, (with cd)}. John Wiley \& Sons, 2007.
+
+
+\end{document}
