@@ -135,24 +135,30 @@ count.Females <- data.all.Females %>% count(Class)
 n.males   <- min(count.Males$n)
 n.females <- min(count.Females$n)
 
-sd.males <- sd(data.all.Males$imc)
-sd.females <- sd(data.all.Females$imc)
+var.males.2016.2 <- (data.all.Males %>% filter(Class == '2016-2') 
+                    %>% summarise(var = var(imc)))$var
+var.males.2017.2 <- (data.all.Males %>% filter(Class == '2017-2')
+                    %>% summarise(var = var(imc)))$var
 
-sd.males.2016.2 <- (data.all.Males %>% filter(Class == '2016-2') 
-                    %>% summarise(std = sd(imc)))$std
-sd.males.2017.2 <- (data.all.Males %>% filter(Class == '2017-2')
-                    %>% summarise(std = sd(imc)))$std
+var.females.2016.2 <- (data.all.Females %>% filter(Class == '2016-2')
+                      %>% summarise(var = var(imc)))$var
+var.females.2017.2 <- (data.all.Females %>% filter(Class == '2017-2')
+                      %>% summarise(var = var(imc)))$var
 
-sd.females.2016.2 <- (data.all.Females %>% filter(Class == '2016-2')
-                      %>% summarise(std = sd(imc)))$std
-sd.females.2017.2 <- (data.all.Females %>% filter(Class == '2017-2')
-                      %>% summarise(std = sd(imc)))$std
+n.males.2016.2 <- (count.Males %>% filter(Class == '2016-2'))$n
+n.males.2017.2 <- (count.Males %>% filter(Class == '2017-2'))$n
+n.females.2017.2 <- (count.Females %>% filter(Class == '2016-2'))$n
+n.females.2016.2 <- (count.Females %>% filter(Class == '2017-2'))$n
 
-sd.pooled.males <- sqrt((sd.males.2016.2^2 + sd.males.2017.2^2)/2)
-sd.pooled.females <- sqrt((sd.females.2016.2^2 + sd.females.2017.2^2)/2)
+pooled.var <- function(var1, var2, n1, n2){
+  return((var1 * (n1 - 1) + var2 * (n2 -1))/(n1 + n2 - 2))
+}
 
-d.cohen.males <- eff_size/sd.pooled.males
-d.cohen.females <- eff_size/sd.pooled.females
+var.pooled.males <- pooled.var(var.males.2016.2, var.males.2017.2, n.males.2016.2, n.males.2017.2)
+var.pooled.females <- pooled.var(var.females.2016.2, var.females.2017.2, n.females.2016.2, n.females.2017.2)
+
+d.cohen.males <- eff_size/sqrt(var.pooled.males)
+d.cohen.females <- eff_size/sqrt(var.pooled.females)
 ```
 
 ``` {r show_power_est}
