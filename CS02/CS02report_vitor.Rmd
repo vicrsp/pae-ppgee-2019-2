@@ -62,13 +62,13 @@ O objetivo é estudar as diferenças entre o IMC médio entre duas turmas de est
 $$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
 Onde $\mu_{1}$ e $\mu_{2}$ são as turmas de 2016-7 e 2017-2, respectivamente. A mesma hipótese será testada separadamente para cada sub-população. 
 
-Os testes serão realizados para um tamanho de efeito $\delta^* = 5$, visto que essa é a diferença de valor entre os níveis de classificação IMC encontrados na literatura [@tabelaimc:online].
+Os testes serão realizados para um tamanho de efeito $\delta^* = 5$, visto que essa é a diferença de valor entre os níveis de classificação IMC encontrados na literatura [@tabelaimc:online]. 
 
 
 ## Análise Exploratória dos Dados
 Antes de iniciar a análise exploratória dos dados, é precisa realizar um breve pré-processamento dos dados, visto que os dados de cada ano possuem formatos ligeiramente diferentes. Por exemplo, para os dados de 2016-2, é necessário remover as linhas referentes aos alunos de graduação. Ambos os arquivos foram padronizados para possuir o mesmo nome de coluna, e uma nova coluna com o cálculo do IMC foi adicionada em cada. Novos datasets também foram criados contendo somente os dados de cada sexo e todos os dados, para auxiliar nas análises.
 
-```{r datapreprocessing}
+```{r datapreprocessing, echo=FALSE}
 imc <- function(height, weight){
   return(weight/(height^2))
 }
@@ -100,6 +100,10 @@ data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
 data.all <- data.2016.2 %>% mutate(Class = '2016-2')
 data.all <- data.all %>% bind_rows(data.2017.2 %>% mutate(Class = '2017-2')) 
 
+# creat a single dataset for males and femaless, with the class identification
+data.all.Males <- data.all %>% filter(Gender == 'M') %>% select(imc, Class)
+data.all.Females <- data.all %>% filter(Gender == 'F') %>% select(imc, Class)
+
 ```
 Para ter uma ideia inicial dos dados, suas estatísticas básicas são calculadas: 
 ```{r summary_statistic_2016}
@@ -115,5 +119,76 @@ Para melhor visualização, um gráfico boxplot é gerado na figura abaixo. Nele
 ```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados"}
 ggplot(data.all, aes(x=Class, y=imc, color=Gender)) + geom_boxplot()
 ```
+
+### Estimativa da significância e potência
+
+Um nível de significância $\alpha = 0.05$ é estabelecido para uma potência de $\pi = 1 - \beta = 0.8$. Dado que o número de amostras é conhecido para cada turma e gênero, avalia-se a seguir se a quantidade de amostras é suficiente para atender os parâmetros especificados.  
+
+```{r power_estimate, echo=FALSE}
+eff_size <- 5 
+pi <- 0.8
+sig_level <- 0.05
+
+count.Males <- data.all.Males %>% count(Class)
+count.Females <- data.all.Females %>% count(Class)
+
+n.males   <- min(count.Males$n)
+n.females <- min(count.Females$n)
+
+sd.males <- sd(data.all.Males$imc)
+sd.females <- sd(data.all.Females$imc)
+
+sd.males.2016.2 <- (data.all.Males %>% filter(Class == '2016-2') 
+                    %>% summarise(std = sd(imc)))$std
+sd.males.2017.2 <- (data.all.Males %>% filter(Class == '2017-2')
+                    %>% summarise(std = sd(imc)))$std
+
+sd.females.2016.2 <- (data.all.Females %>% filter(Class == '2016-2')
+                      %>% summarise(std = sd(imc)))$std
+sd.females.2017.2 <- (data.all.Females %>% filter(Class == '2017-2')
+                      %>% summarise(std = sd(imc)))$std
+
+sd.pooled.males <- sqrt((sd.males.2016.2^2 + sd.males.2017.2^2)/2)
+sd.pooled.females <- sqrt((sd.females.2016.2^2 + sd.females.2017.2^2)/2)
+
+d.cohen.males <- eff_size/sd.pooled.males
+d.cohen.females <- eff_size/sd.pooled.females
+```
+
+``` {r show_power_est}
+(sig.est.males <- pwr.t.test(d = d.cohen.males, 
+           n = n.males,
+           sig.level = NULL,
+           type = "two.sample",
+           alternative = "two.sided",
+           power = pi))
+
+(sig.est.females <- pwr.t.test(d = d.cohen.females, 
+           n = n.females,
+           sig.level = NULL,
+           type = "two.sample",
+           alternative = "two.sided",
+           power = pi))
+```
+Portanto, é possível ver que há amostras suficientes para a realização dos testes de cada sub-população. É importante notar que, dado que há mais amostras de estudantes do sexo masculino, a significância mínima estimada foi bem menor. Um outro resultado interessante, causado pela diferença do número de amostras, é que a potência do teste para alunos do sexo feminino será significativamente menor em relação à do sexo masculino. Assumindo $\alpha = 0.05$, a potência é estimada a seguir.
+
+```{r power_estimate_females}
+
+(pwr.est.females <- pwr.t.test(d = d.cohen.females, 
+           n = n.females,
+           sig.level = 0.05,
+           type = "two.sample",
+           alternative = "two.sided",
+           power = NULL))
+
+
+(pwr.est.males <- pwr.t.test(d = d.cohen.males, 
+           n = n.males,
+           sig.level = 0.05,
+           type = "two.sample",
+           alternative = "two.sided",
+           power = NULL))
+```
+Conforme esperado, a potência do teste masculino é `r 100*round((pwr.est.males$power - pwr.est.females$power)/pwr.est.males$power,digits=2)`% maior que o feminino, indicando uma maior possibilidade de erros do tipo 2.
 
 ## Referências
