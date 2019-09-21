@@ -127,7 +127,7 @@ summary(data.2017.2)
 ```
 É possível fazer as seguintes observações que a quantidade de amostras do sexo feminimo é bem menor do que a do masculino, o que pode afetar a potência dos testes a serem executados.
 
-Para melhor visualização, um gráfico boxplot é gerado na figura abaixo. Nele é possível ver que há alguns outliers nos valores de IMC em alguns anos, que verão ser removidos posteriormente. 
+Para melhor visualização, um gráfico boxplot é gerado na figura abaixo. Nele é possível ver que há alguns possíveis outliers nos valores de IMC em alguns anos.
 
 ```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados"}
 ggplot(data.all, aes(x=Class, y=imc, color=Gender)) + geom_boxplot()
