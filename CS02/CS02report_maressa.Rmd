@@ -143,10 +143,19 @@ qqline(log(data.2017.2.Females$imc))
 ```
 
 ```{r shapirolog}
-shapiro.test(log(data.2016.2.Females$imc))
+shapiro.test(log(data.2017.2.Females$imc))
 ```
 
-Embora o gráfico dos quantis não deixe claro a normalidade o teste de Shapiro mostra que, após o ajuste logarítmico dos dados, não há evidências para rejeitar a normalidade.
+Pela análise do gráfico e do teste de Shapiro Wilk após a transformação logarítmica, permanecem as evidências de não normalidade dos dados de 2017.2, pois o p-valor permanece inferior a 0.05.
+
+Como não foi possível obter uma distribuição normal após a transformação dos dados, torna-se necessário a realização de outras análises, como o boxplot.
+
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplotdas amostras - 2017.2 Feminino"}
+par(mfrow=c(1,2))
+boxplot(data.2017.2.Females$imc, horizontal = TRUE, main="Boxplot")
+```
+
+Pela análise de boxplot verificamos que o valor extremo da amostra não pode ser considerado um outlier, porém, como a amostra da população é muito pequena esse valor está influenciando significativamente na normalidade dos dados. Por esse motivo, o valor extremo não pode ser excluído dos dados, pois isso caracterizaria "Cherry-Pick".
 
 2- Igualdade de Variâncias:
 
