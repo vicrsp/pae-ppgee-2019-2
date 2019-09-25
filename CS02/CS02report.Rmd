@@ -124,9 +124,7 @@ Devido a um numero pequeno de amostras para a população das mulheres, no semet
 
 ### Estimativa do tamanho de efeito e da significância
 
-Para os testes de hipóteses, foram especificados um nível de significância $\alpha = 0.05$ e uma potência de $\pi = 1 - \beta = 0.8$, suficientes para uma boa análise das amostras. Como o número de amostras é conhecido e inalterável para cada turma e gênero, avaliou-se os níveis de significância e potência para cada população, para verificar se serão atendidos os respectivos parâmetros.  
-
-Para a análise da significância, utilizou-se a função `pwr.t.test` com o número de amostras $n$ e potência $\pi = 0.8$ especificados. Os resultados dos testes podem ser vistos abaixo.
+Para os testes de hipóteses, foram especificados um nível de significância $\alpha = 0.05$ e uma potência de $\pi = 1 - \beta = 0.8$, suficientes para uma boa análise das amostras. Como o número de amostras é conhecido e inalterável para cada turma e gênero, utiliza-se a função `pwr.t2n.test` para a estimativa do tamanho de efeito ideal.
 
 ```{r power_estimate, echo=FALSE}
 eff_size <- 5 
@@ -178,35 +176,16 @@ var.pooled.females <- pooled.var(var.females.2016.2, var.females.2017.2, n.femal
                                 power = 0.8,
                                 alternative = "two.sided"))
 
-(eff_size.males <- sig.est.males$d * sqrt(var.pooled.males))
-(eff_size.females <- sig.est.females$d *sqrt(var.pooled.females))
-
 ```
 
-É possível verificar, analisando os resultados, que existem amostras suficientes para a realização dos testes de cada subpopulação, que atendam o nível de siginificancia $\alpha=0.05$ pré estabelicido. É importante notar que, dado que existem mais amostras de estudantes do sexo masculino, a significância mínima estimada foi significativamente inferior a da população feminina. 
+Portanto, é obtido um tamanho de efeito de `r sig.est.females$d` para os dados do gênero feminino e `r sig.est.males$d` para o masculino. 
 
-Para testar a potência de cada teste considerou-se o número de amostras $n$ e uma significância $\alpha = 0.05$, a potência estimada pode ser observada a seguir.
+```{r power_estimate_females, echo = FALSE}
+eff_size.males <- sig.est.males$d * sqrt(var.pooled.males)
+eff_size.females <- sig.est.females$d *sqrt(var.pooled.females)
 
-
-```{r power_estimate_females}
-
-(pwr.est.females <- pwr.t.test(d = d.cohen.females, 
-           n = n.females,
-           sig.level = 0.05,
-           type = "two.sample",
-           alternative = "two.sided",
-           power = NULL))
-
-
-(pwr.est.males <- pwr.t.test(d = d.cohen.males, 
-           n = n.males,
-           sig.level = 0.05,
-           type = "two.sample",
-           alternative = "two.sided",
-           power = NULL))
 ```
-
-Conforme esperado, a potência do teste referente a população masculina é `r 100*round((pwr.est.males$power - pwr.est.females$power)/pwr.est.males$power,digits=2)`% maior que a feminina, indicando uma maior probabilidades de erros do tipo II. Assim como no teste da significância as duas amostras possuem potência superior a estimada.
+Os valores obtidos pela função `pwr.t2n.test` são normalizados pela variância ponderada, logo o tamanho de efeito real da diferença das médias é dado por `r eff_size.males` e `r eff_size.females` para o gênero masculino e feminino, respectivamente.
 
 # Validação das premissas
 
@@ -234,7 +213,7 @@ shapiro.test(data.2016.2.Females$imc)
 shapiro.test(data.2017.2.Females$imc)
 ```
 
-Pela análise do teste de Shapiro-Wilk e do gráfico concluí-se que não há evidências para rejeitar a normalidade dos dados de 2016-2, pois o p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os dados de 2017-2 apresentam um outlier e o p-valor foi inferior a $0.05$, por isso, há evidências para rejeitar a normalidade dos dados.
+Pela análise do teste de Shapiro-Wilk e do gráfico concluí-se que não há evidências para rejeitar a normalidade dos dados de 2016-2, pois o p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os dados de 2017-2 apresentam um p-valor inferior a $0.05$, por isso, há evidências para rejeitar a normalidade dos dados.
 
 Diante dos resultados, foi necessário fazer uma transformação logarítma nos dados de 2017-2 para normalizar os dados, a fim de possibilitar a realização dos testes estatísticos.
 
@@ -335,16 +314,7 @@ Para o teste de hipótese para subpopulação feminina utilizou-se o o teste t, 
 
 Analisando os resultados, verifica-se que o p-valor retornado pelo teste é superior ao nível de significancia, desta maneira não se possui evidencias suficientes para se rejeitar a hipótese nula, mesmo verificando que a diferença entre as médias, $d =$ `r abs(diff(mean.t.teste$estimate))`, está dentro do intervalo de confiança calculado.
 
-Devido o baixo número de amostras da subpopulação, realizou-se um teste de potência, utilizando a função pwr.t.test, para verificar a probabilidade de erro de tipo II. O teste está especificado a seguir.
-
-``` {r powr_test_fem}
-pwr.t2n.test(n1 = 7, n2= 4, d = sig.est.females$d, sig.level = 0.05, power = NULL,
-    alternative = "two.sided")
-```
-
-O teste resultou em uma potência extremamente baixa devido ao baixo número de amostras entre os dois semestres 2016-2 e 2017-2. Desta maneira a probabilidade de erro de tipo II é extremamente alta. 
-
-Para melhora a análise dos dados e aumentando a sua potências realizou-se uma remostragem utilizando-se a técnica de bootstrap, conforme mostrado a seguir.
+Devido o baixo número de amostras da subpopulação, realizou-se uma remostragem utilizando-se a técnica de bootstrap como forma de obter uma melhor aproximação do intervalo de confiança, conforme mostrado a seguir.
 
 ```{r bootstrap_females}
 means.diff <- function(x, i){
@@ -377,7 +347,7 @@ ci_sd <- 1 - 2 * sig_level
 
 ```
 
-Analisando o histograma gerado, pode-se observar a normalização dos dados para subpopulação, justificado pelo teorema do limite central para médias amostrais. Analisando o intervalo de confiança resultante verifica-se que, dado que a hipótese nula assume que as médias populacionais são iguais ($\mu_1 - \mu_2 = 0$), a hipótese nula é rejeitada pois está fora do intervalo de confiança.
+Analisando o histograma gerado, pode-se observar a normalização dos dados para subpopulação, justificado pelo teorema do limite central para médias amostrais. Analisando o intervalo de confiança resultante verifica-se que, dado que a hipótese nula assume que as médias populacionais são iguais ($\mu_1 - \mu_2 = 0$), a hipótese nula é rejeitada para a média pois está fora do intervalo de confiança, porém ela não pode ser rejeitada para a mediana.
 
 ## Teste de Hipóteses Subpopulação Masculina
 
@@ -390,21 +360,30 @@ Assim como para a subpopulação feminina, utilizou-se o teste t para análise d
                   var.equal = TRUE, conf.level = 1 - sig_level))
 ```
 
-O teste t para as subpopulações masculinas resultou em um p-valor superior ao nível de significancia de $0,05$, como especificado. Deste forma não se possui evidências suficientes para rejeitar a hipótese nula. Verifica-se também que o a valor das diferenças entre as médias está dentro do valor especificado.
+O teste t para as subpopulações masculinas resultou em um p-valor superior ao nível de significancia de $0,05$, como especificado. Deste forma não se possui evidências suficientes para rejeitar a hipótese nula. Verifica-se também que o a valor das diferenças entre as médias está dentro do valor especificado. 
 
-Realizou-se  o teste de potência para as subpopulações masculinas, demostrado a seguir.
+Para melhor avaliar os resultados, a técnica de bootstrapping também foi aplicada para a subpopulação masculina.
 
-``` {r powr_test_male}
+```{r bootstrap_males}
 
-(pot_males<-pwr.t2n.test(n1 = 21, n2= 21, d = sig.est.males$d, sig.level = 0.05, power = NULL,
-    alternative = "two.sided"))
+set.seed(5021)
+data.diff.means.boot.males <- boot(data.all.Males, statistic = means.diff, R=1000)
+data.diff.median.boot.males <- boot(data.all.Males, statistic = median.diff, R=1000)
+
+par(mfrow=c(1,2))
+hist(data.diff.means.boot.males$t)
+hist(data.diff.median.boot.males$t)
+
+ci_sd <- 1 - 2 * sig_level
+(test.boot.mean.males <- boot.ci(data.diff.means.boot.males, conf = ci_sd, type = "bca"))
+(test.boot.median.males <- boot.ci(data.diff.median.boot.males, conf = ci_sd, type = "bca"))
+
 ```
 
-O teste resultado em uma potência superior de `r pot_males$power`, que é considerada uma potência próxima do valor pré-estabelecido.
+Note que neste caso, tanto para a média quanto para a mediana, não podemos rejeitar a hipótese nula. Isso reforça ainda mais os resultads obtidos para o teste t. 
 
 # Discussão e Conclusões
 Neste trabalho foi feito um estudo estatístico ...
-
 
 # Divisão das Atividades
 
