@@ -114,8 +114,8 @@ summary(data.2017.2)
 ```
 Analisando os dados é possível observar que a quantidade de amostras do sexo feminimo é inferior a do masculino, o que pode afetar a potência dos testes a serem executados. Para melhor visualização, um gráfico boxplot é gerado na figura abaixo.
 
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados"}
-ggplot(data.all, aes(x=Class, y=imc, color=Gender)) + geom_boxplot()
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
+ggplot(data.all, aes(x=Class, y=imc, fill=Gender)) + geom_boxplot()
 ```
 
 Analisando os boxplots é possível observar que existem possíveis outliers nos valores de IMC, para a subpopulação dos homens no semetre de 2016-2 e para a subpopulação das mulheres no semestre de 2017-2. Como os valores indicados como outliers estão dentro das faixas de IMC definidas em [@tabelaimc:online], conclui-se que de fato eles não são outliers e não devem ser removidos da análise.
@@ -225,7 +225,9 @@ invisible(qqPlot(log(data.2017.2.Females$imc), pch = 16, las = 1, dist='norm',en
 shapiro.test(log(data.2017.2.Females$imc))
 ```
 
-Mesmo após o ajuste logarítmico, os dados continuam sem apresentar uma distribuição normal, de acordo com o p-valor obtido no teste de Shaphiro-Wilk.
+Pela análise do gráfico quantil-quantil e do teste de Shapiro Wilk após a transformação logarítmica, permanecem as evidências de não normalidade dos dados de 2017-2, pois o p-valor permanece inferior a 0.05.
+
+Como não foi possível obter uma distribuição normal após a transformação dos dados, torna-se necessário a realização de outras análises. Pela análise de boxplot na figura \ref{fig:boxplot}, verificamos que o valor extremo da amostra não pode ser considerado um outlier, porém, como a amostra da população é muito pequena esse valor está influenciando significativamente na normalidade dos dados. Por esse motivo, o valor extremo não pode ser excluído dos dados, pois isso caracterizaria "Cherry-Pick".
 
 2- Igualdade de Variâncias:
 
@@ -316,7 +318,7 @@ Analisando os resultados, verifica-se que o p-valor retornado pelo teste é supe
 
 Devido o baixo número de amostras da subpopulação, realizou-se uma remostragem utilizando-se a técnica de bootstrap como forma de obter uma melhor aproximação do intervalo de confiança, conforme mostrado a seguir.
 
-```{r bootstrap_females}
+```{r bootstrap_females, fig.width=7,fig.height=4, fig.cap="Histograma do bootstrapping da média e mediana da subpopulação feminina"}
 means.diff <- function(x, i){
   sample.2016.2 <- sample((x %>% filter(Class == '2016-2'))$imc,replace=TRUE)
   sample.2017.2 <- sample((x %>% filter(Class == '2017-2'))$imc,replace=TRUE)
@@ -364,7 +366,7 @@ O teste t para as subpopulações masculinas resultou em um p-valor superior ao 
 
 Para melhor avaliar os resultados, a técnica de bootstrapping também foi aplicada para a subpopulação masculina.
 
-```{r bootstrap_males}
+```{r bootstrap_male, fig.width=7,fig.height=4, fig.cap="Histograma do bootstrapping da média e mediana da subpopulação masculina"}
 
 set.seed(5021)
 data.diff.means.boot.males <- boot(data.all.Males, statistic = means.diff, R=1000)
