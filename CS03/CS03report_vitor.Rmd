@@ -1,7 +1,7 @@
 ---
 title: 'Estudo de caso: Grupo D 3'
 author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
-date: "30 de Setembro, 2019"
+date: "29 de Outubro, 2019"
 output:
   pdf_document:
     fig_caption: yes
@@ -10,7 +10,7 @@ header-includes:
   \usepackage{float}
   \floatplacement{figure}{H}
 
-bibliography: refsCS02.bib
+bibliography: refsCS03.bib
 csl: ieee.csl
 ---
 
@@ -50,14 +50,19 @@ if (!require(dplyr, quietly = TRUE)){
 if (!require(pwr, quietly = TRUE)){
   install.packages("pwr")
 }
+
+
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+
 ```
 # Summary
-O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar as diferenças no IMC médio entre duas populações de estudantes de pós-graduação em Engenharia elétrica, nos semetres de 2016-2 e 2017-2. As sub-populações masculina e feminina foram analisadas separadamente. Após os testes verificou-se que ...
-
 
 # Planejamento do experimento
 ## Objetivo do experimento
-O objetivo é estudar as diferenças entre o IMC médio entre duas turmas de estudantes de pós-graduação em Engenharia elétrica na UFMG, para dados coletados nos semestres de 2016-2 e 2017-2. A análise será dividada entre as duas sub-populações (homens e mulheres), uma vez que é experado diferenças no ICM e também no tamanho amostral. Portanto, para verificar estas diferenças, as seguintes hipóteses serão testadas:
+
 
 $$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
 Onde $\mu_{1}$ e $\mu_{2}$ são as turmas de 2016-7 e 2017-2, respectivamente. A mesma hipótese será testada separadamente para cada sub-população. 
@@ -66,135 +71,76 @@ Os testes serão realizados para um tamanho de efeito $\delta^* = 5$, visto que 
 
 
 ## Análise Exploratória dos Dados
-Antes de iniciar a análise exploratória dos dados, é precisa realizar um breve pré-processamento dos dados, visto que os dados de cada ano possuem formatos ligeiramente diferentes. Por exemplo, para os dados de 2016-2, é necessário remover as linhas referentes aos alunos de graduação. Ambos os arquivos foram padronizados para possuir o mesmo nome de coluna, e uma nova coluna com o cálculo do IMC foi adicionada em cada. Novos datasets também foram criados contendo somente os dados de cada sexo e todos os dados, para auxiliar nas análises.
+```{r constants, echo=FALSE}
+# Equipe D
+## Config 1
+recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0.4, beta = 0.4)
+mutpars1 <- list(name = "mutation_rand", f = 4)
 
-```{r datapreprocessing, echo=FALSE}
-imc <- function(height, weight){
-  return(weight/(height^2))
+## Config 2
+recpars2 <- list(name = "recombination_eigen", othername = "recombination_bin", cr = 0.9)
+mutpars2 <- list(name = "mutation_best", f = 2.8)
+
+# Normalized effect size
+d <- 0.5
+# Significance
+alpha <- 0.05
+# Power
+power <- 0.8
+
+```
+
+```{r datageneration, echo=FALSE}
+suppressPackageStartupMessages(library(ExpDE))
+set.seed(156732) # set a random seed
+
+generate.observation <- function(mutparsX, recparsX, dim, fn){
+
+  selpars <- list(name = "selection_standard")
+  stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
+  probpars <- list(name = fn, xmin = rep(-5, dim), xmax = rep(10, dim))
+  popsize = 5 * dim
+  
+  out <- ExpDE(mutpars = mutparsX,
+            recpars = recparsX,
+            popsize = popsize,
+            selpars = selpars,
+            stopcrit = stopcrit,
+            probpars = probpars,
+            showpars = list(show.iters = "dots", showevery = 20))
+  return(out$Fbest)
 }
 
-data.2016.2 <- read.csv('imc_20162.csv', header = T, sep = ",")
-data.2017.2 <- read.csv('CS01_20172.csv', header = T, sep = ";")
-data.2017.2 <- data.2017.2 %>% rename(Gender = Sex)
-
-# calculate the IMC
-data.2016.2 <- data.2016.2 %>% mutate(imc = imc(Height.m, Weight.kg))
-data.2017.2 <- data.2017.2 %>% mutate(imc = imc(height.m, Weight.kg))
-
-# remove undergraduate students for 2016.2 data
-data.2016.2 <- data.2016.2 %>% filter(Course == 'PPGEE')
-
-# remove unecessary columns and rename
-data.2016.2 <- data.2016.2 %>% select(Gender, imc)
-data.2017.2 <- data.2017.2 %>% select(Gender, imc)
-
-# split the 2016.2 data by gender and remove undergraduate students
-data.2016.2.Females <- data.2016.2 %>% filter(Gender == 'F') %>% select(imc)
-data.2016.2.Males <- data.2016.2 %>% filter(Gender == 'M') %>% select(imc)
-
-# split the 2017.2 data by gender
-data.2017.2.Females <- data.2017.2 %>% filter(Gender == 'F') %>% select(imc)
-data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
-
-# create a single dataset
-data.all <- data.2016.2 %>% mutate(Class = '2016-2')
-data.all <- data.all %>% bind_rows(data.2017.2 %>% mutate(Class = '2017-2')) 
-
-# creat a single dataset for males and femaless, with the class identification
-data.all.Males <- data.all %>% filter(Gender == 'M') %>% select(imc, Class)
-data.all.Females <- data.all %>% filter(Gender == 'F') %>% select(imc, Class)
-
-```
-Para ter uma ideia inicial dos dados, suas estatísticas básicas são calculadas: 
-```{r summary_statistic_2016}
-summary(data.2016.2)
-```
-```{r summary_statistic_2017}
-summary(data.2017.2)
-```
-É possível fazer as seguintes observações que a quantidade de amostras do sexo feminimo é bem menor do que a do masculino, o que pode afetar a potência dos testes a serem executados.
-
-Para melhor visualização, um gráfico boxplot é gerado na figura abaixo. Nele é possível ver que há alguns outliers nos valores de IMC em alguns anos, que verão ser removidos posteriormente. 
-
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados"}
-ggplot(data.all, aes(x=Class, y=imc, color=Gender)) + geom_boxplot()
-```
-
-### Estimativa da significância e potência
-
-Um nível de significância $\alpha = 0.05$ é estabelecido para uma potência de $\pi = 1 - \beta = 0.8$. Dado que o número de amostras é conhecido para cada turma e gênero, avalia-se a seguir se a quantidade de amostras é suficiente para atender os parâmetros especificados.  
-
-```{r power_estimate, echo=FALSE}
-eff_size <- 5 
-pi <- 0.8
-sig_level <- 0.05
-
-count.Males <- data.all.Males %>% count(Class)
-count.Females <- data.all.Females %>% count(Class)
-
-n.males   <- min(count.Males$n)
-n.females <- min(count.Females$n)
-
-var.males.2016.2 <- (data.all.Males %>% filter(Class == '2016-2') 
-                    %>% summarise(var = var(imc)))$var
-var.males.2017.2 <- (data.all.Males %>% filter(Class == '2017-2')
-                    %>% summarise(var = var(imc)))$var
-
-var.females.2016.2 <- (data.all.Females %>% filter(Class == '2016-2')
-                      %>% summarise(var = var(imc)))$var
-var.females.2017.2 <- (data.all.Females %>% filter(Class == '2017-2')
-                      %>% summarise(var = var(imc)))$var
-
-n.males.2016.2 <- (count.Males %>% filter(Class == '2016-2'))$n
-n.males.2017.2 <- (count.Males %>% filter(Class == '2017-2'))$n
-n.females.2017.2 <- (count.Females %>% filter(Class == '2016-2'))$n
-n.females.2016.2 <- (count.Females %>% filter(Class == '2017-2'))$n
-
-pooled.var <- function(var1, var2, n1, n2){
-  return((var1 * (n1 - 1) + var2 * (n2 -1))/(n1 + n2 - 2))
+generate.n.observations <- function(mutparsX, recparsX, dim, fn, N){
+  my.sample <- numeric(N)
+  for (i in seq(N)){
+    my.sample[i] <- generate.observation(mutparsX, recparsX, dim, fn)
+  }
+  
+  return(my.sample)
 }
 
-var.pooled.males <- pooled.var(var.males.2016.2, var.males.2017.2, n.males.2016.2, n.males.2017.2)
-var.pooled.females <- pooled.var(var.females.2016.2, var.females.2017.2, n.females.2016.2, n.females.2017.2)
 
-d.cohen.males <- eff_size/sqrt(var.pooled.males)
-d.cohen.females <- eff_size/sqrt(var.pooled.females)
+dim <- 2
+fn.rosenbrock <- function(X){
+  if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+  
+  Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+  return(Y)
+}
+
+# testing the function on a matrix composed of 2 points
+N <- 2
+X <- matrix(runif(2*N), nrow = 2)
+fn.rosenbrock(X)
+
+# test EXpDE generation
+generate.observation(mutpars1, recpars1, dim, "fn.rosenbrock")
+generate.observation(mutpars2, recpars2, dim, "fn.rosenbrock")
+
+generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N)
+generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N)
+
 ```
-
-``` {r show_power_est}
-(sig.est.males <- pwr.t.test(d = d.cohen.males, 
-           n = n.males,
-           sig.level = NULL,
-           type = "two.sample",
-           alternative = "two.sided",
-           power = pi))
-
-(sig.est.females <- pwr.t.test(d = d.cohen.females, 
-           n = n.females,
-           sig.level = NULL,
-           type = "two.sample",
-           alternative = "two.sided",
-           power = pi))
-```
-Portanto, é possível ver que há amostras suficientes para a realização dos testes de cada sub-população. É importante notar que, dado que há mais amostras de estudantes do sexo masculino, a significância mínima estimada foi bem menor. Um outro resultado interessante, causado pela diferença do número de amostras, é que a potência do teste para alunos do sexo feminino será significativamente menor em relação à do sexo masculino. Assumindo $\alpha = 0.05$, a potência é estimada a seguir.
-
-```{r power_estimate_females}
-
-(pwr.est.females <- pwr.t.test(d = d.cohen.females, 
-           n = n.females,
-           sig.level = 0.05,
-           type = "two.sample",
-           alternative = "two.sided",
-           power = NULL))
-
-
-(pwr.est.males <- pwr.t.test(d = d.cohen.males, 
-           n = n.males,
-           sig.level = 0.05,
-           type = "two.sample",
-           alternative = "two.sided",
-           power = NULL))
-```
-Conforme esperado, a potência do teste masculino é `r 100*round((pwr.est.males$power - pwr.est.females$power)/pwr.est.males$power,digits=2)`% maior que o feminino, indicando uma maior possibilidade de erros do tipo 2.
 
 ## Referências
