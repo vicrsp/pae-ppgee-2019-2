@@ -1,7 +1,7 @@
 ---
 title: 'Estudo de caso: Grupo D 3'
 author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
-date: "30 de Setembro, 2019"
+date: "29 de Outubro, 2019"
 output:
   pdf_document:
     fig_caption: yes
@@ -10,9 +10,10 @@ header-includes:
   \usepackage{float}
   \floatplacement{figure}{H}
 
-bibliography: refsCS02.bib
+bibliography: refsCS03.bib
 csl: ieee.csl
 ---
+
 
 ```{r setup,results='hide',warning=FALSE,echo=FALSE, message=FALSE, include=FALSE}
 # A few initial definitions just to make sure all required packages are installed. Change as needed.
@@ -28,6 +29,10 @@ if (!require(devtools, quietly = TRUE)){
       }
 if (!require(GGally, quietly = TRUE)){
       install.packages("GGally")
+}
+
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
 }
 
 if (!require(car, quietly = TRUE)){
@@ -46,356 +51,96 @@ if (!require(pwr, quietly = TRUE)){
   install.packages("pwr")
 }
 
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
 ```
-
 # Summary
-O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar as diferenças no IMC médio entre duas populações de estudantes de pós-graduação em Engenharia elétrica, nos semetres de 2016-2 e 2017-2. As subpopulações masculina e feminina foram analisadas separadamente em todo o trabalho, devido às diferenças inerentes aos dois grupos. Após os testes verificou-se que as médias da subpopulação masculina são iguais, porém para a feminina elas são diferentes, para um intervalo de confiança de 95%. 
 
 # Planejamento do experimento
-
-Nesta seção é apresentado o planejamento do experimento, descrevendo os objetivos, determinando as hipóteses a serem testadas e realizando uma análise exploratória dos dados.
-
 ## Objetivo do experimento
-O objetivo deste experimento é estudar as diferenças entre o IMC médio das duas turmas - 2016-2 e 2017-2 - de estudantes de pós-graduação em Engenharia elétrica da UFMG. A análise foi dividada entre as subpopulações de homens e mulheres, visando comparar as subpopulações das duas amostras entre si. Essa separação deve-se às diferenças de IMC entre homens e mulheres, e também ao tamanho amostral. 
-
-Para se comparar os valores de IMC, formularam-se as seguintes hipóteses a serem testadas:
 
 $$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
-Onde $\mu_{1}$ e $\mu_{2}$ são as turmas de 2016-7 e 2017-2, respectivamente. A mesma hipótese foi testada separadamente para cada subpopulação. 
+Onde $\mu_{1}$ e $\mu_{2}$ são as configurações 1 e 2, respectivamente. 
 
-## Análise exploratória dos dados
+Além disso, foram definidos os seguintes objetivos: 
 
-Antes de iniciar a análise exploratória dos dados, foi preciso realizar um pré-processamento dos dados, visto que cada semestre possui formatos ligeiramente diferentes, como por exemplo, para os dados de 2016-2 foi necessário remover as linhas referentes aos alunos de graduação. Ambos os arquivos foram padronizados, para possuírem os mesmos nomes de colunas, e foi adicionada uma nova coluna com o cálculo do IMC. A partir dos dados filtrados e tratados forma criados novos datasets contendo somente os dados referentes a cada sexo e semestre, para auxiliar nas análises.
+* Significância desejada: $\alpha = 0.05$.
+* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.5$
+* Potência mínima desejada $\pi = 1 - \beta = 0.8$
 
-```{r datapreprocessing, echo=FALSE}
-imc <- function(height, weight){
-  return(weight/(height^2))
-}
 
-data.2016.2 <- read.csv('imc_20162.csv', header = T, sep = ",")
-data.2017.2 <- read.csv('imc_20172.csv', header = T, sep = ";")
-data.2017.2 <- data.2017.2 %>% rename(Gender = Sex)
+## Descrição da coleta de dados
+```{r constants, echo=FALSE}
+# Equipe D
+## Config 1
+recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0.4, beta = 0.4)
+mutpars1 <- list(name = "mutation_rand", f = 4)
 
-# calculate the IMC
-data.2016.2 <- data.2016.2 %>% mutate(imc = imc(Height.m, Weight.kg))
-data.2017.2 <- data.2017.2 %>% mutate(imc = imc(height.m, Weight.kg))
+## Config 2
+recpars2 <- list(name = "recombination_eigen", othername = "recombination_bin", cr = 0.9)
+mutpars2 <- list(name = "mutation_best", f = 2.8)
 
-# remove undergraduate students for 2016.2 data
-data.2016.2 <- data.2016.2 %>% filter(Course == 'PPGEE')
-
-# remove unecessary columns and rename
-data.2016.2 <- data.2016.2 %>% select(Gender, imc)
-data.2017.2 <- data.2017.2 %>% select(Gender, imc)
-
-# split the 2016.2 data by gender and remove undergraduate students
-data.2016.2.Females <- data.2016.2 %>% filter(Gender == 'F') %>% select(imc)
-data.2016.2.Males <- data.2016.2 %>% filter(Gender == 'M') %>% select(imc)
-
-# split the 2017.2 data by gender
-data.2017.2.Females <- data.2017.2 %>% filter(Gender == 'F') %>% select(imc)
-data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
-
-# create a single dataset
-data.all <- data.2016.2 %>% mutate(Class = '2016-2')
-data.all <- data.all %>% bind_rows(data.2017.2 %>% mutate(Class = '2017-2')) 
-
-# creat a single dataset for males and femaless, with the class identification
-data.all.Males <- data.all %>% filter(Gender == 'M') %>% select(imc, Class)
-data.all.Females <- data.all %>% filter(Gender == 'F') %>% select(imc, Class)
+# Normalized effect size
+d <- 0.5
+# Significance
+alpha <- 0.05
+# Power
+power <- 0.8
 
 ```
 
-Realizando uma primeira análise, calculou-se os seguintes dados estatísticos separados por semestre.
-```{r summary_statistic_2016}
-summary(data.2016.2)
-```
-```{r summary_statistic_2017}
-summary(data.2017.2)
-```
-Analisando os dados observa-se que a quantidade de amostras do sexo feminimo é inferior à do masculino, o que pode afetar a potência dos testes a serem executados. Para melhor visualização, um gráfico boxplot foi gerado na figura abaixo.
-
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
-ggplot(data.all, aes(x=Class, y=imc, fill=Gender)) + geom_boxplot()
-```
-
-Analisando os boxplots verifica-se que existem possíveis outliers nos valores de IMC, para a subpopulação dos homens no semetre de 2016-2 e para a subpopulação das mulheres no semestre de 2017-2. Como os valores indicados como outliers estão dentro das faixas de IMC definidas em [@tabelaimc:online], conclui-se que de fato eles não são outliers e não devem ser removidos da análise.
-
-Devido ao número pequeno de amostras para a população das mulheres, no semetre de 2017-2, o valor fora do padrão pode influenciar nos resultados dos testes. Desta maneira, será desenvolvido nas seções seguintes as análises preliminares das amostras, para constatação dos níveis de significância e potência para os respectivos testes a serem realizados com as populações.
-
-### Estimativa do tamanho de efeito e da significância
-
-Para os testes de hipóteses, foram especificados um nível de significância $\alpha = 0.05$ e uma potência de $\pi = 1 - \beta = 0.8$, suficientes para uma boa análise das amostras. Como o número de amostras é conhecido e inalterável para cada turma e gênero, utiliza-se a função `pwr.t2n.test` para a estimativa do tamanho de efeito ideal.
-
-```{r power_estimate, echo=FALSE}
-eff_size <- 5 
-pi <- 0.8
-sig_level <- 0.05
-
-count.Males <- data.all.Males %>% count(Class)
-count.Females <- data.all.Females %>% count(Class)
-
-n.males   <- min(count.Males$n)
-n.females <- min(count.Females$n)
-
-var.males.2016.2 <- (data.all.Males %>% filter(Class == '2016-2') 
-                    %>% summarise(var = var(imc)))$var
-var.males.2017.2 <- (data.all.Males %>% filter(Class == '2017-2')
-                    %>% summarise(var = var(imc)))$var
-
-var.females.2016.2 <- (data.all.Females %>% filter(Class == '2016-2')
-                      %>% summarise(var = var(imc)))$var
-var.females.2017.2 <- (data.all.Females %>% filter(Class == '2017-2')
-                      %>% summarise(var = var(imc)))$var
-
-n.males.2016.2 <- (count.Males %>% filter(Class == '2016-2'))$n
-n.males.2017.2 <- (count.Males %>% filter(Class == '2017-2'))$n
-n.females.2017.2 <- (count.Females %>% filter(Class == '2016-2'))$n
-n.females.2016.2 <- (count.Females %>% filter(Class == '2017-2'))$n
-
-pooled.var <- function(var1, var2, n1, n2){
-  return((var1 * (n1 - 1) + var2 * (n2 -1))/(n1 + n2 - 2))
-}
-
-var.pooled.males <- pooled.var(var.males.2016.2, var.males.2017.2, n.males.2016.2, n.males.2017.2)
-var.pooled.females <- pooled.var(var.females.2016.2, var.females.2017.2, n.females.2016.2, n.females.2017.2)
-
-```
-
-``` {r show_power_est}
-(sig.est.females <- pwr.t2n.test(n1 = n.females.2016.2, 
-                                n2= n.females.2017.2, 
-                                d = NULL, 
-                                sig.level = 0.05, 
-                                power = 0.8,
-                                alternative = "two.sided"))
-
-(sig.est.males <- pwr.t2n.test(n1 = n.males.2016.2, 
-                                n2= n.males.2017.2, 
-                                d = NULL, 
-                                sig.level = 0.05, 
-                                power = 0.8,
-                                alternative = "two.sided"))
-
-```
-Portanto, é obtido um tamanho de efeito de `r sig.est.females$d` para os dados do gênero feminino e `r sig.est.males$d` para o masculino. Vale ressaltar que, para uma mesma potência e significância, o tamanho de efeito é maior para subpopulação feminina, uma vez que o baixo número de amostras não permite identificar alterações mais sensíveis nos valores de IMC.
-```{r power_estimate_females, echo = FALSE}
-eff_size.males <- sig.est.males$d * sqrt(var.pooled.males)
-eff_size.females <- sig.est.females$d *sqrt(var.pooled.females)
-```
-Os valores obtidos pela função `pwr.t2n.test` são normalizados pela variância ponderada, logo, o tamanho de efeito real da diferença das médias é dado por `r eff_size.males` e `r eff_size.females`, sexo masculino e feminino, respectivamente.
-
-# Validação das premissas
-
-
-Para realizar as inferências estatísticas sobre o IMC das duas populações foi necessário validar as premissas antes de executar os respectivos testes. Neste caso, como a variância das duas populações é desconhecida, utiliza-se a distribuição t para o teste de hipóteses e para os intervalos de confiança [@montgomery2007applied]. 
-
-A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste t: análise da normalidade dos dados, homocedasticidade e independência. Para facilitar as análises optou-se por separar o grupo na população feminina e masculina.
-
-## Subpopulação feminina
-
-**A - Normalidade:**
-
-Para avaliar a normalidade dos dados das duas subpopulações, utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$. Os resultados são apresentados a seguir.
-
-```{r plot_norm_fem, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-invisible(qqPlot(data.2016.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2016.2", ylab = "IMC"))
-
-invisible(qqPlot(data.2017.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2017.2", ylab = "IMC"))
-```
-
-
-```{r shapirofem}
-shapiro.test(data.2016.2.Females$imc)
-shapiro.test(data.2017.2.Females$imc)
-```
-
-Pela análise do teste de Shapiro-Wilk e do gráfico conclui-se que não há evidências para rejeitar a normalidade dos dados de 2016-2, pois o p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os dados de 2017-2 apresentam um p-valor inferior a $0.05$, por isso, há evidências para rejeitar a normalidade dos dados.
-
-Diante dos resultados, foi necessário fazer uma transformação logarítmica nos dados de 2017-2 visando normalizá-los, e possibilitar a realização dos testes estatísticos.
-
-```{r lognormal, echo=FALSE, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
-invisible(qqPlot(log(data.2017.2.Females$imc), pch = 16, las = 1, dist='norm',envelope=.95, main="Q-Q plot Feminino - 2017.2", ylab = "log(IMC)"))
-```
-
-```{r shapirolog}
-shapiro.test(log(data.2017.2.Females$imc))
-```
-
-Pela análise do gráfico quantil-quantil e do teste de Shapiro Wilk após a transformação logarítmica, os dados de 2017.2 continuam sem apresentar uma distribuição normal, pois o p-valor permanece inferior a 0.05.
-
-Como não foi possível obter uma distribuição normal após a transformação dos dados, torna-se necessário a realização de outras análises. Pela análise de boxplot na figura \ref{fig:boxplot}, verificamos que o valor extremo da amostra não pode ser considerado um outlier, porém, como a amostra da população é muito pequena esse valor está influenciando significativamente na normalidade dos dados. Por esse motivo, o valor extremo não pode ser excluído dos dados, pois isso caracterizaria "Cherry-Pick". 
-
-Diante disso, como descrito na seção 4, optou-se por realizar o teste paramétrico e não-paramétrico (bootstrapping) nesse caso, e comparar os resultados, pois não foi possível validar as premissas.
-
-**B- Igualdade de Variâncias:**
-
-A segunda premissa a ser avaliada é a igualdade de variâncias das duas populações, homocedasticidade. Para tanto, utilizou-se o teste F com a função var.test e $\alpha = 0.05$, considerando como hipótese nula a igualdade da variância de duas amostras.
-
-``` {r vartesfem}
-var.test(data.2016.2.Females$imc,data.2017.2.Females$imc)
-```
-Pelo teste F conclui-se que não há evidências para rejeitar a hipótese nula de igualdade das variâncias das duas populações, portanto, as amostras são consideradas homocedásticas.
-
-**C - Independência:**
-
-Considerando que as populações referem-se a dois grupos distintos da pós-graduação, sabe-se a priori, que as amostras são independentes. Porém, para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
-
-``` {r chitestfem}
-data.chi.Female <- c(data.2016.2.Females$imc, data.2017.2.Females$imc)
-chisq.test(data.chi.Female)
-```
-Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor muito alto ($0.9813$).
-
-Após a análise das premissas para o grupo de mulheres percebe-se que, provavelmente, o tamanho pequeno das amostras de IMC feminino pode ter influenciado nas conclusões em relação às premissas. Portanto, esse fator pode influenciar também nos testes de hipóteses que serão apresentados nas próximas seções.
-
-## Subpopulação masculina
-
-Assim como na validação das premissas da subpopulação feminina, foram realizados os testes para a subpopulação masculina, como descrito a seguir.
-
-**A - Normalidade:** 
-
-Para validar a normalidade dos dados utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$.
-
-```{r plot_norm_male, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-
-library(car)
-invisible(qqPlot(data.2016.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2016.2", ylab = "IMC"))
-
-invisible(qqPlot(data.2017.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2017.2", ylab = "IMC"))
-
-```
-
-
-```{r shapiro_male}
-shapiro.test(data.2016.2.Males$imc)
-shapiro.test(data.2017.2.Males$imc)
-```
-
-Pela análise do teste de Shapiro-Wilk e dos gráficos conclui-se que não há evidências para rejeitar a hipótese nula para as duas amostras, pois em ambas o p-valor do teste foi superior a 0.05. Portanto, para a subpo-pulação masculina dos dois semestres os dados estão normalmente distribuídos.
-
-**B - Igualdade de Variâncias:**
-
-Para validar a igualdade de variâncias das duas amostras utilizou-se o teste F com $\alpha = 0.05$. A hipótese nula considera a igualdade da variância das duas amostras.
-
-``` {r vartes_male}
-var.test(data.2016.2.Males$imc,data.2017.2.Males$imc)
-```
-Pelo teste F conclui-se que as populações são homocedásticas, pois o p-valor foi superior a 0.05, logo, não há evidências para rejeitar a hipótese nula.
-
-**C - Independência:**
-
-Assim como na subpopulação feminina, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
-
-``` {r chitest_male}
-data.chi.male <- c(data.2016.2.Males$imc,data.2017.2.Males$imc)
-chisq.test(data.chi.male)
-```
-
-Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, com o p-valor = 0.9772.
-
-Ao contrário do que aconteceu com as amostras da subpopulação feminina, nesse caso o tamanho das amostras foram maiores, e por isso, não houve nenhum problema em relação às premissas do teste.
-
-# Resultados
-
-Nesta seção são apresentados os resultados do teste para as hipóteses estabelecidas anteriormente com $\alpha =0.05$. Os resultados estão subdivididos entre a população feminina e masculina devido às diferenças de IMC que existem entre eles.
-
-## Teste de hipóteses subpopulação feminina
-
-Embora as premissas do teste paramétrico não tenham sido validadas completamnete, foi realizado o teste t para verificar a igualdade das duas nédias amostrais, como apresentado a seguir. 
-
-```{r teste_Fem}
-#teste para custo médio:
-(mean.t.teste <- t.test(data.2016.2.Females,
-                  data.2017.2.Females,
-                   var.equal = TRUE, conf.level = 1 - sig_level))
-
-```
-
-Analisando os resultados, verifica-se que o p-valor retornado pelo teste é superior ao nível de significância, desta maneira não se possui evidências suficientes para a rejeição da hipótese nula. Além disso, verifica-se que a diferença entre as médias, $d =$ `r abs(diff(mean.t.teste$estimate))`, está contido no intervalo de confiança calculado.
-
-Devido ao baixo número de amostras da subpopulação e à não validação das premissas, realizou-se também o teste não paramétrico. Para tanto, realizou-se uma remostragem utilizando-se a técnica de bootstrapping como forma de obter uma melhor aproximação do intervalo de confiança, conforme mostrado a seguir. teste foi realizado tanto para a média como para mediana.
-
-```{r bootstrap_females, fig.width=7,fig.height=4, fig.cap="Histograma do bootstrapping da média e mediana da subpopulação feminina"}
-means.diff <- function(x, i){
-  sample.2016.2 <- sample((x %>% filter(Class == '2016-2'))$imc,replace=TRUE)
-  sample.2017.2 <- sample((x %>% filter(Class == '2017-2'))$imc,replace=TRUE)
+```{r datageneration, echo=FALSE}
+suppressPackageStartupMessages(library(ExpDE))
+set.seed(156732) # set a random seed
+
+generate.observation <- function(mutparsX, recparsX, dim, fn){
+
+  selpars <- list(name = "selection_standard")
+  stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
+  probpars <- list(name = fn, xmin = rep(-5, dim), xmax = rep(10, dim))
+  popsize = 5 * dim
   
-  return((mean(sample.2016.2) - mean(sample.2017.2)))
+  out <- ExpDE(mutpars = mutparsX,
+            recpars = recparsX,
+            popsize = popsize,
+            selpars = selpars,
+            stopcrit = stopcrit,
+            probpars = probpars,
+            showpars = list(show.iters = "dots", showevery = 20))
+  return(out$Fbest)
 }
 
-median.diff <- function(x, i){
-  sample.2016.2 <- sample((x %>% filter(Class == '2016-2'))$imc,replace=TRUE)
-  sample.2017.2 <- sample((x %>% filter(Class == '2017-2'))$imc,replace=TRUE)
+generate.n.observations <- function(mutparsX, recparsX, dim, fn, N){
+  my.sample <- numeric(N)
+  for (i in seq(N)){
+    my.sample[i] <- generate.observation(mutparsX, recparsX, dim, fn)
+  }
   
-  return((median(sample.2016.2) - median(sample.2017.2)))
+  return(my.sample)
 }
 
 
-set.seed(5021)
-data.diff.means.boot <- boot(data.all.Females, statistic = means.diff, R=1000)
-data.diff.median.boot <- boot(data.all.Females, statistic = median.diff, R=1000)
+dim <- 2
+fn.rosenbrock <- function(X){
+  if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+  
+  Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+  return(Y)
+}
 
-par(mfrow=c(1,2))
-hist(data.diff.means.boot$t)
-hist(data.diff.median.boot$t)
+# testing the function on a matrix composed of 2 points
+N <- 2
+X <- matrix(runif(2*N), nrow = 2)
+fn.rosenbrock(X)
 
-ci_sd <- 1 - 2 * sig_level
-(test.boot.var <- boot.ci(data.diff.means.boot, conf = ci_sd, type = "bca"))
+# test EXpDE generation
+generate.observation(mutpars1, recpars1, dim, "fn.rosenbrock")
+generate.observation(mutpars2, recpars2, dim, "fn.rosenbrock")
 
-(test.boot.var <- boot.ci(data.diff.median.boot, conf = ci_sd, type = "bca"))
-
-```
-
-Analisando o histograma gerado, pode-se observar a normalização dos dados para subpopulação após a reamostragem, justificado pelo teorema do limite central para médias amostrais. Analisando o intervalo de confiança resultante verifica-se que, dado que a hipótese nula assume que as médias populacionais são iguais ($\mu_1 - \mu_2 = 0$), a hipótese nula é rejeitada para o teste da média, pois está fora do intervalo de confiança, porém, ela não pode ser rejeitada para o teste da mediana.
-
-## Teste de hipóteses subpopulação masculina
-
-Assim como para a subpopulação feminina, utilizou-se o teste t para análise dos dados. O teste está especificado abaixo.
-
-```{r teste_Male}
-#teste para custo médio:
-(mean.t.teste.male <- t.test(data.2016.2.Males,
-                  data.2017.2.Males,
-                  var.equal = TRUE, conf.level = 1 - sig_level))
-```
-
-O teste t para as subpopulações masculinas resultou em um p-valor superior ao nível de significância de $0.05$, como especificado. Desta forma não se possui evidências suficientes para rejeitar a hipótese nula de igualdade das médias. Verifica-se também que o a valor das diferenças entre as médias está dentro do valor especificado. 
-
-Para melhor avaliar os resultados, a técnica de bootstrapping também foi aplicada para a subpopulação masculina.
-
-```{r bootstrap_male, fig.width=7,fig.height=4, fig.cap="Histograma do bootstrapping da média e mediana da subpopulação masculina"}
-
-set.seed(5021)
-data.diff.means.boot.males <- boot(data.all.Males, statistic = means.diff, R=1000)
-data.diff.median.boot.males <- boot(data.all.Males, statistic = median.diff, R=1000)
-
-par(mfrow=c(1,2))
-hist(data.diff.means.boot.males$t)
-hist(data.diff.median.boot.males$t)
-
-ci_sd <- 1 - 2 * sig_level
-(test.boot.mean.males <- boot.ci(data.diff.means.boot.males, conf = ci_sd, type = "bca"))
-(test.boot.median.males <- boot.ci(data.diff.median.boot.males, conf = ci_sd, type = "bca"))
+generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N)
+generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N)
 
 ```
 
-Note que, neste caso, tanto para a média quanto para a mediana, não há evidências para rejeitar a hipótese nula. Isso reforça ainda mais os resultads obtidos para o teste t. 
-
-# Discussão e Conclusões
-Neste trabalho foi feito um estudo estatístico da diferença das médias de IMC entre duas turmas de alunos de pós-graduação. Os dados foram divididos entre uma subpopulação masculina e feminina, as quais foram analisadas separadamente. Para a masculina, todas as premissas são atendidas, logo o teste t foi utilizado e o p-valor de `r mean.t.teste.male$p.value` obtido comprova que não é posível rejeitar a hipótese nula, ou seja, as médias não são diferentes. Já para a subpopulação feminina, a premissa de normalidade não é respeitada para os dados de 2017-2, o que fez com que fosse necessário utilizar técnicas não paramétricas para estimativa do intervalo de confiança. A técnica de bootstrapping foi aplicada à média das diferençase de IMC entre as turmas, e obteve-se que a hipótese nula é rejeitada para o teste da média. Além disso, a técnica paramétrica também leva a concluir que as médias são diferentes para as mulheres.
-
-Como os dados da subpopulação feminina de 2017-2 possui uma instância fora do padrão das demais, embora não seja um outlier, executou-se também o bootstrapping para a mediana das diferenças. Como a mediana é mais robusta à outliers, conclui-se que para este estimador a hipótese nula não pode ser rejeitada, de acordo com o intervalo de confiança resultante. como forma de comprovar os resultados obtidos com o teste t, o bootstrapping também foi executado para a subpopulação masculina. Os intervalos de confiança obtidos mostram que, tanto para a média quanto para a mediana, a hipótese nula não pode ser rejeitada, reforçando os resultados do teste t.
-
-# Divisão das Atividades
-
-* Victor - Verificador e Monitor
-* Maressa - Relatora
-* Gilmar - Coordenador
-
-
-# Referências
-
-
-
+## Referências
