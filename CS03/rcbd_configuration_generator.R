@@ -1,4 +1,20 @@
 
+# Load packages -----------------------------------------------------------
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
+
+
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+
+if (!require(CAISEr, quietly = TRUE)){
+  install.packages("CAISEr")
+}
+
+
 # Constants ---------------------------------------------------------------
 ## Equipe D
 ## Config 1
@@ -16,11 +32,100 @@ alpha <- 0.05
 ## Power
 power <- 0.8
 
+set.seed(15632) # set a random seed
+
+# Parameter estimation functions ----------------------------------------------------
+## Estimate number of instances
+Ncalc.normaldata <- calc_instances(ncomparisons = 2, power = power,
+                           d = d,
+                           sig.level = alpha,
+                           alternative = "two.sided",
+                           test = "t.test")
+
+Ncalc.nonnormal <- calc_instances(ncomparisons = 2, power = power,
+                        d = d,
+                        sig.level = alpha,
+                        alternative = "two.sided",
+                        test = "wilcoxon")
+
+Ncalc.normaldata$ninstances
+Ncalc.nonnormaldata$ninstances
+
+N <- Ncalc.nonnormaldata$ninstances
+
+
+## Estimate number of repetitions per instance
+my.ExpDE <- function(mutp, recp, dim, instance){
+  
+  selpars <- list(name = "selection_standard")
+  stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
+  probpars <- list(name = instance$FUN, xmin = rep(-5, dim), xmax = rep(10, dim))
+  popsize = 5 * dim
+  
+  out <- ExpDE(mutpars = mutp,
+               recpars = recp,
+               popsize = popsize,
+               selpars = selpars,
+               stopcrit = stopcrit,
+               probpars = probpars,
+               showpars = list(show.iters = "none"))
+  
+  print(out$Fbest)
+  return(list(value = out$Fbest))
+}
+
+instances <- ceiling(seq(2, 150, length.out = N))
+instances.repetitions.calc <- data.frame("instance" = instances, 
+                                         "N.config.1" = rep(0,N),
+                                         "N.config.2" = rep(0,N)) 
+
+for (row in 1:nrow(instances.repetitions.calc)){
+  
+  dim <- instances.repetitions.calc[row, "instance"]
+  print(paste("Processing Instance:", dim))
+  
+  # define a rosenbrock function for a given dimension
+  fn <- function(X){
+    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as Z
+    
+    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+    return(Y)
+  }
+  
+  instance <- list(FUN = "fn")
+  
+  algorithm1 <- list(FUN = "my.ExpDE", alias = "algo1", mutp = mutpars1, recp = recpars1, dim = dim, instance = instance)
+  algorithm2 <- list(FUN = "my.ExpDE", alias = "algo2", mutp = mutpars2, recp = recpars2, dim = dim, instance = instance)
+  algorithms <- list(alg1 = algorithm1, alg2 = algorithm2)
+  
+  myreps <- calc_nreps(instance   = instance,
+                       algorithms = algorithms,
+                       se.max     = 0.5,          # desired (max) standard error
+                       dif        = "perc",        # type of difference
+                       comparisons = "all.vs.all", # differences to consider
+                       method     = "param",       # method ("param", "boot")
+                       nstart     = 30,            # initial number of samples
+                       nmax       = 60,          # maximum allowed sample size
+                       seed       = 15632,          # seed for PRNG
+                       boot.R     = 499,           # number of bootstrap resamples (unused)
+                       ncpus      = 1,             # number of cores to use
+                       force.balanced = FALSE,     # force balanced sampling?
+                       load.folder   = NA,         # file to load results from
+                       save.folder = NA)         # folder to save results
+  
+  instances.repetitions.calc[row, "N.config.1"] <-  myreps$Nk[1]
+  instances.repetitions.calc[row, "N.config.2"] <-  myreps$Nk[2]
+  
+  print(paste("Finished. Instance:", dim))
+  print(myreps$Nk)
+  
+}
+
 
 # RCBD functions ----------------------------------------------------
 b <- 5 # number of elements per block
 a <- 2 # number of levels
-instances <- seq(2,150) # number of instances
+instances <- ceiling(seq(2, 150, length.out = Ncalc.nonnormal$ninstances)) # number of instances
 N <- 5 # number of replicates per instance
 
 # Define a class to store the levels configuration

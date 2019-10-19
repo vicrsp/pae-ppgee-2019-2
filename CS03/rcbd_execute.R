@@ -10,7 +10,25 @@ if (!require(smoof, quietly = TRUE)){
 
 # Execute a RCBD test configuration ------------------------------------------
 Z <- read.csv('rcbd.config.victor.csv')
-set.seed(156732) # set a random seed
+set.seed(15632) # set a random seed
+
+my.ExpDE <- function(mutp, recp, dim, instance){
+  
+  selpars <- list(name = "selection_standard")
+  stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
+  probpars <- list(name = instance$FUN, xmin = rep(-5, dim), xmax = rep(10, dim))
+  popsize = 5 * dim
+  
+  out <- ExpDE(mutpars = mutp,
+               recpars = recp,
+               popsize = popsize,
+               selpars = selpars,
+               stopcrit = stopcrit,
+               probpars = probpars,
+               showpars = list(show.iters = "none"))
+  
+  return(list(value = out$Fbest))
+}
 
 for (row in 1:nrow(Z)){
   
@@ -31,20 +49,10 @@ for (row in 1:nrow(Z)){
       return(Y)
     }
     
-    selpars <- list(name = "selection_standard")
-    stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
-    probpars <- list(name = "fn", xmin = rep(-5, dim), xmax = rep(10, dim))
-    popsize = 5 * dim
+    instance <- list(FUN = "fn")
+    out <- my.ExpDE(algo.config$mutparsX, algo.config$recparsX, dim, instance)
     
-    out <- ExpDE(mutpars = algo.config$mutparsX,
-                 recpars = algo.config$recparsX,
-                 popsize = popsize,
-                 selpars = selpars,
-                 stopcrit = stopcrit,
-                 probpars = probpars,
-                 showpars = list(show.iters = "none", showevery = 20))
-    
-    Z[row, "result"] <- out$Fbest
-    print(paste("Finished. Instance:", dim, "; Algo:", algo, "; Repetition:", replicate, "; Result=", out$Fbest))
+    Z[row, "result"] <- out$value
+    print(paste("Finished. Instance:", dim, "; Algo:", algo, "; Repetition:", replicate, "; Result=", out$value))
   }
 }
