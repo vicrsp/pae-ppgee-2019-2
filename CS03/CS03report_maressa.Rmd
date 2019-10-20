@@ -9,7 +9,7 @@ output:
   html_document:
     df_print: paged
 csl: ieee.csl
-bibliography: refsCS02.bib
+bibliography: refsCS03.bib
 ---
 
 ```{r setup,results='hide',warning=FALSE,echo=FALSE, message=FALSE, include=FALSE}
@@ -45,8 +45,14 @@ if (!require(dplyr, quietly = TRUE)){
 }
 
 if (!require(pwr, quietly = TRUE)){
-      install.packages("pwr")
-      }
+  install.packages("pwr")
+}
+
+
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
 
 ```
 
@@ -69,33 +75,75 @@ $$\begin{cases} H_0: \sigma^{2} = 100&\\H_1: \sigma^{2} < 100\end{cases}$$
 
 ### Descrição da coleta de dados
 
-```{r datapreprocessing}
-imc <- function(height, weight){
-  return(weight/(height^2))
+```{r constants, echo=FALSE}
+# Equipe D
+## Config 1
+recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0.4, beta = 0.4)
+mutpars1 <- list(name = "mutation_rand", f = 4)
+
+## Config 2
+recpars2 <- list(name = "recombination_eigen", othername = "recombination_bin", cr = 0.9)
+mutpars2 <- list(name = "mutation_best", f = 2.8)
+
+# Normalized effect size
+d <- 0.5
+# Significance
+alpha <- 0.05
+# Power
+power <- 0.8
+
+```
+
+```{r datageneration, echo=FALSE}
+suppressPackageStartupMessages(library(ExpDE))
+set.seed(156732) # set a random seed
+
+generate.observation <- function(mutparsX, recparsX, dim, fn){
+
+  selpars <- list(name = "selection_standard")
+  stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
+  probpars <- list(name = fn, xmin = rep(-5, dim), xmax = rep(10, dim))
+  popsize = 5 * dim
+  
+  out <- ExpDE(mutpars = mutparsX,
+            recpars = recparsX,
+            popsize = popsize,
+            selpars = selpars,
+            stopcrit = stopcrit,
+            probpars = probpars,
+            showpars = list(show.iters = "dots", showevery = 20))
+  return(out$Fbest)
 }
 
-data.2016.2 <- read.csv('imc_20162.csv', header = T, sep = ",")
-data.2017.2 <- read.csv('CS01_20172.csv', header = T, sep = ";")
-data.2017.2 <- data.2017.2 %>% rename(Gender = Sex)
+generate.n.observations <- function(mutparsX, recparsX, dim, fn, N){
+  my.sample <- numeric(N)
+  for (i in seq(N)){
+    my.sample[i] <- generate.observation(mutparsX, recparsX, dim, fn)
+  }
+  
+  return(my.sample)
+}
 
-# calculate the IMC
-data.2016.2$imc <- imc(data.2016.2$Height.m, data.2016.2$Weight.kg)
-data.2017.2$imc <- imc(data.2017.2$height.m, data.2017.2$Weight.kg)
 
-# remove undergraduate students for 2016.2 data
-data.2016.2 <- data.2016.2 %>% filter(Course == 'PPGEE')
+dim <- 2
+fn.rosenbrock <- function(X){
+  if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+  
+  Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+  return(Y)
+}
 
-# remove unecessary columns and rename
-data.2016.2 <- data.2016.2 %>% select(Gender, imc)
-data.2017.2 <- data.2017.2 %>% select(Gender, imc)
+# testing the function on a matrix composed of 2 points
+N <- 2
+X <- matrix(runif(2*N), nrow = 2)
+fn.rosenbrock(X)
 
-# split the 2016.2 data by gender and remove undergraduate students
-data.2016.2.Females <- data.2016.2 %>% filter(Gender == 'F') %>% select(imc)
-data.2016.2.Males <- data.2016.2 %>% filter(Gender == 'M') %>% select(imc)
+# test EXpDE generation
+generate.observation(mutpars1, recpars1, dim, "fn.rosenbrock")
+generate.observation(mutpars2, recpars2, dim, "fn.rosenbrock")
 
-# split the 2017.2 data by gender
-data.2017.2.Females <- data.2017.2 %>% filter(Gender == 'F') %>% select(imc)
-data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
+generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N)
+generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N)
 
 ```
 
@@ -110,171 +158,23 @@ data.2017.2.Males <- data.2017.2 %>% filter(Gender == 'M') %>% select(imc)
 
 ## Validação das premissas
 
-Para realizar as inferências estatísticas sobre o IMC das duas populações é necessário validar as premissas antes de executar o teste. Neste caso, como as variâncias das duas populações é desconhecida, utiliza-se a distribuição t para o teste de hipóteses e para os intervalos de confiança [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste t. Para facilitar as análises optou-se por separar o grupo na população feminina e masculina.
-
-### Subpopulação Feminina
-
-1 - Normalidade: 
-
-Para avaliar a normalidade dos dados das duas subpopulações, utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$, como apresnetado a seguir.
-
-```{r plot_norm_fem, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-
-library(car)
-qqPlot(data.2016.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2016.2", ylab = "IMC")
-
-qqPlot(data.2017.2.Females$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Feminino - 2017.2", ylab = "IMC")
-```
+Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como trata-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e cotrolável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
 
 
-```{r shapirofem}
-shapiro.test(data.2016.2.Females$imc)
-shapiro.test(data.2017.2.Females$imc)
-```
-
-Pela análise do teste de Shapiro-Wilk e do gráfico concluímos que não há evidências para rejeitar a normalidade dos dados de 2016.2, pois o p-valor do teste de Shapiro Wilk foi maior que 0.05. Por outro lado, os dados de 2017.2 apresentam um ponto fora dos limites e o p-valor foi inferior a 0.05, por isso, há evidências para rejeitar a normalidade dos dados.
-
-Diante disso, é necessário fazer uma transformação nos dados de 2017.2 para tentar normalizar os dados, a fim de possibilitar a realização dos testes estatísticos.
-
-```{r lognormal, fig.width=5,fig.height=4, fig.cap="Gráfico quantil-quantil para tranformação logarítimica dos dados"}
-qqnorm(log(data.2017.2.Females$imc), pch = 16, las = 1)
-qqline(log(data.2017.2.Females$imc))
-```
-
-```{r shapirolog}
-shapiro.test(log(data.2017.2.Females$imc))
-```
-
-Pela análise do gráfico e do teste de Shapiro Wilk após a transformação logarítmica, permanecem as evidências de não normalidade dos dados de 2017.2, pois o p-valor permanece inferior a 0.05.
-
-Como não foi possível obter uma distribuição normal após a transformação dos dados, torna-se necessário a realização de outras análises, como o boxplot.
-
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplotdas amostras - 2017.2 Feminino"}
-par(mfrow=c(1,2))
-boxplot(data.2017.2.Females$imc, horizontal = TRUE, main="Boxplot")
-```
-
-Pela análise de boxplot verificamos que o valor extremo da amostra não pode ser considerado um outlier, porém, como a amostra da população é muito pequena esse valor está influenciando significativamente na normalidade dos dados. Por esse motivo, o valor extremo não pode ser excluído dos dados, pois isso caracterizaria "Cherry-Pick".
-
-2- Igualdade de Variâncias:
-
-A segunda premissa a ser avaliada é a igualdade de variâncias das duas populações, homocedasticidade. Para tanto, utilizou-se o teste F com a função var.test e $\alpha = 0.05$, que tem como hipótese nula a igualdade da variância das duas amostras.
-
-``` {r vartesfem}
-var.test(data.2016.2.Females$imc,data.2017.2.Females$imc)
-```
-Pelo teste F conclui-se que não há evidências para rejeitar a hipótese nula de igualdade das variâncias das duas populações, portanto, as amostras são consideradas homocedásticas.
-
-3 - Independência
-
-Considerando que as populações referem-se a dois grupos distintos da pós-graduação, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
-
-``` {r chitestfem}
-data.chi.Female <- c(data.2016.2.Females$imc, data.2017.2.Females$imc)
-chisq.test(data.chi.Female)
-```
-Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor = 0.9813.
-
-Diante dessas análises, percebemos que provavlemente o tamanho pequeno das amostras de IMC feminino pode ter influenciado nas conclusões em relação às premissas. Portanto, esse fator pode influenciar também nos testes de hipóteses que serão apresentados nas próximas seções.
-
-### Subpopulação Masculina
-
-Assim como na validação das premissas da subpopulação feminina, foram realizados os testes para a subpopulação masculina, como descrito a seguir.
-
-1 - Normalidade: 
-
-Para validar a normalidade dos dados utilizou-se o gráfico quantil-quantil e o teste de Shapiro Wilk com $\alpha = 0.05$.
-
-```{r plot_norm_male, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-
-library(car)
-qqPlot(data.2016.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2016.2", ylab = "IMC")
-
-qqPlot(data.2017.2.Males$imc, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot Masculino - 2017.2", ylab = "IMC")
-
-```
+1 - Replicação por bloco: 
 
 
-```{r shapiro_male}
-shapiro.test(data.2016.2.Males$imc)
-shapiro.test(data.2017.2.Males$imc)
-```
+2- Independência dos blocos:
 
-Pela análise do teste de Shapiro-Wilk e dos gráficos concluímos que não há evidências para rejeitar a hipótese nula para as duas amostras, pois em ambas o p-valor do teste foi superior a 0.05. Portanto, para a subpopulação masculina dos dois semestres os dados estão normalmente distribuídos.
 
-2- Igualdade de Variâncias:
+3 - Randomização dos blocos:
 
-Para validar a igualdade de variâncias das duas amostras utilizou-se o teste F com $\alpha = 0.05$. A hipótese nula considera a igualdade da variância das duas amostras.
 
-``` {r vartes_male}
-var.test(data.2016.2.Males$imc,data.2017.2.Males$imc)
-```
-Pelo teste F conclui-se que as populações são homocedásticas, pois o p-valor foi superior a 0.05, logo, não há evidências para rejeitar a hipótese nula.
-
-3 - Independência
-
-Assim como na subpopulação feminina, sabe-se a priori, que as amostras são independentes. Para concluir com precisão em relação à independência realizou-se o teste Qui-quadrado com $\alpha = 0.05$.
-
-``` {r chitest_male}
-data.chi.male <- c(data.2016.2.Males$imc,data.2017.2.Males$imc)
-chisq.test(data.chi.male)
-```
-
-Como era esperado, o teste Qui-quadrado reafirma a independência entre as duas amostras, como o p-valor = 0.9772.
-
-Ao contrário do que aconteceu com as amostras da subpopulação feminina, nesse caso o tamanho das amostras foram maiores, e por isso, não houve nenhum problema em relação às premissas do teste.
 
 # Resultados
 
-Nesta seção são apresentados os resultados do teste para as hipóteses estabelecidas anteriormente com $\alpha =0.05$. Os resultados estão subdivididos entre a população feminina e masculina devido às diferenças de IMC que existem entre eles.
-
-## Teste de Hipóteses Subpopulação Feminina
-
-```{r teste_Fem}
-#teste para custo médio:
-(mean.t.teste <- t.test(data.2016.2.Females,
-                  data.2017.2.Females,
-                   var.equal = TRUE))
-```
-
-
-## Teste de Hipóteses Subpopulação Masculina
-
-```{r teste_Male}
-#teste para custo médio:
-(mean.t.teste <- t.test(data.2016.2.Males,
-                  data.2017.2.Males,
-                   var.equal = TRUE))
-```
-
-
-``` {r powr_test_fem}
-
-pwr.t2n.test(n1 = 7, n2= 4, d = 0.3, sig.level = 0.05, power = NULL,
-    alternative = "two.sided")
-```
-
-``` {r powr_test_male}
-
-pwr.t2n.test(n1 = 21, n2= 21, d = 0.8, sig.level = 0.05, power = NULL,
-    alternative = "two.sided")
-```
 
 # Discussão e Conclusões
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
