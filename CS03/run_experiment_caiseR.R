@@ -85,24 +85,25 @@ algorithm1 <- list(FUN = "my.ExpDE", alias = "algo1", mutp = mutpars1, recp = re
 algorithm2 <- list(FUN = "my.ExpDE", alias = "algo2", mutp = mutpars2, recp = recpars2, dim = dim)
 algorithms <- list(alg1 = algorithm1, alg2 = algorithm2)
 
+if(!file.exists('experiment_data/CAISEr_results_20191020142945.rds')){
+  my.results <- run_experiment(instances.list, algorithms,
+                               d = d, se.max = .1,
+                               power = power, sig.level = alpha,
+                               alternative = "two.sided",
+                               test = "wilcoxon", method = "param",
+                               nstart = 20, nmax = 60,
+                               power.target = "mean",
+                               dif = "perc", comparisons = "all.vs.all",
+                               ncpus = 1, seed = 1234,
+                               save.partial.results = 'experiment_data/', 
+                               load.partial.results= 'experiment_data/', 
+                               save.final.result = 'experiment_data/')
 
-my.results <- run_experiment(instances.list, algorithms,
-                             d = d, se.max = .1,
-                             power = power, sig.level = alpha,
-                             alternative = "two.sided",
-                             test = "wilcoxon", method = "param",
-                             nstart = 20, nmax = 60,
-                             power.target = "mean",
-                             dif = "perc", comparisons = "all.vs.all",
-                             ncpus = 1, seed = 1234,
-                             save.partial.results = 'C:/Users/Victor/git/PPGEE/pae-ppgee-2019-2/CS03/experiment_data', 
-                             load.partial.results= 'C:/Users/Victor/git/PPGEE/pae-ppgee-2019-2/CS03/experiment_data', 
-                             save.final.result = 'C:/Users/Victor/git/PPGEE/pae-ppgee-2019-2/CS03/experiment_data')
-
+} else {
+  my.results <- readRDS(file = 'experiment_data/CAISEr_results_20191020142945.rds', refhook = NULL)
+}
 
 summary(my.results)
 plot(my.results)
-#data.experiment <- my.results$data.raw
-
 
 write.table(x = my.results$data.raw, file='experiment_raw_results.txt')
