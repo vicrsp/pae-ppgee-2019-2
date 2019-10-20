@@ -124,43 +124,73 @@ generate.n.observations <- function(mutparsX, recparsX, dim, fn, N){
 }
 
 
-dim <- 15
-fn.rosenbrock <- function(X){
-  if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
-  
-  Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
-  return(Y)
-}
 
 # testing the function on a matrix composed of 2 points
 N <- 30
 
-if(!file.exists('CS03data_ea.csv')){
+if(!file.exists('CS03data_ea_dim2.csv')){
+  
+  dim <- 2
+  fn.rosenbrock <- function(X){
+    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+  
+    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+    return(Y)
+  }
+
   sample.config1 <- data.frame(value = generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N), "config" = rep('config1',N))
   sample.config2 <- data.frame(value = generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N), "config" = rep('config2',N))
   
   sample.all = rbind(sample.config1, sample.config2)
-  write.csv('CS03data_ea.csv',x = sample.all, row.names = FALSE)
+  write.csv('CS03data_ea_dim2.csv',x = sample.all, row.names = FALSE)
 
   } else{
-  sample.all <- read.csv('CS03data_ea.csv')
-  sample.config1 <- sample.all[which(sample.all$config == 'config1'),]
-  sample.config2 <- sample.all[which(sample.all$config == 'config2'),]
+  sample.all.dim2 <- read.csv('CS03data_ea_dim2.csv')
+  sample.config1.dim2 <- sample.all.dim2[which(sample.all$config == 'config1'),]
+  sample.config2.dim2 <- sample.all.dim2[which(sample.all$config == 'config2'),]
+  }
+
+
+if(!file.exists('CS03data_ea_dim15.csv')){
+  
+  dim <- 15
+  fn.rosenbrock <- function(X){
+    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
+  
+    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+    return(Y)
+  }
+
+  sample.config1.dim15 <- data.frame(value = generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N), "config" = rep('config1',N))
+  sample.config2.dim15 <- data.frame(value = generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N), "config" = rep('config2',N))
+  
+  sample.all = rbind(sample.config1, sample.config2)
+  write.csv('CS03data_ea_dim15.csv',x = sample.all, row.names = FALSE)
+
+  } else{
+  sample.all.dim15 <- read.csv('CS03data_ea_dim15.csv')
+  sample.config1.dim15 <- sample.all.dim15[which(sample.all$config == 'config1'),]
+  sample.config2.dim15 <- sample.all.dim15[which(sample.all$config == 'config2'),]
 }
 
 ```
 
 ```{r summary_statistic_2016}
-summary(sample.all)
+summary(sample.config1.dim2)
+summary(sample.config2.dim2)
 ```
 
 
 ```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
-ggplot(sample.all, aes(x=config, y=value)) + geom_boxplot()
+par(mfrow=c(1,2))
+ggplot(sample.all.dim2, aes(x=config, y=value)) + geom_boxplot()
+ggplot(sample.all.dim15, aes(x=config, y=value)) + geom_boxplot()
 ```
 
 ```{r plot_histogram, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
-ggplot(sample.all, aes(x=value, fill=config)) + geom_histogram(bins = 50)
+par(mfrow=c(1,2))
+ggplot(sample.all.dim2, aes(x=value, fill=config)) + geom_histogram(bins = 50)
+ggplot(sample.all.dim15, aes(x=value, fill=config)) + geom_histogram(bins = 50)
 ```
 
 
@@ -171,8 +201,22 @@ invisible(qqPlot(sample.config1$value, dist='norm',envelope=.95, las = 1, pch = 
 invisible(qqPlot(sample.config2$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 2", ylab = "value"))
 ```
 
+```{r plot_norm, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
+par(mfrow=c(1,2))
+invisible(qqPlot(sample.config1.dim2$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 1", ylab = "value"))
 
-```{r shapirofem}
+invisible(qqPlot(sample.config1.dim15$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 2", ylab = "value"))
+```
+
+```{r plot_norm, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
+par(mfrow=c(1,2))
+invisible(qqPlot(sample.config2.dim2$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 1", ylab = "value"))
+
+invisible(qqPlot(sample.config2.dim15$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 2", ylab = "value"))
+```
+
+
+```{r shapirotest}
 shapiro.test(sample.config1$value)
 shapiro.test(sample.config2$value)
 ```

@@ -31,6 +31,7 @@ d <- 0.5
 alpha <- 0.05
 ## Power
 power <- 0.8
+beta <- 1 - power
 
 set.seed(15632) # set a random seed
 
@@ -51,8 +52,17 @@ Ncalc.nonnormal <- calc_instances(ncomparisons = 2, power = power,
 Ncalc.normaldata$ninstances
 Ncalc.nonnormaldata$ninstances
 
-N <- Ncalc.nonnormaldata$ninstances
+N <- Ncalc.normaldata$ninstances
 
+## Estimate the number of blocks
+a <- 2 # number of levels
+tau <- c(-d, d, rep(0, a - 2)) # define tau vector
+b <- 5
+while (qf(1 - alpha, a - 1, (a - 1)*(b - 1)) 
+       >
+       qf(beta, a - 1, (a - 1)*(b - 1), b*sum(tau^2)/a)){
+  b <- b + 1
+}
 
 ## Estimate number of repetitions per instance
 my.ExpDE <- function(mutp, recp, dim, instance){
@@ -100,7 +110,7 @@ for (row in 1:nrow(instances.repetitions.calc)){
   
   myreps <- calc_nreps(instance   = instance,
                        algorithms = algorithms,
-                       se.max     = 0.5,          # desired (max) standard error
+                       se.max     = 1,          # desired (max) standard error
                        dif        = "perc",        # type of difference
                        comparisons = "all.vs.all", # differences to consider
                        method     = "param",       # method ("param", "boot")
@@ -123,10 +133,8 @@ for (row in 1:nrow(instances.repetitions.calc)){
 
 
 # RCBD functions ----------------------------------------------------
-b <- 5 # number of elements per block
-a <- 2 # number of levels
 instances <- ceiling(seq(2, 150, length.out = Ncalc.nonnormal$ninstances)) # number of instances
-N <- 5 # number of replicates per instance
+N <- 30 # number of replicates per instance
 
 # Define a class to store the levels configuration
 level.config <- function(mp, rp, id) {
