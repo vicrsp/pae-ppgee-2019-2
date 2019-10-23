@@ -46,7 +46,9 @@ set.seed(15632) # set a random seed
 
 
 # Execute a RCBD test configuration ------------------------------------------
-my.ExpDE <- function(mutp, recp, dim, instance){
+my.ExpDE <- function(mutp, recp, instance){
+  
+  dim <- instance$dim
   
   #fname <- paste0('instances.list[[', dim, ']]$FUN')
   fn.current <- function(X){
@@ -77,12 +79,12 @@ my.ExpDE <- function(mutp, recp, dim, instance){
 }
 
 instances.list <- lapply(2:150, function(i){ 
-  list(FUN = 'fn', alias = paste0("Inst.", i))
+  list(FUN = 'fn', alias = paste0("Inst.", i), dim = i)
 })
 
 
-algorithm1 <- list(FUN = "my.ExpDE", alias = "algo1", mutp = mutpars1, recp = recpars1, dim = dim)
-algorithm2 <- list(FUN = "my.ExpDE", alias = "algo2", mutp = mutpars2, recp = recpars2, dim = dim)
+algorithm1 <- list(FUN = "my.ExpDE", alias = "algo1", mutp = mutpars1, recp = recpars1)
+algorithm2 <- list(FUN = "my.ExpDE", alias = "algo2", mutp = mutpars2, recp = recpars2)
 algorithms <- list(alg1 = algorithm1, alg2 = algorithm2)
 
 if(!file.exists('experiment_data/CAISEr_results_20191020142945.rds')){
@@ -90,14 +92,14 @@ if(!file.exists('experiment_data/CAISEr_results_20191020142945.rds')){
                                d = d, se.max = .1,
                                power = power, sig.level = alpha,
                                alternative = "two.sided",
-                               test = "wilcoxon", method = "param",
-                               nstart = 20, nmax = 60,
+                               test = "t.test", method = "boot",
+                               nstart = 30, nmax = 100,
                                power.target = "mean",
                                dif = "perc", comparisons = "all.vs.all",
-                               ncpus = 1, seed = 1234,
-                               save.partial.results = 'experiment_data/', 
-                               load.partial.results= 'experiment_data/', 
-                               save.final.result = 'experiment_data/')
+                               ncpus = 1, seed = 15632,
+                               save.partial.results = 'experiment_data_test/', 
+                               load.partial.results= 'experiment_data_test/', 
+                               save.final.result = 'experiment_data_test/')
 
 } else {
   my.results <- readRDS(file = 'experiment_data/CAISEr_results_20191020142945.rds', refhook = NULL)
