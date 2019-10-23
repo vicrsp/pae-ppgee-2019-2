@@ -12,7 +12,7 @@ if (!require(dplyr, quietly = TRUE)){
 
 # Analysis ----------------------------------------------------------------
 data.experiment <- read.table('experiment_raw_results.txt')
-data.experiment$ObservationLogScaled <- log(my.results$data.raw$Observation)
+data.experiment$ObservationLogScaled <- log(data.experiment$Observation)
 
 #data.experiment.grouped <- data.experiment %>% group_by(Algorithm,Instance) %>% summarise(avg = mean(Observation))
 
