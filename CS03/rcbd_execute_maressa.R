@@ -30,7 +30,7 @@ config.1 <- level.config(mutpars1, recpars1, 1)
 config.2 <- level.config(mutpars2, recpars2, 2)
 
 
-fname = 'rcbd.config.victor.csv'
+fname = 'rcbd.config.maressa.csv'
 Z <- read.csv(fname)
 set.seed(15632) # set a random seed
 
