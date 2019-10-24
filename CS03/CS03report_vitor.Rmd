@@ -122,9 +122,9 @@ generate.n.observations <- function(mutparsX, recparsX, dim, fn, N){
   
   return(my.sample)
 }
+```
 
-
-
+```{r testematrix}
 # testing the function on a matrix composed of 2 points
 N <- 30
 
@@ -146,8 +146,8 @@ if(!file.exists('CS03data_ea_dim2.csv')){
 
   } else{
   sample.all.dim2 <- read.csv('CS03data_ea_dim2.csv')
-  sample.config1.dim2 <- sample.all.dim2[which(sample.all$config == 'config1'),]
-  sample.config2.dim2 <- sample.all.dim2[which(sample.all$config == 'config2'),]
+  sample.config1.dim2 <- sample.all.dim2[which(sample.all.dim2$config == 'config1'),]
+  sample.config2.dim2 <- sample.all.dim2[which(sample.all.dim2$config == 'config2'),]
   }
 
 
@@ -169,8 +169,8 @@ if(!file.exists('CS03data_ea_dim15.csv')){
 
   } else{
   sample.all.dim15 <- read.csv('CS03data_ea_dim15.csv')
-  sample.config1.dim15 <- sample.all.dim15[which(sample.all$config == 'config1'),]
-  sample.config2.dim15 <- sample.all.dim15[which(sample.all$config == 'config2'),]
+  sample.config1.dim15 <- sample.all.dim15[which(sample.all.dim15$config == 'config1'),]
+  sample.config2.dim15 <- sample.all.dim15[which(sample.all.dim15$config == 'config2'),]
 }
 
 ```
