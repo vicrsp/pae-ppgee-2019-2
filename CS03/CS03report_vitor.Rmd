@@ -51,31 +51,304 @@ if (!require(pwr, quietly = TRUE)){
   install.packages("pwr")
 }
 
+if (!require(knitr, quietly = TRUE)){
+  install.packages("knitr")
+}
+```
+# Summary
+
+O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar o desempenho médio do algoritmo conhecido como Evoluçao Diferencial [@storn1997differential].O algoritmo foi desenvolvido no ano de 1997 por Storn e Price e é um algoritmo simples de otimização multimodal, primeiramente desenvolvido para otimização de funções continuas e variaveis numéricas discretas [@price2013differential].  
+
+Para o presente trabalho o algoritmo DE (Differential Evolution) é equipado com duas configurações alterando a forma de recombinação e mutação dos algoritmos. As classes de funções para este experimento foi composta por funções Rosenbrock [@rosenbrock1960automatic] de dimensões entre 2 e 250. Para se analisar os dados utilizou-se da técnica de blocagem determinando a quantidade de blocos e seus tamanhos, assim como o número de amostras por instância.
+
+Realizou-se a análise dos dados pela técnica ....
+
+# Planejamento do Experimento
+
+Nesta seção é apresentado o planejamento do experimento, descrevendo os objetivos e o delineamento do experimento.
+
+## Objetivo do Experimento
+
+O objetivo deste experimento é analisar se exite alguma deferença entre duas configuração do algoritmo DE dentre as classes de funções, determinando a configuração de melhor desempenho ressaltando as magnitudes das diferenças encontradas.
+
+## Delineamento
+
+Para o seguinte experimento serão realizados as seguintes etapas: 
+
+* Formulação das hipoteses de teste; 
+* Cálculo dos tamanhos amostrais, determinando a quantidades de instâncias e número de iterações do algortimo; 
+* Coleta e tabulação dos dados, 
+* Realização dos teste de hipoteses; 
+* Estimação da magnitude das diferenças;
+* Validação das premissas; 
+* Resultados e Conclusões.
+
+## Hipóteses
+
+Para a análise comparativa entre as configurações do algortimo DE, determinou-se a seguintes hipoteses a serem testadas.
+$$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
+Onde $\mu_{1}$ e $\mu_{2}$ são as médias amostras das configurações 1 e 2, respectivamente. 
+
+Além disso, foram definidos os seguintes parâmetros experimentais: 
+
+* Significância desejada: $\alpha = 0.05$.
+* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.5$
+* Potência mínima desejada $\pi = 1 - \beta = 0.8$
+
+## Coleta dos Dados
+
+Neste trabalho, cada amostra consiste em uma execução do algoritmo DE, para cada instância (dimensão da função objetivo) e configuração do algoritmo em questão (níveis). Foram escolhidas $N = 30$ repetições de cada par instância-configuração, conforme recomendado como suficiente em [@articlefcampelo]. A coleta de dados foi divida em duas etapas, descritas nas seções a seguir. O código utilizado para a coleta de dados está disponível no apêndice deste trabalho.
+
+### Geração de arquivo de configuração do experimento
+
+Esta etapa consiste em permitir que seja gerada um arquivo .csv contendo a configuração descrita a seguir. As rotinas foram implementadas de forma a permitir que seja criada a configuração para qualquer número de repetições $N$, instâncias $I$, grupos $b$ e níveis $a$. Um último passo consiste em randomizar o arquivo de configuração e dividí-lo em 3 arquivos separados, a serem executados por cada membro do grupo. Isso garante que as amostras geradas são independentes e que o experimento seja completamente randomizado. Como o algoritmo demora um tempo considerável para sua execução, a divisão entre os participantes permitiu a sua execução em paralelo para otimizar o tempo necessário para gerar todos os dados. A tabela abaixo exibe um exemplo de arquivo de configuração gerado.
+
+```{r config_file, echo=FALSE}
+fname = 'rcbd.config.victor.csv'
+Z <- read.csv(fname)
+Z[,"result"] = -1
+kable(Z[1:5, 5:9], caption = 'Exemplo de arquivo de configuração', align = 'l')
+```
+
+### Execução de arquivo de configuração
+
+Com o arquivo de configuração disponível, o experimento está pronto para ser executado. A rotina desenvolvida carrega um arquivo informado e executa cada linha em sequência, para os seus respectivos parâmetros. À medida em que uma amostra é finalizada, o resultado é salvo no próprio arquivo de configuração, na coluna `result`. Isso garante com que seja possível continuar a execução do arquivo sem perder as amostras realizadas anteriormente, caso ocorra algum problema.
+
+## Análise Exploratória dos Dados
+
+Como o estudo consiste na comparação entre resultados da execução de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória será feita considerando exemplos de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento são carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot é criad para uma análise preliminar.
+
+```{r read_data}
+sample.all <- read.csv('data.all.instances.csv', header = TRUE)
+sample.all$configuration <- as.factor(sample.all$algorithm)
+sample.all <- sample.all %>% mutate(logresult = log(result))
+
+sample.all.eda <- sample.all %>% filter(instance == 100 | instance == 50 | instance == 4)
+```
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
+ggplot(sample.all.eda, aes(x=configuration, y=result)) + 
+  geom_boxplot() +  facet_grid(rows = vars(instance), scales = "free_y")
+```
+
+Através deste gráfico, as seguintes observações podem ser feitas:
+
+* Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para correta análise dos experimentos.
+* Há algumas repetições do algoritmo que poderiam ser considerados outliers. Elas devem ser removidas de forma a não prejudicar os testes de hipótese e validação das premissas.
+* A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando o mínimo da função. Entretnato, o mesmo não pode ser afirmado para dimensões maiores.
+
+## Cálculo do número de blocos
+
+De acordo com [@Campelo2018], o número de blocos ideal é calculado variando a quantidade de blocos enquanto a relação
+
+$$F(1-\alpha) \leq F(\beta,\phi)$$
+é respeitada. Onde $\phi$ é o parâmetro de não-centralidade, definido por:
+
+$$\phi = \frac{b \sum^{a}_{i=1}\tau_i}{a\sigma^2}$$
+De acordo com a definição do experimento, temos que $a = 2$, tamanho de efeito normalizado $d = 0.5$, potência desejada de $\pi = 0.8$ e significância $\alpha = 0.05$. Logo, é possível calcular o número de blocos $b$ de acordo com a rotina abaixo.
+
+```{r blockcalculation, echo = TRUE}
+a <- 2
+d <- 0.5
+alpha <- 0.05
+beta <- 0.2
+
+tau <- c(-d, d, rep(0, a - 2)) # define tau vector
+b <- 5
+
+tb <- data.frame(b = rep(-1, 50), ratio = rep(-1,50), phi = rep(-1,50))
+
+for(i in seq(1,40,by=2)){
+
+  b <- i + 5
+  f1 <- qf(1 - alpha, a - 1, (a - 1)*(b - 1))
+  f2 <- qf(beta, a - 1, (a - 1)*(b - 1), (b*sum(tau^2)/a))
+  phi <- b*sum(tau^2)/a
+  
+  tb[i, ] = c(b, f1/f2, phi)
+}
+
+```
+
+Portanto, o número mínimo de blocos necessários é de `r tb %>% filter(ratio <= 1 & ratio > 0) %>% select(b) %>% min()`. As iterações podem ser vistas na tabela abaixo.
+
+```{r tabledisplay, echo = FALSE}
+kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos', align = 'l')
+```
+
+
+
+## Validação das premissas
+
+Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como trata-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
+
+A - Normalidade
+
+Para se ter uma idéia inicial da normalidade dos dados, o histograma para as instâncias em avaliação é gerado a seguir.
+
+```{r plot_histogram, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Histograma dos dados\\label{fig:histogram}"}
+ggplot(sample.all.eda, aes(fill=configuration, x=result)) + 
+  geom_histogram(bins=30) +  facet_grid(cols = vars(instance), scales = "free_x") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Pelo histograma apresentado, é possível notar que os dados não apresentam uma distribuição visivelmente normal. Os gráficos quantil-quantil e os testes de Shapiro-Wilk são apresentados para se comprovar essa observação.
+
+```{r plot_norm_dim4, echo=FALSE, fig.width=7,fig.height=7, fig.cap="Gráfico quantil-quantil das instâncias avaliadas"}
+sample.all.dim.4.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance  == 4)
+sample.all.dim.4.algo2 <-  sample.all.eda %>% filter(algorithm == 2 & instance == 4)
+sample.all.dim.50.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 50)
+sample.all.dim.50.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 50)
+sample.all.dim.100.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 100)
+sample.all.dim.100.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 100)
+
+
+par(mfrow=c(3,2))
+invisible(qqPlot(sample.all.dim.4.algo1$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 1 - Dimensão 4", ylab = "Result"))
+
+invisible(qqPlot(sample.all.dim.4.algo2$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 2 - Dimensão 4", ylab = "Result"))
+
+invisible(qqPlot(sample.all.dim.50.algo1$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 1 - Dimensão 50", ylab = "Result"))
+
+invisible(qqPlot(sample.all.dim.50.algo2$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 2 - Dimensão 50", ylab = "Result"))
+
+invisible(qqPlot(sample.all.dim.100.algo1$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 1 - Dimensão 100", ylab = "Result"))
+
+invisible(qqPlot(sample.all.dim.100.algo2$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 2 - Dimensão 100", ylab = "Result"))
+
+```
+```{r shapirotest, echo = FALSE}
+sw.test.result <- data.frame("p.value" = rep(0,6), "configuration" =  rep(0,6), instance =  rep(0,6))
+
+sw.test.result[1,] <- c(shapiro.test(sample.all.dim.4.algo1$result)$p.value,1,4)
+sw.test.result[2,] <- c(shapiro.test(sample.all.dim.4.algo2$result)$p.value,2,4)
+sw.test.result[3,] <- c(shapiro.test(sample.all.dim.50.algo1$result)$p.value,1,50)
+sw.test.result[4,] <- c(shapiro.test(sample.all.dim.50.algo2$result)$p.value,2,50)
+sw.test.result[5,] <- c(shapiro.test(sample.all.dim.100.algo1$result)$p.value,1,100)
+sw.test.result[6,] <- c(shapiro.test(sample.all.dim.100.algo2$result)$p.value,2,100)
+
+kable(sw.test.result[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk', align = 'l')
+```
+
+Conforme visto anteriormente, não foi possível atestar a normalidade dos dados. Logo, uma transformação logarítmica é aplicada aos dados e os testes de Shapiro-Wilk são executados novamente.
+
+```{r shapirotest_log, echo = FALSE}
+
+sw.test.result.log <- data.frame("p.value" = rep(0,6), "configuration" =  rep(0,6), instance =  rep(0,6))
+
+sw.test.result.log[1,] <- c(shapiro.test(sample.all.dim.4.algo1$logresult)$p.value,1,4)
+sw.test.result.log[2,] <- c(shapiro.test(sample.all.dim.4.algo2$logresult)$p.value,2,4)
+sw.test.result.log[3,] <- c(shapiro.test(sample.all.dim.50.algo1$logresult)$p.value,1,50)
+sw.test.result.log[4,] <- c(shapiro.test(sample.all.dim.50.algo2$logresult)$p.value,2,50)
+sw.test.result.log[5,] <- c(shapiro.test(sample.all.dim.100.algo1$logresult)$p.value,1,100)
+sw.test.result.log[6,] <- c(shapiro.test(sample.all.dim.100.algo2$logresult)$p.value,2,100)
+
+kable(sw.test.result.log[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk com aplicação de transformaçao logarítimica', align = 'l')
+```
+
+Pelas tabelas 2 e 3, é possível notar que após a aplicação da transformação logarítmica, há resultados que passa e deixam de ser normais. Portanto, não podemos afirmar que para todas as dimensões e configurações testadas os dados seguirão uma distribuição normal.
+
+
+B - Igualdade de Variância
+```{r variance_test, echo = FALSE}
+var.test.results <- data.frame("p.value" = rep(0,3), instance =  rep(0,3))
+var.test.results[1,] <- c(var.test(sample.all.dim.4.algo1$result,sample.all.dim.4.algo2$result)
+$p.value, 4)
+var.test.results[2,] <- c(var.test(sample.all.dim.50.algo1$result,sample.all.dim.50.algo2$result)
+$p.value, 50)
+var.test.results[3,] <- c(var.test(sample.all.dim.100.algo1$result,sample.all.dim.100.algo2$result)
+$p.value, 100)
+
+kable(var.test.results[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'Resultados dos testes de variância', align = 'l')
+```
+
+Pela tabela 4, é possível notar que para os 
+
+1 - Replicação por bloco: 
+
+
+2 - Independência dos blocos:
+
+
+3 - Randomização dos blocos:
+
+
+## Apêndice
+### Geração de configuração
+```{r config_generation, eval = FALSE}
+# Load packages -----------------------------------------------------------
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
+
 
 if (!require(smoof, quietly = TRUE)){
   install.packages("smoof")
 }
 
+
 if (!require(CAISEr, quietly = TRUE)){
   install.packages("CAISEr")
 }
 
+
+# RCBD functions ----------------------------------------------------
+set.seed(15632) # set a random seed
+instances <- seq(2, 150) # number of instances
+N <- 30 # number of replicates per instance
+
+rcbd.configuration.generator <- function(level, b, instances, N){
+  nrows <- length(instances) * N
+  n.instances <- length(instances)
+  instance <- sort(rep(instances, N))
+  groups <- sapply(instance, function(i){ ceiling(i/(n.instances/b))  })
+    
+  X <- data.frame("algorithm" = rep(level, nrows), 
+                  "replicate" = rep(seq(1,N), n.instances),
+                  "instance" = instance,
+                  "group" =  groups,
+                  "result" = rep(-1, nrows))
+  return(X)
+}
+
+
+x.config.1 <- rcbd.configuration.generator(1, b, instances, N)
+x.config.2 <- rcbd.configuration.generator(2, b, instances, N)
+x.config.all <- rbind(x.config.1, x.config.2)
+x.config.all.shuffled <- x.config.all[sample(nrow(x.config.all)), ]
+
+split.size <- (nrow(x.config.all.shuffled)/3)
+x.config.all.shuffled$member <- ceiling((1:nrow(x.config.all.shuffled))/split.size)
+
+x.config.all.shuffled.victor <- x.config.all.shuffled[x.config.all.shuffled$member == 1,1:5]
+x.config.all.shuffled.gilmar <- x.config.all.shuffled[x.config.all.shuffled$member == 2,1:5]
+x.config.all.shuffled.maressa <- x.config.all.shuffled[x.config.all.shuffled$member == 3,1:5]
+
+write.csv(x.config.all.shuffled.victor, 'rcbd.config.victor.csv', row.names=FALSE)
+write.csv(x.config.all.shuffled.gilmar, 'rcbd.config.gilmar.csv', row.names=FALSE)
+write.csv(x.config.all.shuffled.maressa, 'rcbd.config.maressa.csv', row.names=FALSE)
 ```
-# Summary
 
-# Planejamento do experimento
-## Objetivo do experimento
-
-
-$$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
-Onde $\mu_{1}$ e $\mu_{2}$ são as turmas de 2016-7 e 2017-2, respectivamente. A mesma hipótese será testada separadamente para cada sub-população. 
-
-Os testes serão realizados para um tamanho de efeito $\delta^* = 5$, visto que essa é a diferença de valor entre os níveis de classificação IMC encontrados na literatura [@tabelaimc:online]. 
+### Execução de configuração
+```{r config_execution, eval = FALSE}
+# Load packages -----------------------------------------------------------
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
 
 
-## Análise Exploratória dos Dados
-```{r constants, echo=FALSE}
-# Equipe D
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+# Execute a RCBD test configuration ------------------------------------------
+
+# Define a class to store the levels configuration
+level.config <- function(mp, rp, id) {
+  value <- list(mutparsX = mp, recparsX = rp, id = id)
+  class(value) <- append(class(value),"level.config")
+  return(value)
+}
+
+## Equipe D
 ## Config 1
 recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0.4, beta = 0.4)
 mutpars1 <- list(name = "mutation_rand", f = 4)
@@ -84,141 +357,66 @@ mutpars1 <- list(name = "mutation_rand", f = 4)
 recpars2 <- list(name = "recombination_eigen", othername = "recombination_bin", cr = 0.9)
 mutpars2 <- list(name = "mutation_best", f = 2.8)
 
-# Normalized effect size
-d <- 0.5
-# Significance
-alpha <- 0.05
-# Power
-power <- 0.8
+config.1 <- level.config(mutpars1, recpars1, 1)
+config.2 <- level.config(mutpars2, recpars2, 2)
 
-```
 
-```{r datageneration, echo=FALSE}
-suppressPackageStartupMessages(library(ExpDE))
+fname = 'rcbd.config.victor.csv'
+Z <- read.csv(fname)
 set.seed(15632) # set a random seed
 
-generate.observation <- function(mutparsX, recparsX, dim, fn){
-
+my.ExpDE <- function(mutp, recp, dim){
+  
+  fn.current <- function(X){
+    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as Z
+    
+    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+    return(Y)
+  }
+  
+  
+  assign("fn", fn.current, envir = .GlobalEnv)
+  
   selpars <- list(name = "selection_standard")
   stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
-  probpars <- list(name = fn, xmin = rep(-5, dim), xmax = rep(10, dim))
+  probpars <- list(name = "fn", xmin = rep(-5, dim), xmax = rep(10, dim))
   popsize = 5 * dim
   
-  out <- ExpDE(mutpars = mutparsX,
-            recpars = recparsX,
-            popsize = popsize,
-            selpars = selpars,
-            stopcrit = stopcrit,
-            probpars = probpars,
-            showpars = list(show.iters = "dots", showevery = 20))
-  return(out$Fbest)
+  out <- ExpDE(mutpars = mutp,
+               recpars = recp,
+               popsize = popsize,
+               selpars = selpars,
+               stopcrit = stopcrit,
+               probpars = probpars,
+               showpars = list(show.iters = "none"))
+  
+  return(list(value = out$Fbest))
 }
 
-generate.n.observations <- function(mutparsX, recparsX, dim, fn, N){
-  my.sample <- numeric(N)
-  for (i in seq(N)){
-    my.sample[i] <- generate.observation(mutparsX, recparsX, dim, fn)
-  }
+for (row in 1:nrow(Z)){
   
-  return(my.sample)
+  if(Z[row, "result"] == -1){ # start from the last execution
+    dim <- Z[row, "instance"]
+    algo <- Z[row, "algorithm"]
+    replicate <- Z[row, "replicate"]
+    
+    if(algo == 1)
+      algo.config <- config.1
+    else
+      algo.config <- config.2
+
+    print(paste("Started Instance:", dim, "; Algo:", algo, "; Repetition:", replicate))
+    
+    out <- my.ExpDE(algo.config$mutparsX, algo.config$recparsX, dim)
+    
+    Z[row, "result"] <- out$value
+    print(paste("Finished. Instance:", dim, "; Algo:", algo, "; 
+                Repetition:", replicate, "; Result=", out$value))
+    print(paste("Progress = ", 100 * row / nrow(Z) , "%"))    
+    write.csv(Z, fname)
+    
+  }
 }
-```
-
-```{r testematrix}
-# testing the function on a matrix composed of 2 points
-N <- 30
-
-if(!file.exists('CS03data_ea_dim2.csv')){
-  
-  dim <- 2
-  fn.rosenbrock <- function(X){
-    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
-  
-    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
-    return(Y)
-  }
-
-  sample.config1 <- data.frame(value = generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N), "config" = rep('config1',N))
-  sample.config2 <- data.frame(value = generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N), "config" = rep('config2',N))
-  
-  sample.all = rbind(sample.config1, sample.config2)
-  write.csv('CS03data_ea_dim2.csv',x = sample.all, row.names = FALSE)
-
-  } else{
-  sample.all.dim2 <- read.csv('CS03data_ea_dim2.csv')
-  sample.config1.dim2 <- sample.all.dim2[which(sample.all.dim2$config == 'config1'),]
-  sample.config2.dim2 <- sample.all.dim2[which(sample.all.dim2$config == 'config2'),]
-  }
-
-
-if(!file.exists('CS03data_ea_dim15.csv')){
-  
-  dim <- 15
-  fn.rosenbrock <- function(X){
-    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as X
-  
-    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
-    return(Y)
-  }
-
-  sample.config1.dim15 <- data.frame(value = generate.n.observations(mutpars1, recpars1, dim, "fn.rosenbrock", N), "config" = rep('config1',N))
-  sample.config2.dim15 <- data.frame(value = generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N), "config" = rep('config2',N))
-  
-  sample.all = rbind(sample.config1, sample.config2)
-  write.csv('CS03data_ea_dim15.csv',x = sample.all, row.names = FALSE)
-
-  } else{
-  sample.all.dim15 <- read.csv('CS03data_ea_dim15.csv')
-  sample.config1.dim15 <- sample.all.dim15[which(sample.all.dim15$config == 'config1'),]
-  sample.config2.dim15 <- sample.all.dim15[which(sample.all.dim15$config == 'config2'),]
-}
-
-```
-
-```{r summary_statistic_2016}
-summary(sample.config1.dim2)
-summary(sample.config2.dim2)
-```
-
-
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
-par(mfrow=c(1,2))
-ggplot(sample.all.dim2, aes(x=config, y=value)) + geom_boxplot()
-ggplot(sample.all.dim15, aes(x=config, y=value)) + geom_boxplot()
-```
-
-```{r plot_histogram, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
-par(mfrow=c(1,2))
-ggplot(sample.all.dim2, aes(x=value, fill=config)) + geom_histogram(bins = 50)
-ggplot(sample.all.dim15, aes(x=value, fill=config)) + geom_histogram(bins = 50)
-```
-
-
-```{r plot_norm, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-invisible(qqPlot(sample.config1$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 1", ylab = "value"))
-
-invisible(qqPlot(sample.config2$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 2", ylab = "value"))
-```
-
-```{r plot_norm, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-invisible(qqPlot(sample.config1.dim2$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 1", ylab = "value"))
-
-invisible(qqPlot(sample.config1.dim15$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 2", ylab = "value"))
-```
-
-```{r plot_norm, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Gráfico quantil-quantil das populações - Feminino"}
-par(mfrow=c(1,2))
-invisible(qqPlot(sample.config2.dim2$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 1", ylab = "value"))
-
-invisible(qqPlot(sample.config2.dim15$value, dist='norm',envelope=.95, las = 1, pch = 16, main="Q-Q plot algoritmo 2", ylab = "value"))
-```
-
-
-```{r shapirotest}
-shapiro.test(sample.config1$value)
-shapiro.test(sample.config2$value)
 ```
 
 
