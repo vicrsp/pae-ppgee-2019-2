@@ -156,22 +156,7 @@ generate.n.observations(mutpars2, recpars2, dim, "fn.rosenbrock", N)
 
 # Resultados
 
-## Validação das premissas
 
-Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como trata-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
-
-
-1 - Replicação por bloco: 
-
-
-2- Independência dos blocos:
-
-
-3 - Randomização dos blocos:
-
-
-
-# Resultados
 
 
 # Discussão e Conclusões
