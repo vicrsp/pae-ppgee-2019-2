@@ -19,18 +19,18 @@ level.config <- function(mp, rp, id) {
 
 ## Equipe D
 ## Config 1
-recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0.4, beta = 0.4)
+recpars1 <- list(name = "recombination_arith")
 mutpars1 <- list(name = "mutation_rand", f = 4)
 
 ## Config 2
-recpars2 <- list(name = "recombination_eigen", othername = "recombination_bin", cr = 0.9)
-mutpars2 <- list(name = "mutation_best", f = 2.8)
+recpars2 <- list(name = "recombination_bin", cr = 0.7)
+mutpars2 <- list(name = "mutation_best", f = 3)
 
 config.1 <- level.config(mutpars1, recpars1, 1)
 config.2 <- level.config(mutpars2, recpars2, 2)
 
 
-fname = 'rcbd.config.maressa1.csv'
+fname = 'rcbd.config.maressaA.csv'
 Z <- read.csv(fname)
 set.seed(123) # set a random seed
 
