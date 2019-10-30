@@ -54,6 +54,11 @@ if (!require(pwr, quietly = TRUE)){
 if (!require(knitr, quietly = TRUE)){
   install.packages("knitr")
 }
+
+if (!require(ggridges, quietly = TRUE)){
+  install.packages("ggridges")
+}
+
 ```
 # Summary
 
@@ -169,19 +174,63 @@ for(i in seq(1,40,by=2)){
 
 ```
 
-Portanto, o número mínimo de blocos necessários é de `r tb %>% filter(ratio <= 1 & ratio > 0) %>% select(b) %>% min()`. As iterações podem ser vistas na tabela abaixo.
+Portanto, o número mínimo de blocos necessários $b$ é de `r tb %>% filter(ratio <= 1 & ratio > 0) %>% select(b) %>% min()`. As iterações podem ser vistas na tabela abaixo.
 
 ```{r tabledisplay, echo = FALSE}
 kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos', align = 'l')
 ```
 
+Portanto, devemos escolher $b$ blocos aleatoriamente das instâncias disponíveis. A figura \ref{fig:ridge} exibe o gráfico de ridge para as instâncias selecionadas. 
 
+```{r block_instances, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Ridge plot dos dados\\label{fig:ridge}"}
+data.all.instances.log <- sample.all %>% group_by(instance) %>% 
+  mutate(Max = max(result), Min = min(result), Std = sd(result), Avg = mean(result)) %>% 
+  mutate(resultLog = log(result))
+
+set.seed(1234)
+random.blocks <- sample(70:150, b)
+data.block.instances <- data.all.instances.log %>%  filter(instance %in% random.blocks)
+
+data.block.instances$instance = as.factor(data.block.instances$instance)
+data.block.instances$algorithm = as.factor(data.block.instances$algorithm)
+
+ggplot(data.block.instances, aes(x = instance, 
+                            y = resultLog, 
+                            group = (algorithm), 
+                            colour = (algorithm))) + geom_line(linetype=2) + geom_point(size=2)
+
+
+ggplot(data.block.instances, aes(x = resultLog, y = instance, fill = algorithm)) + geom_density_ridges() +
+  geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) + theme(legend.position="bottom")
+
+```
 
 ## Validação das premissas
 
-Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como trata-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
+Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como trata-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo anova.
 
-A - Normalidade
+A - Normalidade dos Resíduos
+
+Para a validação desta premissa, aplica-se o teste ANOVA aos dados e depois avalia-se os resíduos obtidos pelo moddelo. O gráfico quantil-quantil e teste de shapiro-wilk serão utilizados nessa validação.
+
+```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
+res.aov <- aov(result  ~ algorithm + instance, data = data.block.instances)
+summary(res.aov)
+par(mfrow=c(2,2))
+plot(res.aov)
+#invisible(qqPlot(res.aov$residuals, dist='norm',envelope=.95, las = 1, pch = 16))
+shapiro.test(res.aov$residuals)
+```
+Conforme pode ser visto, a premissa de normalidade dos resíduos é violada.
+
+```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
+res.aov <- aov(resultLog  ~ algorithm + instance, data = data.block.instances)
+summary(res.aov)
+
+invisible(qqPlot(res.aov$residuals, dist='norm',envelope=.95, las = 1, pch = 16))
+shapiro.test(res.aov$residuals)
+```
+
 
 Para se ter uma idéia inicial da normalidade dos dados, o histograma para as instâncias em avaliação é gerado a seguir.
 
@@ -228,6 +277,21 @@ sw.test.result[6,] <- c(shapiro.test(sample.all.dim.100.algo2$result)$p.value,2,
 kable(sw.test.result[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk', align = 'l')
 ```
 
+
+```{r shapirotest_all, echo = FALSE}
+sw.test.result <- data.frame("config1" = rep(0,b), "config2" = rep(0,b), instance =  rep(0,b))
+for (i in seq(1,b)){
+  bi <- sort(random.blocks)[i]
+  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
+  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
+  
+  sw.test.result[i,] <- c(shapiro.test(data.block.algo1$resultNormalized)$p.value,shapiro.test(data.block.algo2$resultNormalized)$p.value,bi)
+}
+
+kable(sw.test.result[,c(3,2,1)], col.names = c("Instância","Configuração 1","Configuração 2"), caption = 'p-valores dos testes de shapiro-wilk', align = 'l')
+```
+
+
 Conforme visto anteriormente, não foi possível atestar a normalidade dos dados. Logo, uma transformação logarítmica é aplicada aos dados e os testes de Shapiro-Wilk são executados novamente.
 
 ```{r shapirotest_log, echo = FALSE}
@@ -248,6 +312,21 @@ Pelas tabelas 2 e 3, é possível notar que após a aplicação da transformaç�
 
 
 B - Igualdade de Variância
+```{r levene_test, echo = FALSE}
+leveneTest(result ~ algorithm, data = data.block.instances)
+leveneTest(result ~ instance, data = data.block.instances)
+
+df <- data.block.instances[order(data.block.instances$algorithm, data.block.instances$instance),]
+
+df_2 <- df %>% filter(algorithm == 1) %>% group_by(instance, algorithm) %>% summarise(result = mean(result))
+df_3 <- df %>% filter(algorithm == 2) %>% group_by(instance, algorithm) %>% summarise(result = mean(result))
+
+df_4 <- df_2 %>% bind_rows(df_3)
+
+df_5 <- df_4[order(df_4$instance, df_4$algorithm),] 
+friedman.test(result ~ algorithm | instance, data = df_5)
+```
+
 ```{r variance_test, echo = FALSE}
 var.test.results <- data.frame("p.value" = rep(0,3), instance =  rep(0,3))
 var.test.results[1,] <- c(var.test(sample.all.dim.4.algo1$result,sample.all.dim.4.algo2$result)
@@ -259,6 +338,21 @@ $p.value, 100)
 
 kable(var.test.results[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'Resultados dos testes de variância', align = 'l')
 ```
+
+
+```{r vatest, echo = FALSE}
+sw.test.result <- data.frame("p.value" = rep(0,b), instance =  rep(0,b))
+for (i in seq(1,b)){
+  bi <- sort(random.blocks)[i]
+  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
+  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
+  
+  sw.test.result[i,] <- c(var.test(data.block.algo1$resultNormalized, data.block.algo2$resultNormalized)$p.value,bi)
+}
+
+kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'p-valores dos testes de shapiro-wilk', align = 'l')
+```
+
 
 Pela tabela 4, é possível notar que para os 
 
