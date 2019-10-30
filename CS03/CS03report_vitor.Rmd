@@ -188,7 +188,7 @@ data.all.instances.log <- sample.all %>% group_by(instance) %>%
   mutate(resultLog = log(result))
 
 set.seed(1234)
-random.blocks <- sample(70:150, b)
+random.blocks <- sample(5:150, b)
 data.block.instances <- data.all.instances.log %>%  filter(instance %in% random.blocks)
 
 data.block.instances$instance = as.factor(data.block.instances$instance)
@@ -214,7 +214,7 @@ A - Normalidade dos Resíduos
 Para a validação desta premissa, aplica-se o teste ANOVA aos dados e depois avalia-se os resíduos obtidos pelo moddelo. O gráfico quantil-quantil e teste de shapiro-wilk serão utilizados nessa validação.
 
 ```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
-res.aov <- aov(result  ~ algorithm + instance, data = data.block.instances)
+res.aov <- aov(resultLog  ~ algorithm + instance, data = data.block.instances)
 summary(res.aov)
 par(mfrow=c(2,2))
 plot(res.aov)
