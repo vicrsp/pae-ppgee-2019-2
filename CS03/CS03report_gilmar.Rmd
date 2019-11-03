@@ -75,7 +75,7 @@ O presente trabalho realizou o delineamento e executou os testes estatísticos p
 
 Para este trabalho o algoritmo DE (Differential Evolution) é equipado com duas configurações alterando a forma de recombinação e mutação dos algoritmos. As classes de funções para este experimento foi composta por funções Rosenbrock [@rosenbrock1960automatic] de dimensões entre 2 e 250. Para se analisar os dados utilizou-se da técnica de blocagem determinando a quantidade de blocos e seus tamanhos, assim como o número de amostras por instância.
 
-Realizou-se cálculo do número de blocos de acordo com [@Campelo2018] e o número de instâncias de acordo com [@articlefcampelo]. Para teste das premissas de normalidade utilizou-se a ferramenta qqplot e o teste de shapiro-wilk. Para o teste da variancia utilizou-se o teste Friedman.
+Realizou-se cálculo do número de blocos de acordo com [@Campelo2018] e o número de instâncias de acordo com [@articlefcampelo]. Para teste das premissas de normalidade utilizou-se a ferramenta qqplot e o teste de shapiro-wilk. Para o teste da homogeniedade de variancia utilizou-se o teste F. Para análise da hipotese nula utilizou-se o teste não paramétrico de Friedman.
 
 # Planejamento do Experimento
 
@@ -307,7 +307,46 @@ Pelas tabelas 3 e 4, é possível notar que após a aplicação da transformaç�
 
 B - Igualdade de Variância
 
-Para o o teste de 
+Para validação dessa premissa utilizou-se o teste homogeniedade de variâncias no qual a hipotese nula é razão entre as variancias igual 1. Primeiramente analisou-se as instancias de dimensão 4, 50 e 100, verificando as variancias das duas configurações. Os resultado do teste poder ser visto na tabela 5.
+
+```{r variance_test, echo = FALSE, fig.cap="\\label{fig:varteste1}"}
+var.test.results <- data.frame("p.value" = rep(0,3), instance =  rep(0,3))
+var.test.results[1,] <- c(var.test(sample.all.dim.4.algo1$result,sample.all.dim.4.algo2$result)
+$p.value, 4)
+var.test.results[2,] <- c(var.test(sample.all.dim.50.algo1$result,sample.all.dim.50.algo2$result)
+$p.value, 50)
+var.test.results[3,] <- c(var.test(sample.all.dim.100.algo1$result,sample.all.dim.100.algo2$result)
+$p.value, 100)
+
+kable(var.test.results[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'Resultados dos testes de variância', align = 'l')
+```
+
+Verifica-se que a instancia de maior dimensão possui um p-valor alto, em relação ao nível de significancia pré-determinado para a análise do experimento, desta maneira não se pode rejeitar a hipostese nula. Após analisou-se as duas configurações com as instancias geradas forma aleatória. O resultado por ser visto na tabela 6.
+
+
+```{r vatest, echo = FALSE, fig.cap="\\label{fig:varteste2}"}
+sw.test.result <- data.frame("p.value" = rep(0,b), instance =  rep(0,b))
+for (i in seq(1,b)){
+  bi <- sort(random.blocks)[i]
+  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
+  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
+  
+  sw.test.result[i,] <- c(var.test(data.block.algo1$result, data.block.algo2$result)$p.value,bi)
+}
+
+kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'p-valores do teste F', align = 'l')
+```
+
+Verifica-se que para diferentes valores de instâncias, dimensões, o p-valor é maior que o nível de significancia pré-estabelecido. Desta forma não se pode rejeitar a hipotese nula de que as variancias são iguais. Analisando de forma geral verifica-se que é possível que as variancias entre as duas configurações são iguais.
+
+# Resultados
+
+Nesta seção são apresentados os resultados realizando os testes de hipoteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
+
+## Teste de Hipotese
+
+Verificando que os dados gerados pelas duas configurações não são normais e que não há um homegeniedade entre as variancias, opitou-se pela utilização de um teste não paramétrico. O teste utilizado para verificar a igualdade das médias entre as duas configurações foi o teste de Friedman. O test de Friedman é um teste não paramétrico que generaliza o teste de sinais e possui um poder estatítico modesto para muitas distribuições não normais [@zimmerman1993relative]. O teste Friedman esta descrito abaixo.
+
 ```{r levene_test, echo = FALSE}
 leveneTest(result ~ algorithm, data = data.block.instances)
 leveneTest(result ~ instance, data = data.block.instances)
@@ -323,44 +362,15 @@ df_5 <- df_4[order(df_4$instance, df_4$algorithm),]
 friedman.test(result ~ algorithm | instance, data = df_5)
 ```
 
-```{r variance_test, echo = FALSE}
-var.test.results <- data.frame("p.value" = rep(0,3), instance =  rep(0,3))
-var.test.results[1,] <- c(var.test(sample.all.dim.4.algo1$result,sample.all.dim.4.algo2$result)
-$p.value, 4)
-var.test.results[2,] <- c(var.test(sample.all.dim.50.algo1$result,sample.all.dim.50.algo2$result)
-$p.value, 50)
-var.test.results[3,] <- c(var.test(sample.all.dim.100.algo1$result,sample.all.dim.100.algo2$result)
-$p.value, 100)
+Verifica-se pelo teste que o baixo p-valor garante a rejeição da hipotese nula de que as configurações possuem médias iguais.
 
-kable(var.test.results[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'Resultados dos testes de variância', align = 'l')
+## Estimação das magnitudes das diferenças
+
+```{r teste_fisher }
+
+
+
 ```
-
-```{r vatest, echo = FALSE}
-sw.test.result <- data.frame("p.value" = rep(0,b), instance =  rep(0,b))
-for (i in seq(1,b)){
-  bi <- sort(random.blocks)[i]
-  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
-  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
-  
-  sw.test.result[i,] <- c(var.test(data.block.algo1$result, data.block.algo2$result)$p.value,bi)
-}
-
-kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'p-valores dos testes de shapiro-wilk', align = 'l')
-```
-
-1 - Replicação por bloco: 
-
-
-2- Independência dos blocos:
-
-
-3 - Randomização dos blocos:
-
-# Resultados
-
-Nesta seção são apresentados os resultados realizando os testes de hipoteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
- 
-
 # Discussão e Conclusões
 
 Neste trabalho foi feito um estudo estatístico ...
