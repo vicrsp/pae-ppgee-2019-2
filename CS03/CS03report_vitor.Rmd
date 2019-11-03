@@ -112,7 +112,7 @@ Esta etapa consiste em permitir que seja gerada um arquivo .csv contendo a confi
 fname = 'rcbd.config.victor.csv'
 Z <- read.csv(fname)
 Z[,"result"] = -1
-kable(Z[1:5, 5:9], caption = 'Exemplo de arquivo de configuração', align = 'l')
+kable(Z[5:9, 1:6], caption = 'Exemplo de arquivo de configuração', align = 'l')
 ```
 
 ### Execução de arquivo de configuração
@@ -121,7 +121,7 @@ Com o arquivo de configuração disponível, o experimento está pronto para ser
 
 ## Análise Exploratória dos Dados
 
-Como o estudo consiste na comparação entre resultados da execução de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória será feita considerando exemplos de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento são carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot é criad para uma análise preliminar.
+Como o estudo consiste na comparação entre resultados da execução de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória será feita considerando exemplos de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento são carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot é criado para uma análise preliminar.
 
 ```{r read_data}
 sample.all <- read.csv('data.all.instances.csv', header = TRUE)
@@ -139,7 +139,7 @@ Através deste gráfico, as seguintes observações podem ser feitas:
 
 * Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para correta análise dos experimentos.
 * Há algumas repetições do algoritmo que poderiam ser considerados outliers. Elas devem ser removidas de forma a não prejudicar os testes de hipótese e validação das premissas.
-* A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando o mínimo da função. Entretnato, o mesmo não pode ser afirmado para dimensões maiores.
+* A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando o mínimo da função. Entretanto, o mesmo não pode ser afirmado para dimensões maiores.
 
 ## Cálculo do número de blocos
 
