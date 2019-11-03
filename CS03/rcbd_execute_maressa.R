@@ -30,9 +30,9 @@ config.1 <- level.config(mutpars1, recpars1, 1)
 config.2 <- level.config(mutpars2, recpars2, 2)
 
 
-fname = 'rcbd.config.maressa1.csv'
+fname = 'rcbd.config.maressa3.csv'
 Z <- read.csv(fname)
-set.seed(123) # set a random seed
+set.seed(10) # set a random seed
 
 my.ExpDE <- function(mutp, recp, dim){
   
