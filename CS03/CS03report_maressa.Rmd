@@ -107,7 +107,7 @@ Esta etapa permite gerar um arquivo .csv contendo a configuração descrita a se
 fname = 'rcbd.config.maressa3.csv'
 Z <- read.csv(fname)
 Z[,"result"] = -1
-kable(Z[1:5, 5:9], caption = 'Exemplo de arquivo de configuração', align = 'l')
+kable(Z[1:5, 3:6], caption = 'Exemplo de arquivo de configuração', align = 'l')
 ```
 
 ### Execução de arquivo de configuração
@@ -123,7 +123,7 @@ sample.all <- read.csv('rcbd.config.maressa3.csv', header = TRUE)
 sample.all$configuration <- as.factor(sample.all$algorithm)
 sample.all <- sample.all %>% mutate(logresult = log(result))
 
-sample.all.eda <- sample.all %>% filter(instance == 98 | instance == 50 | instance == 6)
+sample.all.eda <- sample.all %>% filter(instance == 18 | instance == 70 | instance == 130)
 ```
 
 ```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
@@ -176,7 +176,30 @@ Portanto, o número mínimo de blocos necessários é de `r tb %>% filter(ratio 
 kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos', align = 'l')
 ```
 
+Portanto, devemos escolher $b$ blocos aleatoriamente das instâncias disponíveis. A figura \ref{fig:ridge} exibe o gráfico de ridge para as instâncias selecionadas. 
 
+```{r block_instances, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Ridge plot dos dados\\label{fig:ridge}"}
+data.all.instances.log <- sample.all %>% group_by(instance) %>% 
+  mutate(Max = max(result), Min = min(result), Std = sd(result), Avg = mean(result)) %>% 
+  mutate(resultLog = log(result))
+
+set.seed(1234)
+random.blocks <- sample(5:150, b)
+data.block.instances <- data.all.instances.log %>%  filter(instance %in% random.blocks)
+
+data.block.instances$instance = as.factor(data.block.instances$instance)
+data.block.instances$algorithm = as.factor(data.block.instances$algorithm)
+
+ggplot(data.block.instances, aes(x = instance, 
+                            y = resultLog, 
+                            group = (algorithm), 
+                            colour = (algorithm))) + geom_line(linetype=2) + geom_point(size=2)
+
+
+ggplot(data.block.instances, aes(x = resultLog, y = instance, fill = algorithm)) + geom_density_ridges() +
+  geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) + theme(legend.position="bottom")
+
+```
 
 ## Validação das premissas
 
@@ -194,12 +217,12 @@ ggplot(sample.all.eda, aes(fill=configuration, x=result)) +
 Pelo histograma apresentado, é possível notar que os dados não apresentam uma distribuição visivelmente normal. Os gráficos quantil-quantil e os testes de Shapiro-Wilk são apresentados para comprovar essa observação.
 
 ```{r plot_norm_dim4, echo=FALSE, fig.width=7,fig.height=7, fig.cap="Gráfico quantil-quantil das instâncias avaliadas"}
-sample.all.dim.4.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance  == 6)
-sample.all.dim.4.algo2 <-  sample.all.eda %>% filter(algorithm == 2 & instance == 6)
-sample.all.dim.50.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 50)
-sample.all.dim.50.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 50)
-sample.all.dim.100.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 98)
-sample.all.dim.100.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 98)
+sample.all.dim.4.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance  == 18)
+sample.all.dim.4.algo2 <-  sample.all.eda %>% filter(algorithm == 2 & instance == 18)
+sample.all.dim.50.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 70)
+sample.all.dim.50.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 70)
+sample.all.dim.100.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 130)
+sample.all.dim.100.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 130)
 
 
 par(mfrow=c(3,2))
@@ -219,12 +242,12 @@ invisible(qqPlot(sample.all.dim.100.algo2$result, dist='norm',envelope=.95, las 
 ```{r shapirotest, echo = FALSE}
 sw.test.result <- data.frame("p.value" = rep(0,6), "configuration" =  rep(0,6), instance =  rep(0,6))
 
-sw.test.result[1,] <- c(shapiro.test(sample.all.dim.4.algo1$result)$p.value,1,6)
-sw.test.result[2,] <- c(shapiro.test(sample.all.dim.4.algo2$result)$p.value,2,6)
-sw.test.result[3,] <- c(shapiro.test(sample.all.dim.50.algo1$result)$p.value,1,50)
-sw.test.result[4,] <- c(shapiro.test(sample.all.dim.50.algo2$result)$p.value,2,50)
-sw.test.result[5,] <- c(shapiro.test(sample.all.dim.100.algo1$result)$p.value,1,98)
-sw.test.result[6,] <- c(shapiro.test(sample.all.dim.100.algo2$result)$p.value,2,98)
+sw.test.result[1,] <- c(shapiro.test(sample.all.dim.4.algo1$result)$p.value,1,10)
+sw.test.result[2,] <- c(shapiro.test(sample.all.dim.4.algo2$result)$p.value,2,10)
+sw.test.result[3,] <- c(shapiro.test(sample.all.dim.50.algo1$result)$p.value,1,70)
+sw.test.result[4,] <- c(shapiro.test(sample.all.dim.50.algo2$result)$p.value,2,70)
+sw.test.result[5,] <- c(shapiro.test(sample.all.dim.100.algo1$result)$p.value,1,130)
+sw.test.result[6,] <- c(shapiro.test(sample.all.dim.100.algo2$result)$p.value,2,130)
 
 kable(sw.test.result[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk', align = 'l')
 ```
@@ -235,12 +258,12 @@ Conforme visto anteriormente, não foi possível atestar a normalidade dos dados
 
 sw.test.result.log <- data.frame("p.value" = rep(0,6), "configuration" =  rep(0,6), instance =  rep(0,6))
 
-sw.test.result.log[1,] <- c(shapiro.test(sample.all.dim.4.algo1$logresult)$p.value,1,4)
-sw.test.result.log[2,] <- c(shapiro.test(sample.all.dim.4.algo2$logresult)$p.value,2,4)
-sw.test.result.log[3,] <- c(shapiro.test(sample.all.dim.50.algo1$logresult)$p.value,1,50)
-sw.test.result.log[4,] <- c(shapiro.test(sample.all.dim.50.algo2$logresult)$p.value,2,50)
-sw.test.result.log[5,] <- c(shapiro.test(sample.all.dim.100.algo1$logresult)$p.value,1,100)
-sw.test.result.log[6,] <- c(shapiro.test(sample.all.dim.100.algo2$logresult)$p.value,2,100)
+sw.test.result.log[1,] <- c(shapiro.test(sample.all.dim.4.algo1$logresult)$p.value,1,18)
+sw.test.result.log[2,] <- c(shapiro.test(sample.all.dim.4.algo2$logresult)$p.value,2,18)
+sw.test.result.log[3,] <- c(shapiro.test(sample.all.dim.50.algo1$logresult)$p.value,1,70)
+sw.test.result.log[4,] <- c(shapiro.test(sample.all.dim.50.algo2$logresult)$p.value,2,70)
+sw.test.result.log[5,] <- c(shapiro.test(sample.all.dim.100.algo1$logresult)$p.value,1,130)
+sw.test.result.log[6,] <- c(shapiro.test(sample.all.dim.100.algo2$logresult)$p.value,2,130)
 
 kable(sw.test.result.log[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk com aplicação de transformaçao logarítimica', align = 'l')
 ```
@@ -251,11 +274,11 @@ B - Igualdade de Variância
 ```{r variance_test, echo = FALSE}
 var.test.results <- data.frame("p.value" = rep(0,3), instance =  rep(0,3))
 var.test.results[1,] <- c(var.test(sample.all.dim.4.algo1$result,sample.all.dim.4.algo2$result)
-$p.value, 4)
+$p.value, 18)
 var.test.results[2,] <- c(var.test(sample.all.dim.50.algo1$result,sample.all.dim.50.algo2$result)
-$p.value, 50)
+$p.value, 70)
 var.test.results[3,] <- c(var.test(sample.all.dim.100.algo1$result,sample.all.dim.100.algo2$result)
-$p.value, 100)
+$p.value, 130)
 
 kable(var.test.results[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'Resultados dos testes de variância', align = 'l')
 ```
@@ -271,7 +294,14 @@ Pela tabela 4, é possível notar que para os
 3 - Randomização dos blocos:
 
   
-
+```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
+res.aov <- aov(resultLog  ~ algorithm + instance, data = data.block.instances)
+summary(res.aov)
+par(mfrow=c(2,2))
+plot(res.aov)
+invisible(qqPlot(res.aov$residuals, dist='norm',envelope=.95, las = 1, pch = 16))
+shapiro.test(res.aov$residuals)
+```
 
 ## Apêndice
 ### Geração de configuração
