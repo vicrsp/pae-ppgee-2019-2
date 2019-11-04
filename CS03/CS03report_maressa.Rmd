@@ -51,9 +51,22 @@ if (!require(pwr, quietly = TRUE)){
   install.packages("pwr")
 }
 
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+if (!require(CAISEr, quietly = TRUE)){
+  install.packages("CAISEr")
+}
+
 if (!require(knitr, quietly = TRUE)){
   install.packages("knitr")
 }
+
+if (!require(ggridges, quietly = TRUE)){
+  install.packages("ggridges")
+}
+
 ```
 # Summary
 
@@ -61,7 +74,7 @@ O presente trabalho realizou o delineamento e executou os testes estatísticos p
 
 Para o presente trabalho o algoritmo DE (Differential Evolution) foi ajustado com duas configurações alterando a forma de recombinação e mutação nos algoritmos. As classes de funções para este experimento foi composta pela função Rosenbrock [@rosenbrock1960automatic] de dimensões entre 2 e 150. Para  analisar os dados utilizou-se da técnica de blocagem determinando a quantidade de blocos e seus tamanhos, assim como o número de amostras por instância.
 
-Realizou-se a análise dos dados pela técnica ....
+Realizou-se o cálculo do número de blocos de acordo com [@Campelo2018] e o número de instâncias de acordo com [@articlefcampelo]. Para teste das premissas de normalidade utilizou-se a ferramenta qqplot e o teste de shapiro-wilk. O teste F foi utilizado para avaliar a homocedasticidade, e por fim, para comparar os dois algoritmos utilizou-se o teste não paramétrico de Friedman, tendo em vista não validação das premissas da ANOVA.
 
 # Planejamento do Experimento
 
@@ -73,10 +86,10 @@ O objetivo deste experimento é analisar se exite alguma diferença entre duas c
 
 ## Delineamento
 
-Para o seguinte experimento foram realizadas as seguintes etapas: 
+Para o seguinte experimento foram realizadas as seguintes etapas, as quais estão detalhadas nas próximas seções. 
 
 * Formulação das hipóteses de teste; 
-* Cálculo dos tamanhos amostrais, determinando a quantidades de instâncias e número de iterações do algortimo; 
+* Cálculo dos tamanhos amostrais, estabelecimento das quantidades de instâncias e número de iterações do algoritmo; 
 * Coleta e tabulação dos dados, 
 * Realização dos testes de hipóteses; 
 * Estimação da magnitude das diferenças;
@@ -85,7 +98,7 @@ Para o seguinte experimento foram realizadas as seguintes etapas:
 
 ## Hipóteses
 
-Para a análise comparativa entre as configurações do algortimo DE, determinou-se as seguintes hipóteses a serem testadas.
+Para a análise comparativa entre as configurações do algoritmo DE, determinou-se as seguintes hipóteses a serem testadas.
 $$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
 Onde $\mu_{1}$ e $\mu_{2}$ são as médias amostrais das configurações 1 e 2 dos algoritmos, respectivamente. 
 
@@ -101,13 +114,13 @@ Neste trabalho, cada amostra consiste em uma execução do algoritmo DE, para ca
 
 ### Geração do arquivo de configuração do experimento
 
-Esta etapa permite gerar um arquivo .csv contendo a configuração descrita a seguir. As rotinas foram implementadas de forma a permitir que seja criada a configuração para qualquer número de repetições $N$, instâncias $I$, grupos $b$ e níveis $a$. Um último passo consiste em randomizar o arquivo de configuração e dividí-lo em 3 arquivos separados, a serem executados por cada membro do grupo. Isso garante que as amostras geradas são independentes e que o experimento seja completamente randomizado. Como o algoritmo demora um tempo considerável para sua execução, a divisão entre os participantes permitiu a sua execução em paralelo para otimizar o tempo necessário para gerar todos os dados. A tabela abaixo exibe um exemplo de arquivo de configuração gerado.
+Esta etapa permite gerar um arquivo .csv contendo a configuração descrita a seguir. As rotinas foram implementadas de forma a possibilitar a criação da configuração para quaisquer número de repetições ($N$), instâncias ($I$), grupos ($b$) e níveis ($a$). Um último passo consiste em randomizar o arquivo de configuração e dividí-lo em 3 arquivos separados, a serem executados por cada membro do grupo. Isso a independência das amostras geradas e que o experimento seja completamente randomizado. Como o algoritmo demora um tempo considerável para sua execução, a divisão entre os participantes permitiu a sua execução em paralelo para otimizar o tempo necessário para gerar todos os dados. A tabela abaixo exibe um exemplo de arquivo de configuração gerado.
 
 ```{r config_file, echo=FALSE}
-fname = 'rcbd.config.maressa3.csv'
+fname = 'rcbd.config.victor.csv'
 Z <- read.csv(fname)
 Z[,"result"] = -1
-kable(Z[1:5, 3:6], caption = 'Exemplo de arquivo de configuração', align = 'l')
+kable(Z[5:9, 1:6], caption = 'Exemplo de arquivo de configuração', align = 'l')
 ```
 
 ### Execução de arquivo de configuração
@@ -116,30 +129,30 @@ Com o arquivo de configuração disponível, o experimento está pronto para ser
 
 ## Análise Exploratória dos Dados
 
+Nesta seção é apresentado uma análise exploratória dos dados, verificando normalidade, homocedasticidade, independência, que são as premissas que devem ser validadas antes da realização dos testes estatísticos.
+
 Como o estudo consiste na comparação entre os resultados da execução de duas configurações de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória foi feita considerando amostras de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento foram carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot foi criado para a análise preliminar.
 
 ```{r read_data}
-sample.all <- read.csv('rcbd.config.maressa3.csv', header = TRUE)
+sample.all <- read.csv('data.all.instances.csv', header = TRUE)
 sample.all$configuration <- as.factor(sample.all$algorithm)
 sample.all <- sample.all %>% mutate(logresult = log(result))
 
-sample.all.eda <- sample.all %>% filter(instance == 18 | instance == 70 | instance == 130)
+sample.all.eda <- sample.all %>% filter(instance == 100 | instance == 50 | instance == 4)
 ```
-
 ```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
 ggplot(sample.all.eda, aes(x=configuration, y=result)) + 
   geom_boxplot() +  facet_grid(rows = vars(instance), scales = "free_y")
 ```
-
 Através deste gráfico, as seguintes observações podem ser feitas:
 
-* Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para correta análise dos experimentos.
+* Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para a correta análise dos experimentos.
 * Há algumas repetições do algoritmo que poderiam ser considerados outliers. Elas devem ser removidas de forma a não prejudicar os testes de hipótese e validação das premissas.
 * A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando ao mínimo da função. Entretnato, o mesmo não pode ser afirmado para dimensões maiores.
 
 ## Cálculo do número de blocos
 
-De acordo com Campelo [@Campelo2018], o número de blocos ideal é calculado variando a quantidade de blocos enquanto a relação
+De acordo com [@Campelo2018], o número de blocos ideal é calculado variando a quantidade de blocos enquanto a relação
 
 $$F(1-\alpha) \leq F(\beta,\phi)$$
 é respeitada. Onde $\phi$ é o parâmetro de não-centralidade, definido por:
@@ -178,7 +191,7 @@ kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Ph
 
 Portanto, devemos escolher $b$ blocos aleatoriamente das instâncias disponíveis. A figura \ref{fig:ridge} exibe o gráfico de ridge para as instâncias selecionadas. 
 
-```{r block_instances, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Ridge plot dos dados\\label{fig:ridge}"}
+```{r block_instances, echo=FALSE, fig.width=6,fig.height=3.5, fig.cap="Ridge plot dos dados\\label{fig:ridge}"}
 data.all.instances.log <- sample.all %>% group_by(instance) %>% 
   mutate(Max = max(result), Min = min(result), Std = sd(result), Avg = mean(result)) %>% 
   mutate(resultLog = log(result))
@@ -201,28 +214,43 @@ ggplot(data.block.instances, aes(x = resultLog, y = instance, fill = algorithm))
 
 ```
 
+Pela análise das figuras percebe-se que as duas configurações do algoritmo possuem um comportamento semelhanto. A exceção é para as instâncias inferiores, nas quais percebe-se um melhor desempenho do algoritmo 2.
+
 ## Validação das premissas
 
-Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como tratam-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
+Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como tratam-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pela blocagem (ANOVA).
 
 A - Normalidade
 
-Para se ter uma ideia inicial da normalidade dos dados, o histograma para as instâncias em avaliação foi gerado (Figura \ref{fig:histogram}).
+Para a validação desta premissa, aplicou-se o teste ANOVA aos dados e depois foram avaliados os resíduos obtidos pelo moddelo. O gráfico quantil-quantil e teste de shapiro-wilk também foram utilizados nessa validação, como apresentados a seguir.
 
-```{r plot_histogram, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Histograma dos dados\\label{fig:histogram}"}
+```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
+res.aov <- aov(resultLog  ~ algorithm + instance, data = data.block.instances)
+summary(res.aov)
+par(mfrow=c(2,2))
+plot(res.aov)
+#invisible(qqPlot(res.aov$residuals, dist='norm',envelope=.95, las = 1, pch = 16))
+shapiro.test(res.aov$residuals)
+```
+
+De acordo o p-valor (2.2e-16), conclui-se que não há evidências de normalidade dos resíduos.
+
+Para se ter uma ideia inicial da normalidade dos dados, o histograma para as instâncias em avaliação é gerado a seguir.
+
+```{r plot_histogram, echo=FALSE, fig.width=8,fig.height=5, fig.cap="Histograma dos dados\\label{fig:histogram}"}
 ggplot(sample.all.eda, aes(fill=configuration, x=result)) + 
   geom_histogram(bins=30) +  facet_grid(cols = vars(instance), scales = "free_x") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-Pelo histograma apresentado, é possível notar que os dados não apresentam uma distribuição visivelmente normal. Os gráficos quantil-quantil e os testes de Shapiro-Wilk são apresentados para comprovar essa observação.
+Pelo histograma apresentado, é possível notar que os dados não apresentam, visivelmente, uma distribuição  normal. Assim, os gráficos quantil-quantil e os testes de Shapiro-Wilk foram executados para verificar essa observação.
 
-```{r plot_norm_dim4, echo=FALSE, fig.width=7,fig.height=7, fig.cap="Gráfico quantil-quantil das instâncias avaliadas"}
-sample.all.dim.4.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance  == 18)
-sample.all.dim.4.algo2 <-  sample.all.eda %>% filter(algorithm == 2 & instance == 18)
-sample.all.dim.50.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 70)
-sample.all.dim.50.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 70)
-sample.all.dim.100.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 130)
-sample.all.dim.100.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 130)
+```{r plot_norm_dim4, echo=FALSE, fig.width=7,fig.height=7, fig.cap="Gráfico quantil-quantil das instâncias avaliadas\\label{fig:norm}"}
+sample.all.dim.4.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance  == 4)
+sample.all.dim.4.algo2 <-  sample.all.eda %>% filter(algorithm == 2 & instance == 4)
+sample.all.dim.50.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 50)
+sample.all.dim.50.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 50)
+sample.all.dim.100.algo1 <- sample.all.eda %>% filter(algorithm == 1 & instance == 100)
+sample.all.dim.100.algo2 <- sample.all.eda %>% filter(algorithm == 2 & instance == 100)
 
 
 par(mfrow=c(3,2))
@@ -239,17 +267,18 @@ invisible(qqPlot(sample.all.dim.100.algo1$result, dist='norm',envelope=.95, las 
 invisible(qqPlot(sample.all.dim.100.algo2$result, dist='norm',envelope=.95, las = 1, pch = 16, main="Configuração 2 - Dimensão 100", ylab = "Result"))
 
 ```
-```{r shapirotest, echo = FALSE}
-sw.test.result <- data.frame("p.value" = rep(0,6), "configuration" =  rep(0,6), instance =  rep(0,6))
 
-sw.test.result[1,] <- c(shapiro.test(sample.all.dim.4.algo1$result)$p.value,1,10)
-sw.test.result[2,] <- c(shapiro.test(sample.all.dim.4.algo2$result)$p.value,2,10)
-sw.test.result[3,] <- c(shapiro.test(sample.all.dim.50.algo1$result)$p.value,1,70)
-sw.test.result[4,] <- c(shapiro.test(sample.all.dim.50.algo2$result)$p.value,2,70)
-sw.test.result[5,] <- c(shapiro.test(sample.all.dim.100.algo1$result)$p.value,1,130)
-sw.test.result[6,] <- c(shapiro.test(sample.all.dim.100.algo2$result)$p.value,2,130)
+```{r shapirotest_all, echo = FALSE}
+sw.test.result <- data.frame("config1" = rep(0,b), "config2" = rep(0,b), instance =  rep(0,b))
+for (i in seq(1,b)){
+  bi <- sort(random.blocks)[i]
+  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
+  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
+  
+  sw.test.result[i,] <- c(shapiro.test(data.block.algo1$result)$p.value,shapiro.test(data.block.algo2$result)$p.value,bi)
+}
 
-kable(sw.test.result[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk', align = 'l')
+kable(sw.test.result[,c(3,2,1)], col.names = c("Instância","Configuração 1","Configuração 2"), caption = 'p-valores dos testes de shapiro-wilk \\label{tab:shapiro}', align = 'l')
 ```
 
 Conforme visto anteriormente, não foi possível atestar a normalidade dos dados. Logo, uma transformação logarítmica é aplicada aos dados e os testes de Shapiro-Wilk foram executados novamente.
@@ -258,51 +287,107 @@ Conforme visto anteriormente, não foi possível atestar a normalidade dos dados
 
 sw.test.result.log <- data.frame("p.value" = rep(0,6), "configuration" =  rep(0,6), instance =  rep(0,6))
 
-sw.test.result.log[1,] <- c(shapiro.test(sample.all.dim.4.algo1$logresult)$p.value,1,18)
-sw.test.result.log[2,] <- c(shapiro.test(sample.all.dim.4.algo2$logresult)$p.value,2,18)
-sw.test.result.log[3,] <- c(shapiro.test(sample.all.dim.50.algo1$logresult)$p.value,1,70)
-sw.test.result.log[4,] <- c(shapiro.test(sample.all.dim.50.algo2$logresult)$p.value,2,70)
-sw.test.result.log[5,] <- c(shapiro.test(sample.all.dim.100.algo1$logresult)$p.value,1,130)
-sw.test.result.log[6,] <- c(shapiro.test(sample.all.dim.100.algo2$logresult)$p.value,2,130)
+sw.test.result.log[1,] <- c(shapiro.test(sample.all.dim.4.algo1$logresult)$p.value,1,4)
+sw.test.result.log[2,] <- c(shapiro.test(sample.all.dim.4.algo2$logresult)$p.value,2,4)
+sw.test.result.log[3,] <- c(shapiro.test(sample.all.dim.50.algo1$logresult)$p.value,1,50)
+sw.test.result.log[4,] <- c(shapiro.test(sample.all.dim.50.algo2$logresult)$p.value,2,50)
+sw.test.result.log[5,] <- c(shapiro.test(sample.all.dim.100.algo1$logresult)$p.value,1,100)
+sw.test.result.log[6,] <- c(shapiro.test(sample.all.dim.100.algo2$logresult)$p.value,2,100)
 
-kable(sw.test.result.log[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk com aplicação de transformaçao logarítimica', align = 'l')
+kable(sw.test.result.log[,c(3,2,1)], col.names = c("Instância","Configuração","p-valor"), caption = 'Resultados dos testes de shapiro-wilk com aplicação de transformaçao logarítimica\\label{tab:log_shap}', align = 'l')
 ```
 
-Pelas tabelas 2 e 3, é possível notar que após a aplicação da transformação logarítmica, há resultados que deixam de ser normais. Portanto, não podemos afirmar que para todas as dimensões e configurações testadas os dados seguem uma distribuição normal.
+Pelas tabelas \ref{tab:shapiro} e \ref{tab:log_shap}, é possível notar que após a aplicação da transformação logarítmica, há resultados que deixam de ser normais. Portanto, não podemos afirmar que para todas as dimensões e configurações testadas os dados seguem uma distribuição normal.
 
 B - Igualdade de Variância
-```{r variance_test, echo = FALSE}
+
+Para validação dessa premissa utilizou-se o teste de homogeniedade de variâncias no qual a hipótese nula considera que razão entre as variâncias é igual 1. Primeiramente analisou-se as instâncias de dimensão 4, 50 e 100, verificando as variâncias das duas configurações. Os resultado do teste podem ser visto na tabela \ref{tab:varteste1} .
+
+```{r variance_test, echo = FALSE, fig.cap="\\label{tab:varteste1}"}
 var.test.results <- data.frame("p.value" = rep(0,3), instance =  rep(0,3))
 var.test.results[1,] <- c(var.test(sample.all.dim.4.algo1$result,sample.all.dim.4.algo2$result)
-$p.value, 18)
+$p.value, 4)
 var.test.results[2,] <- c(var.test(sample.all.dim.50.algo1$result,sample.all.dim.50.algo2$result)
-$p.value, 70)
+$p.value, 50)
 var.test.results[3,] <- c(var.test(sample.all.dim.100.algo1$result,sample.all.dim.100.algo2$result)
-$p.value, 130)
+$p.value, 100)
 
 kable(var.test.results[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'Resultados dos testes de variância', align = 'l')
 ```
 
-Pela tabela 4, é possível notar que para os 
+Verifica-se que a instância de maior dimensão possui um p-valor alto, em relação ao nível de significancia pré-determinado, desta maneira não há evidências para rejeitar a hipótese nula. Por outro lado, as instâncias menores possuem p-valor baixo, logo, não é possível afirmar a homocedasticidade para tais instâncias. Em seguida analisou-se as duas configurações com instâncias geradas de forma aleatória. O resultado por ser visto na tabela \ref{tab:varteste2}.
 
-1 - Replicação por bloco: 
-
-
-2 - Independência dos blocos:
-
-
-3 - Randomização dos blocos:
-
+```{r vatest, echo = FALSE, fig.cap="\\label{tab:varteste2}"}
+sw.test.result <- data.frame("p.value" = rep(0,b), instance =  rep(0,b))
+for (i in seq(1,b)){
+  bi <- sort(random.blocks)[i]
+  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
+  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
   
-```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
-res.aov <- aov(resultLog  ~ algorithm + instance, data = data.block.instances)
-summary(res.aov)
-par(mfrow=c(2,2))
-plot(res.aov)
-invisible(qqPlot(res.aov$residuals, dist='norm',envelope=.95, las = 1, pch = 16))
-shapiro.test(res.aov$residuals)
+  sw.test.result[i,] <- c(var.test(data.block.algo1$result, data.block.algo2$result)$p.value,bi)
+}
+
+kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'p-valores do teste F', align = 'l')
 ```
 
+Verifica-se que para diferentes valores de instâncias (dimensões) o p-valor é maior que o nível de significancia pré-estabelecido. Desta forma não há evidências para rejeitar a hipótese nula de que as variâncias são iguais. Analisando de forma geral verifica-se que é possível que as variancias entre as duas configurações sejam iguais.
+
+c - INDEPENDÊNCIA
+
+Como descrito anteriormente, a coleta de dados foi meticulosamente planejada de forma a garantir a independência entre as amostras. As características de cada amostras foram geradas e coletadas de modo aleatório, a fim de evnitar qualquer iterção entre a amostra e a instância avaliada. Desse modo, é possível garantir a independância entre as amostras.
+
+# Resultados
+
+Nesta seção são apresentados os resultados realizando os testes de hipoteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
+
+## Teste de Hipótese - não paramétrico
+
+Verificando que os dados gerados pelas duas configurações não são normais e que não há um homegeniedade entre as variâncias, optou-se pela utilização de um teste não paramétrico. O teste utilizado para verificar a igualdade das médias entre as duas configurações foi o teste de Friedman. O teste de Friedman é um teste não paramétrico que generaliza o teste de sinais e possui um poder estatítico modesto para muitas distribuições não normais [@zimmerman1993relative]. O teste Friedman esta descrito abaixo.
+
+```{r levene_test, echo = FALSE}
+leveneTest(result ~ algorithm, data = data.block.instances)
+leveneTest(result ~ instance, data = data.block.instances)
+
+df <- data.block.instances[order(data.block.instances$algorithm, data.block.instances$instance),]
+
+df_2 <- df %>% filter(algorithm == 1) %>% group_by(instance, algorithm) %>% summarise(result = mean(result))
+df_3 <- df %>% filter(algorithm == 2) %>% group_by(instance, algorithm) %>% summarise(result = mean(result))
+
+df_4 <- df_2 %>% bind_rows(df_3)
+
+df_5 <- df_4[order(df_4$instance, df_4$algorithm),] 
+friedman.test(result ~ algorithm | instance, data = df_5)
+```
+
+Verifica-se pelo teste que o p-valor baixo evidencia a rejeição da hipótese nula de que as configurações possuem médias iguais.
+
+## Estimação das magnitudes das diferenças
+
+```{r teste_fisher }
+
+G <- 34
+means_group1 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
+means_group2 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
+means_group <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
+k <- 1
+for (i in 1:Group){
+  block_i1 <- sample.all %>% filter(algorithm == 1 & group == i)
+  block_i2 <- sample.all %>% filter(algorithm == 2 & group == i)
+  
+  means_group1[i,] <- c(i, mean(block_i1$result))
+  means_group2[i,] <- c(i, mean(block_i2$result))
+  means_group[k,] <- c(i, sqrt(mean(block_i1$result)^2))
+  means_group[k+1,] <- c(i, sqrt(mean(block_i2$result)^2))
+  k <- k + 2
+}
+
+datas <- matrix(means_group$mean, nrow = 2)
+
+fisher.test(datas)
+
+```
+
+  
 ## Apêndice
 ### Geração de configuração
 ```{r config_generation, eval = FALSE}
