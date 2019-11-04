@@ -67,6 +67,9 @@ if (!require(ggridges, quietly = TRUE)){
   install.packages("ggridges")
 }
 
+if (!require(multcomp, quietly = TRUE)){
+  install.packages("multcomp")
+}
 ```
 # Summary
 
@@ -340,7 +343,52 @@ Como descrito anteriormente, a coleta de dados foi meticulosamente planejada de 
 
 Nesta seção são apresentados os resultados realizando os testes de hipoteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
 
-## Teste de Hipótese - não paramétrico
+Como as premissas do teste paramétrico (ANOVA) foram parcialmente validadas, optou-se por realizar os testes paramétricos e não-paramétricos a fim de comparar os resultados. Os resultados das duas aborgagens são apresentados e discutidos nas próximas seções.
+
+## Teste de Hipótese - Paramétrico
+
+O teste paramétrico usado para avaliar a blocagem é a ANOVA.
+
+```{r anova, echo = FALSE}
+model <- aov(result~algorithm+instance,
+             data = data.block.instances)
+summary(model)
+summary.lm(model)$r.squared
+
+```
+De acordo com o resultado do teste existem evidências de que a média dos dois algoritmos não são iguais. Além disso, o modelo obteve um ajuste satisfatório com o $r^2 = 0.974$, isto é, o modelo explica mais de 97% dos resultados dos dois algoritmos.
+
+```{r plot_norm_dim4, echo=FALSE, fig.width=7,fig.height=7, fig.cap="Gráfico de teste das premissas\\label{fig:norm}"}
+par(mfrow = c(2, 2))
+plot(model, pch = 20, las = 1)
+
+```
+NÃO SEI ANALISAR ESSE GRÁFICOS...
+
+Assim como na validação, foi realizado o teste de hipótese considerando uma transformação logarítmica dos resultados.
+
+```{r anova2, echo = FALSE}
+model_log <- aov(log(result)~algorithm+instance,
+             data = data.block.instances)
+summary(model_log)
+summary.lm(model_log)$r.squared
+
+```
+
+Pela análise dos resultados, pode-se concluir que o modelo também ajusta bem aos dados, porém o modelo anterior obteve melhor ajuste.
+
+
+```{r anova2, echo = FALSE} 
+mydf        <- as.data.frame(summary(model)[[1]])
+MSblocks    <- mydf["instance","Mean Sq"]
+MSe         <- mydf["Residuals","Mean Sq"]
+a           <- length(unique(data.block.instances))
+b           <- length(unique(data.block.instances$instance))
+((b - 1) * MSblocks + b * (a - 1) * MSe) / ((a * b - 1) * MSe)
+```
+O QUE SIGNIFICA ESSA EFICIÊNCIA DA BLOCAGEM??
+
+## Teste de Hipótese - Não Paramétrico
 
 Verificando que os dados gerados pelas duas configurações não são normais e que não há um homegeniedade entre as variâncias, optou-se pela utilização de um teste não paramétrico. O teste utilizado para verificar a igualdade das médias entre as duas configurações foi o teste de Friedman. O teste de Friedman é um teste não paramétrico que generaliza o teste de sinais e possui um poder estatítico modesto para muitas distribuições não normais [@zimmerman1993relative]. O teste Friedman esta descrito abaixo.
 
