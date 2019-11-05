@@ -172,9 +172,11 @@ for(i in seq(1,40,by=2)){
   tb[i, ] = c(b, f1/f2, phi)
 }
 
+b <- min((tb %>% filter(ratio <= 1 & ratio > 0))$b)
+
 ```
 
-Portanto, o número mínimo de blocos necessários $b$ é de `r tb %>% filter(ratio <= 1 & ratio > 0) %>% select(b) %>% min()`. As iterações podem ser vistas na tabela abaixo.
+Portanto, o número mínimo de blocos necessários $b$ é de `r min((tb %>% filter(ratio <= 1 & ratio > 0))$b)`. As iterações podem ser vistas na tabela abaixo.
 
 ```{r tabledisplay, echo = FALSE}
 kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos', align = 'l')
@@ -188,19 +190,19 @@ data.all.instances.log <- sample.all %>% group_by(instance) %>%
   mutate(resultLog = log(result))
 
 set.seed(1234)
-random.blocks <- sample(5:150, b)
+random.blocks <- sample(15:150, b)
 data.block.instances <- data.all.instances.log %>%  filter(instance %in% random.blocks)
 
 data.block.instances$instance = as.factor(data.block.instances$instance)
 data.block.instances$algorithm = as.factor(data.block.instances$algorithm)
 
 ggplot(data.block.instances, aes(x = instance, 
-                            y = resultLog, 
+                            y = result, 
                             group = (algorithm), 
-                            colour = (algorithm))) + geom_line(linetype=2) + geom_point(size=2)
+                            colour = (algorithm))) + geom_line(linetype=2) + geom_point(size=2) + theme(legend.position="bottom")
 
 
-ggplot(data.block.instances, aes(x = resultLog, y = instance, fill = algorithm)) + geom_density_ridges() +
+ggplot(data.block.instances, aes(x = result, y = instance, fill = algorithm)) + geom_density_ridges() +
   geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) + theme(legend.position="bottom")
 
 ```
@@ -214,12 +216,29 @@ A - Normalidade dos Resíduos
 Para a validação desta premissa, aplica-se o teste ANOVA aos dados e depois avalia-se os resíduos obtidos pelo moddelo. O gráfico quantil-quantil e teste de shapiro-wilk serão utilizados nessa validação.
 
 ```{r res_blocks, echo=FALSE, fig.width=7,fig.height=4, fig.cap="QQ-plot dos resíduos \\label{fig:qqres}"}
-res.aov <- aov(resultLog  ~ algorithm + instance, data = data.block.instances)
+res.aov <- aov(result  ~ algorithm + instance, data = data.block.instances)
 summary(res.aov)
 par(mfrow=c(2,2))
 plot(res.aov)
 #invisible(qqPlot(res.aov$residuals, dist='norm',envelope=.95, las = 1, pch = 16))
 shapiro.test(res.aov$residuals)
+
+```
+
+```{r res_blocks2, echo=FALSE}
+
+library(boot)
+bs <- function(formula, data, indices) {
+  d <- data[indices,] # allows boot to select sample
+  fit=aov(formula,data=d) #fit model
+  summ <- summary(fit)
+  return(summ[1][[1]][[4]][1])
+}
+# bootstrapping with 1000 replications
+data.block.instances.boot <- boot(data=data.block.instances, statistic=bs,
+   R=5000, formula=resultLog  ~ algorithm + instance)
+
+boot.ci(data.block.instances.boot, type="bca", conf = 0.975)
 ```
 Conforme pode ser visto, a premissa de normalidade dos resíduos é violada.
 
