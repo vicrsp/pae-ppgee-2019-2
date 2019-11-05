@@ -366,31 +366,6 @@ Verifica-se pelo teste que o baixo p-valor garante a rejeição da hipotese nula
 
 ## Estimação das magnitudes das diferenças
 
-```{r teste_fisher }
-G <- 34
-#means_group1 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
-#means_group2 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
-#means_group <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G), "algorithm" = rep(0,G))
-data_c <- data.frame("value" = rep(0,6*G))
-k <- 1
-for (i in 1:G){
-  block_i1 <- sample.all %>% filter(algorithm == 1 & group == i)
-  block_i2 <- sample.all %>% filter(algorithm == 2 & group == i)
-  
-  #means_group1[i,] <- c(i, mean(block_i1$result))
-  #means_group2[i,] <- c(i, mean(block_i2$result))
-  
-  data_c[k] <- i
-  data_c[k+1] <- mean(block_i1$result)
-  data_c[k+2] <- i
-  data_c[k+3] <- mean(block_i2$result)
-  
-  k <- k + 4
-}
-
-datas <- matrix(data_c$value, nrow = 2)
-
-fisher.test(datas)
 
 ```
 
