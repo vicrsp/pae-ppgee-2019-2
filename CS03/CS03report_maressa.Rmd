@@ -371,6 +371,7 @@ NÃO SEI ANALISAR ESSE GRÁFICOS...
 
 Assim como na validação, foi realizado o teste de hipótese considerando uma transformação logarítmica dos resultados.
 
+
 ```{r anova2, echo = FALSE}
 model_log <- aov(log(result)~algorithm+instance,
              data = data.block.instances)
@@ -392,17 +393,12 @@ b           <- length(unique(data.block.instances$instance))
 ```
 O QUE SIGNIFICA ESSA EFICIÊNCIA DA BLOCAGEM??
 
-```{r anova, echo = FALSE}
-multcomp1 <- glht(model,
-                  linfct = mcp(algorithm = "Dunnett"),
-                  alternative = "two.sided")
-recovery.ci <- confint(multcomp1, level = 0.95)
-recovery.ci
-
-summary(multcomp1)
+```{r kruskal, echo = FALSE}
+multcomp1 <- kruskal.test(result~algorithm,data=data.block.instances)
+multcomp1
 ```
 
-```{r anova, echo = FALSE}
+```{r DuntestCI, echo = FALSE}
 duntest <- glht(model, linfct = mcp(algorithm = "Dunnett"))
 duntestCI <- confint(duntest)
 par(mar = c(5, 8, 4, 2), las = 1)
