@@ -367,28 +367,34 @@ Verifica-se pelo teste que o baixo p-valor garante a rejeição da hipotese nula
 ## Estimação das magnitudes das diferenças
 
 ```{r teste_fisher }
-
 G <- 34
-means_group1 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
-means_group2 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
-means_group <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
+#means_group1 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
+#means_group2 <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G))
+#means_group <- data.frame("Group" = rep(0,G), "mean" =  rep(0,G), "algorithm" = rep(0,G))
+data_c <- data.frame("value" = rep(0,6*G))
 k <- 1
-for (i in 1:Group){
+for (i in 1:G){
   block_i1 <- sample.all %>% filter(algorithm == 1 & group == i)
   block_i2 <- sample.all %>% filter(algorithm == 2 & group == i)
   
-  means_group1[i,] <- c(i, mean(block_i1$result))
-  means_group2[i,] <- c(i, mean(block_i2$result))
-  means_group[k,] <- c(i, sqrt(mean(block_i1$result)^2))
-  means_group[k+1,] <- c(i, sqrt(mean(block_i2$result)^2))
-  k <- k + 2
+  #means_group1[i,] <- c(i, mean(block_i1$result))
+  #means_group2[i,] <- c(i, mean(block_i2$result))
+  
+  data_c[k] <- i
+  data_c[k+1] <- mean(block_i1$result)
+  data_c[k+2] <- i
+  data_c[k+3] <- mean(block_i2$result)
+  
+  k <- k + 4
 }
 
-datas <- matrix(means_group$mean, nrow = 2)
+datas <- matrix(data_c$value, nrow = 2)
 
 fisher.test(datas)
 
 ```
+
+
 # Discussão e Conclusões
 
 Neste trabalho foi feito um estudo estatístico ...
