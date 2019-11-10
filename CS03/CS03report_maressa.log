@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.8.29)  4 NOV 2019 16:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2019.8.29)  9 NOV 2019 21:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -571,11 +571,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \float@box=\box34
 \@float@everytoks=\toks26
 \@floatcapt=\box35
-) (./CS03report_maressa.aux
-
-LaTeX Warning: Label `fig:ridge' multiply defined.
-
-)
+) (./CS03report_maressa.aux)
 \openout1 = `CS03report_maressa.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 132.
@@ -726,134 +722,143 @@ LaTeX Font Info:    Try loading font information for T1+lmtt on input line 276.
 (c:/Users/ASUS/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [2]
+
+LaTeX Warning: Reference `fig:boxplot' on page 3 undefined on input line 294.
+
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 299.
-LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 299
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 298.
+LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 298
 .
 (c:/Users/ASUS/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-<CS03report_maressa_files/figure-latex/plot_boxplot-1.pdf, id=96, 505.89pt x 28
-9.08pt>
+<CS03report_maressa_files/figure-latex/plot_boxplot-1.pdf, id=116, 505.89pt x 2
+89.08pt>
 File: CS03report_maressa_files/figure-latex/plot_boxplot-1.pdf Graphic file (ty
 pe pdf)
 <use CS03report_maressa_files/figure-latex/plot_boxplot-1.pdf>
 Package pdftex.def Info: CS03report_maressa_files/figure-latex/plot_boxplot-1.p
-df  used on input line 307.
+df  used on input line 306.
 (pdftex.def)             Requested size: 469.76265pt x 268.43579pt.
-[3 <./CS03report_maressa_files/figure-latex/plot_boxplot-1.pdf>]
-<CS03report_maressa_files/figure-latex/block_instances-1.pdf, id=110, 433.62pt 
-x 252.945pt>
-File: CS03report_maressa_files/figure-latex/block_instances-1.pdf Graphic file 
-(type pdf)
-<use CS03report_maressa_files/figure-latex/block_instances-1.pdf>
-Package pdftex.def Info: CS03report_maressa_files/figure-latex/block_instances-
-1.pdf  used on input line 399.
-(pdftex.def)             Requested size: 433.62555pt x 252.94823pt.
-[4]
-<CS03report_maressa_files/figure-latex/block_instances-2.pdf, id=119, 433.62pt 
-x 252.945pt>
-File: CS03report_maressa_files/figure-latex/block_instances-2.pdf Graphic file 
-(type pdf)
-<use CS03report_maressa_files/figure-latex/block_instances-2.pdf>
-Package pdftex.def Info: CS03report_maressa_files/figure-latex/block_instances-
-2.pdf  used on input line 410.
-(pdftex.def)             Requested size: 433.62555pt x 252.94823pt.
+
+LaTeX Warning: Reference `fig:boxplot' on page 3 undefined on input line 307.
+
+[3 <./CS03report_maressa_files/figure-latex/plot_boxplot-1.pdf>] [4]
+
+LaTeX Warning: Reference `fig:ridge' on page 5 undefined on input line 415.
+
+<CS03report_maressa_files/figure-latex/block_instances_plot1-1.pdf, id=138, 505
+.89pt x 289.08pt>
+File: CS03report_maressa_files/figure-latex/block_instances_plot1-1.pdf Graphic
+ file (type pdf)
+<use CS03report_maressa_files/figure-latex/block_instances_plot1-1.pdf>
+Package pdftex.def Info: CS03report_maressa_files/figure-latex/block_instances_
+plot1-1.pdf  used on input line 420.
+(pdftex.def)             Requested size: 469.76265pt x 268.43579pt.
+<CS03report_maressa_files/figure-latex/block_instances_plot2-1.pdf, id=139, 505
+.89pt x 289.08pt>
+File: CS03report_maressa_files/figure-latex/block_instances_plot2-1.pdf Graphic
+ file (type pdf)
+<use CS03report_maressa_files/figure-latex/block_instances_plot2-1.pdf>
+Package pdftex.def Info: CS03report_maressa_files/figure-latex/block_instances_
+plot2-1.pdf  used on input line 429.
+(pdftex.def)             Requested size: 469.76265pt x 268.43579pt.
 [5pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) 
 has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.420 ...remissas}\label{validacao-das-premissas}}
-                                                  pdfTeX warning (ext4): destin
-ation with the same identifier (name{figure.2}) has been already used, duplicat
-e ignored
-
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.420 ...remissas}\label{validacao-das-premissas}}
-                                                   <./CS03report_maressa_files/
-figure-latex/block_instances-1.pdf> <./CS03report_maressa_files/figure-latex/bl
-ock_instances-2.pdf>]
-<CS03report_maressa_files/figure-latex/res_blocks-1.pdf, id=135, 505.89pt x 289
-.08pt>
+l.433 
+       <./CS03report_maressa_files/figure-latex/block_instances_plot1-1.pdf>]
+<CS03report_maressa_files/figure-latex/res_blocks-1.pdf, id=150, 505.89pt x 361
+.35pt>
 File: CS03report_maressa_files/figure-latex/res_blocks-1.pdf Graphic file (type
  pdf)
 <use CS03report_maressa_files/figure-latex/res_blocks-1.pdf>
 Package pdftex.def Info: CS03report_maressa_files/figure-latex/res_blocks-1.pdf
-  used on input line 449.
-(pdftex.def)             Requested size: 469.76265pt x 268.43579pt.
-[6pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) 
-has been already used, duplicate ignored
+  used on input line 455.
+(pdftex.def)             Requested size: 469.76265pt x 335.54477pt.
+[6 <./CS03report_maressa_files/figure-latex/block_instances_plot2-1.pdf>]
 
-\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
-                                                  \fi \fi 
-l.459 \end{verbatim}
-                     <./CS03report_maressa_files/figure-latex/res_blocks-1.pdf>
-]
-<CS03report_maressa_files/figure-latex/plot_histogram-1.pdf, id=147, 578.16pt x
+LaTeX Warning: Reference `fig:ridge' on page 7 undefined on input line 473.
+
+<CS03report_maressa_files/figure-latex/res_blocks_log-1.pdf, id=161, 505.89pt x
  361.35pt>
-File: CS03report_maressa_files/figure-latex/plot_histogram-1.pdf Graphic file (
+File: CS03report_maressa_files/figure-latex/res_blocks_log-1.pdf Graphic file (
 type pdf)
-<use CS03report_maressa_files/figure-latex/plot_histogram-1.pdf>
-Package pdftex.def Info: CS03report_maressa_files/figure-latex/plot_histogram-1
-.pdf  used on input line 469.
-(pdftex.def)             Requested size: 469.75385pt x 293.59616pt.
-<CS03report_maressa_files/figure-latex/plot_norm_dim4-1.pdf, id=148, 505.89pt x
- 505.89pt>
-File: CS03report_maressa_files/figure-latex/plot_norm_dim4-1.pdf Graphic file (
-type pdf)
-<use CS03report_maressa_files/figure-latex/plot_norm_dim4-1.pdf>
-Package pdftex.def Info: CS03report_maressa_files/figure-latex/plot_norm_dim4-1
+<use CS03report_maressa_files/figure-latex/res_blocks_log-1.pdf>
+Package pdftex.def Info: CS03report_maressa_files/figure-latex/res_blocks_log-1
 .pdf  used on input line 480.
-(pdftex.def)             Requested size: 469.76265pt x 469.76265pt.
-[7pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) 
+(pdftex.def)             Requested size: 469.76265pt x 335.54477pt.
+[7pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) 
 has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
 l.484 
-       <./CS03report_maressa_files/figure-latex/plot_histogram-1.pdf>] [8pdfTeX
- warning (ext4): destination with the same identifier (name{figure.5}) has been
- already used, duplicate ignored
+       <./CS03report_maressa_files/figure-latex/res_blocks-1.pdf>]
+
+LaTeX Warning: Reference `tab:varteste1' on page 8 undefined on input line 505.
+
+
+
+Overfull \hbox (1653.27405pt too wide) in alignment at lines 507--512
+ [] [] 
+ []
+
+
+Overfull \hbox (1653.27405pt too wide) in alignment at lines 512--516
+ [] [] 
+ []
+
+
+Overfull \hbox (1653.27405pt too wide) in alignment at lines 516--537
+ [] [] 
+ []
+
+
+Overfull \hbox (1653.27405pt too wide) in alignment at lines 537--560
+ [] [] 
+ []
+
+[8pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) 
+has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.536 1
-       36 & 0.0155369 & 0.2518921\tabularnewline <./CS03report_maressa_files/fi
-gure-latex/plot_norm_dim4-1.pdf>]
-Overfull \vbox (2.13655pt too high) has occurred while \output is active []
-
-[9] [10] [11]
-Underfull \vbox (badness 10000) detected at line 756
- []
-
-
-Underfull \vbox (badness 10000) detected at line 756
- []
-
-[12]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 794.
-[13]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 794.
+l.560 \end{longtable}
+                      <./CS03report_maressa_files/figure-latex/res_blocks_log-1
+.pdf>] [9] [10]
+<CS03report_maressa_files/figure-latex/DuntestCI-1.pdf, id=198, 361.35pt x 216.
+81pt>
+File: CS03report_maressa_files/figure-latex/DuntestCI-1.pdf Graphic file (type 
+pdf)
+<use CS03report_maressa_files/figure-latex/DuntestCI-1.pdf>
+Package pdftex.def Info: CS03report_maressa_files/figure-latex/DuntestCI-1.pdf 
+ used on input line 676.
+(pdftex.def)             Requested size: 361.34912pt x 216.80946pt.
+[11 <./CS03report_maressa_files/figure-latex/DuntestCI-1.pdf>] [12] [13] [14]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 916.
+[15]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 916.
 (./CS03report_maressa.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 794.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 794.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 916.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 916.
 Package rerunfilecheck Info: File `CS03report_maressa.out' has not changed.
-(rerunfilecheck)             Checksum: 5966C95E8F537E3A5CCE5CC1F3771123;2651.
+(rerunfilecheck)             Checksum: 7C6CBF2526FC270F593A7AC5B04D6977;3612.
 
-LaTeX Warning: There were multiply-defined labels.
+LaTeX Warning: There were undefined references.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 794.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 916.
  ) 
 Here is how much of TeX's memory you used:
- 11033 strings out of 494553
- 160136 string characters out of 6175770
- 233729 words of memory out of 5000000
- 14486 multiletter control sequences out of 15000+600000
+ 11050 strings out of 494553
+ 160548 string characters out of 6175770
+ 231515 words of memory out of 5000000
+ 14495 multiletter control sequences out of 15000+600000
  47803 words of font info for 45 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 28i,7n,32p,465b,449s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 28i,7n,32p,465b,430s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/Users/ASUS/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.en
 c}{c:/Users/ASUS/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathi
 t.enc}{c:/Users/ASUS/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-t
@@ -876,10 +881,10 @@ aming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><c:/Users/ASUS/AppData
 /Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/Users/ASUS/App
 Data/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/ASUS
 /AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on CS03report_maressa.pdf (13 pages, 1211838 bytes).
+Output written on CS03report_maressa.pdf (15 pages, 1507959 bytes).
 PDF statistics:
- 286 PDF objects out of 1000 (max. 8388607)
- 241 compressed objects within 3 object streams
- 61 named destinations out of 1000 (max. 500000)
- 151 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 316 PDF objects out of 1000 (max. 8388607)
+ 269 compressed objects within 3 object streams
+ 69 named destinations out of 1000 (max. 500000)
+ 191 words of extra memory for PDF output out of 10000 (max. 10000000)
 
