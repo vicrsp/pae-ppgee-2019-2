@@ -1,7 +1,7 @@
 ---
 title: 'Estudo de caso: Grupo D 3'
 author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
-date: "11 de Novembro, 2019"
+date: "30 de Setembro, 2019"
 output:
   pdf_document:
     fig_caption: yes
@@ -79,12 +79,11 @@ if (!require(dunn.test, quietly = TRUE)){
 
 # Summary
 
-O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar o desempenho médio do algoritmo conhecido como Evoluçao Diferencial [@storn1997differential]. O algoritmo foi desenvolvido no ano de 1997 por Storn e Price e é um algoritmo simples de otimização multimodal, primeiramente desenvolvido para otimização de funções contínuas e variáveis numéricas discretas [@price2013differential].  
+O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar o desempenho médio do algoritmo conhecido como Evoluçao Diferencial [@storn1997differential].O algoritmo foi desenvolvido no ano de 1997 por Storn e Price e é um algoritmo simples de otimização multimodal, primeiramente desenvolvido para otimização de funções continuas e variaveis numéricas discretas [@price2013differential].  
 
-Para o desenvolvimento do trabalho o algoritmo DE (Differential Evolution) foi ajustado com duas configurações alterando a forma de recombinação e mutação dos algoritmos. As classes de funções para este experimento foi composta pela função Rosenbrock [@rosenbrock1960automatic] de dimensões entre 2 e 150. Para  analisar os dados utilizou-se a técnica de blocagem determinando a quantidade de blocos e seus tamanhos, assim como o número de amostras por instância.
+Para este trabalho o algoritmo DE (Differential Evolution) é equipado com duas configurações alterando a forma de recombinação e mutação dos algoritmos. As classes de funções para este experimento foi composta por funções Rosenbrock [@rosenbrock1960automatic] de dimensões entre 2 e 250. Para se analisar os dados utilizou-se da técnica de blocagem determinando a quantidade de blocos e seus tamanhos, assim como o número de amostras por instância.
 
-Realizou-se o cálculo do número de blocos de acordo com [@Campelo2018] e o número de instâncias de acordo com [@articlefcampelo]. Foram realizados os testes das premissas, porém não foi possível de validar completamente todas elas. Assim, foi realizado teste paramétrico e não paramétrico e comparados os resultados.Os dois testes levaram a conclusões diferentes, que serão apresentados nas seções deste relatório.
-
+Realizou-se cálculo do número de blocos de acordo com [@Campelo2018] e o número de instâncias de acordo com [@articlefcampelo]. Para teste das premissas de normalidade utilizou-se a ferramenta qqplot e o teste de shapiro-wilk. Para o teste da homogeniedade de variancia utilizou-se o teste F. Para análise da hipotese nula utilizou-se o teste não paramétrico de Friedman.
 
 # Planejamento do Experimento
 
@@ -92,25 +91,25 @@ Nesta seção é apresentado o planejamento do experimento, descrevendo os objet
 
 ## Objetivo do Experimento
 
-O objetivo deste experimento é analisar se exite alguma diferença entre duas configuração do algoritmo DE dentre as classes de funções, determinando a configuração de melhor desempenho e ressaltando as magnitudes das diferenças encontradas.
+O objetivo deste experimento é analisar se exite alguma deferença entre duas configuração do algoritmo DE dentre as classes de funções, determinando a configuração de melhor desempenho ressaltando as magnitudes das diferenças encontradas.
 
 ## Delineamento
 
-Para execução do experimento foram realizadas as seguintes etapas, as quais estão detalhadas nas próximas seções. 
+Para o seguinte experimento serão realizados as seguintes etapas: 
 
-* Formulação das hipóteses de teste; 
-* Cálculo dos tamanhos amostrais, estabelecimento das quantidades de instâncias e número de iterações do algoritmo; 
+* Formulação das hipoteses de teste; 
+* Cálculo dos tamanhos amostrais, determinando a quantidades de instâncias e número de iterações do algortimo; 
 * Coleta e tabulação dos dados, 
-* Realização dos testes de hipóteses; 
+* Realização dos teste de hipoteses; 
 * Estimação da magnitude das diferenças;
 * Validação das premissas; 
 * Resultados e Conclusões.
 
 ## Hipóteses
 
-Para a análise comparativa entre as configurações do algoritmo DE, determinou-se as seguintes hipóteses a serem testadas.
+Para a análise comparativa entre as configurações do algortimo DE, determinou-se a seguintes hipoteses a serem testadas.
 $$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
-Onde $\mu_{1}$ e $\mu_{2}$ são as médias amostrais das configurações 1 e 2 dos algoritmos, respectivamente. 
+Onde $\mu_{1}$ e $\mu_{2}$ são as médias amostras das configurações 1 e 2, respectivamente. 
 
 Além disso, foram definidos os seguintes parâmetros experimentais: 
 
@@ -120,11 +119,11 @@ Além disso, foram definidos os seguintes parâmetros experimentais:
 
 ## Coleta dos Dados
 
-Neste trabalho, cada amostra consiste em uma execução do algoritmo DE, para cada instância (dimensão da função objetivo) e configuração do algoritmo em questão (níveis). Foram escolhidas $N = 30$ repetições de cada par instância-configuração, recomendado como suficiente por Campelo e Takahashi [@articlefcampelo]. A coleta de dados foi dividida em duas etapas, descritas nas seções a seguir. O código utilizado para a coleta de dados está disponível no apêndice A.
+Neste trabalho, cada amostra consiste em uma execução do algoritmo DE, para cada instância (dimensão da função objetivo) e configuração do algoritmo em questão (níveis). Foram escolhidas $N = 30$ repetições de cada par instância-configuração, conforme recomendado como suficiente em [@articlefcampelo]. A coleta de dados foi divida em duas etapas, descritas nas seções a seguir. O código utilizado para a coleta de dados está disponível no apêndice deste trabalho.
 
-### Geração do arquivo de configuração do experimento
+### Geração de arquivo de configuração do experimento
 
-Esta etapa consiste em permitir que seja gerada um arquivo .csv contendo a configuração descrita a seguir. As rotinas foram implementadas de forma a permitir que seja criada a configuração para qualquer número de repetições $N$, instâncias $I$, grupos $b$ e níveis $a$. Um último passo consiste em randomizar o arquivo de configuração e dividí-lo em 3 arquivos separados, executados por cada membro do grupo. Isso garante que as amostras geradas sejam independentes e que o experimento seja completamente randomizado. Como o algoritmo demora um tempo considerável para sua execução, a divisão entre os participantes permitiu a sua execução em paralelo para otimizar o tempo necessário para gerar todos os dados. A tabela abaixo exibe um exemplo de arquivo de configuração gerado.
+Esta etapa consiste em permitir que seja gerada um arquivo .csv contendo a configuração descrita a seguir. As rotinas foram implementadas de forma a permitir que seja criada a configuração para qualquer número de repetições $N$, instâncias $I$, grupos $b$ e níveis $a$. Um último passo consiste em randomizar o arquivo de configuração e dividí-lo em 3 arquivos separados, a serem executados por cada membro do grupo. Isso garante que as amostras geradas são independentes e que o experimento seja completamente randomizado. Como o algoritmo demora um tempo considerável para sua execução, a divisão entre os participantes permitiu a sua execução em paralelo para otimizar o tempo necessário para gerar todos os dados. A tabela abaixo exibe um exemplo de arquivo de configuração gerado.
 
 ```{r config_file, echo=FALSE}
 fname = 'rcbd.config.victor.csv'
@@ -135,13 +134,13 @@ kable(Z[5:9, 1:6], caption = 'Exemplo de arquivo de configuração', align = 'l'
 
 ### Execução de arquivo de configuração
 
-Com o arquivo de configuração disponível, o experimento está pronto para ser executado. A rotina desenvolvida carrega um arquivo de configuração (.csv) e executa cada linha em sequência, para os seus respectivos parâmetros. À medida em que uma amostra é finalizada, o resultado é salvo no próprio arquivo de configuração, na coluna `result`. Isso garante que seja possível continuar a execução do arquivo sem perder as amostras realizadas anteriormente, caso ocorra algum problema.
+Com o arquivo de configuração disponível, o experimento está pronto para ser executado. A rotina desenvolvida carrega um arquivo informado e executa cada linha em sequência, para os seus respectivos parâmetros. À medida em que uma amostra é finalizada, o resultado é salvo no próprio arquivo de configuração, na coluna `result`. Isso garante com que seja possível continuar a execução do arquivo sem perder as amostras realizadas anteriormente, caso ocorra algum problema.
 
-## Análise Exploratória dos Dados
+# Análise Exploratória dos Dados
 
-Nesta seção é apresentado uma análise exploratória dos dados, a fim de verificar as premissas de normalidade, homocedasticidade, independência, que  devem ser validadas antes da realização dos testes estatísticos.
+Nesta seção é apresentado uma análise exploratória dos dados, verificando normalidade, homocedasticidade, independencia e realizando a validação das premissas.
 
-Como o estudo consiste na comparação entre os resultados da execução de duas configurações de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória foi feita considerando amostras de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento foram carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot foi criado para a análise preliminar (Figura \ref{fig:boxplot}).
+Como o estudo consiste na comparação entre resultados da execução de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória será feita considerando exemplos de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento são carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot é criado para uma análise preliminar.
 
 ```{r read_data}
 sample.all <- read.csv('data.all.instances.csv', header = TRUE)
@@ -150,19 +149,16 @@ sample.all <- sample.all %>% mutate(logresult = log(result))
 
 sample.all.eda <- sample.all %>% filter(instance == 100 | instance == 50 | instance == 4)
 ```
-
-
-
-```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados \\label{fig:boxplot}"}
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
 ggplot(sample.all.eda, aes(x=configuration, y=result)) + 
   geom_boxplot() +  facet_grid(rows = vars(instance), scales = "free_y")
 ```
 
-Através da figura \ref{fig:boxplot}, as seguintes observações podem ser feitas:
+Através deste gráfico, as seguintes observações podem ser feitas:
 
-* Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para a correta análise dos experimentos.
+* Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para correta análise dos experimentos.
 * Há algumas repetições do algoritmo que poderiam ser considerados outliers. Elas devem ser removidas de forma a não prejudicar os testes de hipótese e validação das premissas.
-* A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando ao mínimo da função. Entretnato, o mesmo não pode ser afirmado para dimensões maiores.
+* A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando o mínimo da função. Entretanto, o mesmo não pode ser afirmado para dimensões maiores.
 
 ## Cálculo do número de blocos
 
@@ -198,10 +194,10 @@ for(i in seq(1,40,by=2)){
 b <- min((tb %>% filter(ratio <= 1 & ratio > 0))$b)
 ```
 
-Portanto, o número mínimo de blocos necessários $b$ é de `r b`. As iterações podem ser vistas na tabela \ref{tab:block}.
+Portanto, o número mínimo de blocos necessários $b$ é de `r b`. As iterações podem ser vistas na tabela abaixo.
 
 ```{r tabledisplay, echo = FALSE}
-kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos \\label{tab:block}', align = 'l')
+kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos', align = 'l')
 ```
 
 Portanto, devemos escolher $b$ blocos aleatoriamente das instâncias disponíveis.
@@ -219,8 +215,7 @@ data.block.instances$instance = as.factor(data.block.instances$instance)
 data.block.instances$algorithm = as.factor(data.block.instances$algorithm)
 
 ```
-
-A figura \ref{fig:lineblocks} exibe os valores obtidos para as instâncias selecionadas. Na figura \ref{fig:ridge} é possível ver o respectivo gráfico de Ridge. 
+A figura \ref{fig:lineblocks} exibe os valores obtidos para as instâncias selecionadas. Na figura \ref{fig:ridge} é possível ver o respectivo gráfico de Ridge.
 
 ```{r block_instances_plot1, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Instâncias selecionadas\\label{fig:lineblocks}"}
 
@@ -232,31 +227,29 @@ ggplot(data.block.instances, aes(x = instance,
 ```
 
 
-
-```{r block_instances_plot2, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Ridge plot dos dados \\label{fig:ridge}"}
+```{r block_instances_plot2, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Ridge plot dos dados\\label{fig:ridge}"}
 
 ggplot(data.block.instances, aes(x = result, y = instance, fill = algorithm)) + geom_density_ridges() +
   geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) + theme(legend.position="bottom")
 
 ```
 
-Analisando as figuras percebe-se claramente a influência do número de instância no desempenho do algoritmo, porém, o mesmo não se pode afirmar para as diferentes configurações.
-
 ## Validação das premissas
 
-Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como tratam-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pela blocagem (ANOVA).
+Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como tratam-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
 
 \textbf{A - Normalidade}
 
-Para a validação desta premissa, aplicou-se o teste ANOVA aos dados e depois foram avaliados os resíduos obtidos pelo moddelo. O gráfico quantil-quantil e teste de shapiro-wilk também foram utilizados nessa validação, como apresentados a seguir.
+Para a validação desta premissa, aplicou-se o teste ANOVA aos dados e depois foram avaliados os resíduos obtidos pelo modelo. O gráfico quantil-quantil e teste de shapiro-wilk também foram utilizados nessa validação, como apresentados a seguir.
 
-```{r res_blocks, echo=FALSE, fig.width=7,fig.height=5, fig.cap="Resultados do ANOVA \\label{fig:qqres}"}
+```{r res_blocks, echo=FALSE, fig.width=7,fig.height=5, fig.cap="Resultados do ANOVA para transformação logarítmica \\label{fig:qqres}"}
 res.aov <- aov(result ~ algorithm + instance, data = data.block.instances)
 par(mfrow=c(2,2))
 plot(res.aov)
 shapiro.test(res.aov$residuals)
 ```
-Pelo gráfico quantil-quantil e o teste de Shapiro-Wilk, é possível ver que a premissa de normalidade é violada com o p-valor muito abaixo da significância estabelecida. Nota-se que o gráfico quantil-quantil apresenta um desvio da normalidade maior à esquerda, o que pode ser explicado pela grande variabilidade das amostras em dimensões menores, conforme visto na figura \ref{fig:ridge}. Logo, uma transformação logarítmica foi aplicada aos dados como forma de tentar levá-los à normalidade e também reduzir os efeitos da diferença de magnitude dos resultados de cada instância.
+
+Pelo gráfico quantil-quantil e teste de Shapiro-Wilk, é possível ver que a premissa de normalidade é violada. Nota-se que o gráfico quantil-quantil apresenta um desvio da normalidade maior à esquerda, o que pode ser explicado pela grande variabilidade das amostras em dimensões menores, conforme visto na figura \ref{fig:ridge}. Logo, uma transformação logarítmica é aplicada aos dados como forma de tentar levá-los à normalidade e também reduzir os efeitos da diferença de magnitude dos resultados de cada instância.
 
 ```{r res_blocks_log, echo=FALSE, fig.width=7,fig.height=5, fig.cap="Resultados do ANOVA para transformação logarítmica \\label{fig:qqreslog}"}
 res.aov <- aov(resultLog ~ algorithm + instance, data = data.block.instances)
@@ -264,13 +257,14 @@ par(mfrow=c(2,2))
 plot(res.aov)
 shapiro.test(res.aov$residuals)
 ```
-Aplicando essa transformação, é possível notar que o desvio da normalidade é ainda mais evidenciado, conforme pode ser visto no gráfico quantil-quantil. Portanto, a premissa é novamente violada (p-valor baixo) e testes de hipótese não-paramétricos deverão ser utilizados para se obter resultados mais confiáveis.
+
+Aplicando essa transformação, é possível notar que o desvio da normalidade é ainda mais evidenciado, conforme pode ser visto no gráfico quantil-quantil. Portanto, a premissa é novamente violada e testes de hipótese não-paramétricos deverão ser utilizados para se obter resultados mais confiáveis.
 
 \textbf{B - Igualdade de Variâncias}
 
-Para validação dessa premissa utilizou-se o teste de homogeniedade de variâncias no qual a hipótese nula considera que razão entre as variâncias é igual 1. Para isso, analisou-se as duas configurações com as instâncias selecionadas anteriormente. O resultado por ser visto na tabela \ref{tab:varteste1}.
+Para validação dessa premissa utilizou-se o teste homogeniedade de variâncias no qual a hipotese nula é razão entre as variancias igual 1. Para isso, analisou-se as duas configurações com as instâncias selecionadas anteriormente. O resultado por ser visto na tabela 6.
 
-```{r vatest, echo = TRUE}
+```{r vatest, echo = FALSE, fig.cap="\\label{fig:varteste2}"}
 sw.test.result <- data.frame("p.value" = rep(0,b), instance =  rep(0,b))
 for (i in seq(1,b)){
   bi <- sort(random.blocks)[i]
@@ -280,19 +274,18 @@ for (i in seq(1,b)){
   sw.test.result[i,] <- c(var.test(data.block.algo1$result, data.block.algo2$result)$p.value,bi)
 }
 
-kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), 
-      caption = 'p-valores do teste F \\label{tab:varteste1}', align = 'l')
+kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'p-valores do teste F', align = 'l')
 ```
 
-Verifica-se que para diferentes valores de instâncias, dimensões, o p-valor é maior que o nível de significancia pré-estabelecido. Observa-se que a igualdade de variâncias é em sua maioria respeitada para dimensões maiores. Desta forma não se pode rejeitar a hipótese nula de que as variâncias são iguais. Analisando de forma geral verifica-se que é possível que as variancias entre as duas configurações são iguais, conforme pode ser visto no gráfico ``Residuals vs Fitted`` na figura \ref{fig:qqres}.
+Verifica-se que para diferentes valores de instâncias, dimensões, o p-valor é maior que o nível de significancia pré-estabelecido. Observa-se que a igualdade de variâncias é em sua maioria respeitada para dimensões maiores. Desta forma não se pode rejeitar a hipotese nula de que as variancias são iguais. Analisando de forma geral verifica-se que é possível que as variancias entre as duas configurações são iguais, conforme pode ser visto no gráfico ``Residuals vs Fitted`` na figura \ref{fig:qqres}.
 
 \textbf{C - Independência}
 
-Como descrito anteriormente, a coleta de dados foi meticulosamente planejada de forma a garantir a independência entre as amostras. As características de cada amostra foram geradas e coletadas de modo aleatório, a fim de evnitar qualquer iterção entre a amostra e a instância avaliada. Desse modo, pode-se garantir a independância entre as amostras.
+Como descrito anteriormente, a coleta de dados foi meticulosamente planejada de forma a garantir a independência entre as amostras. As características de cada amostras foram geradas e coletadas de modo aleatório, a fim de evnitar qualquer iterção entre a amostra e a instância avaliada. Desse modo, é possível garantir a independância entre as amostras.
 
 # Resultados
 
-Nesta seção são apresentados os resultados realizando os testes de hipóteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
+Nesta seção são apresentados os resultados realizando os testes de hipoteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
 
 Como as premissas do teste paramétrico (ANOVA) foram parcialmente validadas, optou-se por realizar os testes paramétricos e não-paramétricos a fim de comparar os resultados. Os resultados das duas aborgagens são apresentados e discutidos nas próximas seções.
 
@@ -305,7 +298,8 @@ model <- aov(result~algorithm+instance,
 summary(model)
 summary.lm(model)$r.squared
 ```
-De acordo com o resultado do teste (p-valor < 0.05) existem evidências de que a média dos dois algoritmos não são iguais. Além disso, o modelo obteve um ajuste satisfatório com o $r^2 = 0.971$, isto é, o modelo explica mais de 97% dos resultados dos dois algoritmos.
+
+De acordo com o resultado do teste (p-valor < 0.05) existem evidências de que a média dos dois algoritmos não são iguais. Além disso, o modelo obteve um ajuste satisfatório com o $r^2 = 0.974$, isto é, o modelo explica mais de 97% dos resultados dos dois algoritmos.
 
 Assim como na validação, foi realizado o teste de hipótese considerando uma transformação logarítmica dos resultados.
 
@@ -317,8 +311,7 @@ summary.lm(model_log)$r.squared
 
 ```
 
-Pela análise dos resultados, pode-se concluir que o modelo também ajusta bem aos dados, porém o modelo com os dados originais obteve melhor ajuste. Apesar dos bons resultados de correlação foi realizado também o teste não paramétrico, devido às falhas na validação das premissas.
-
+Pela análise dos resultados, pode-se concluir que o modelo também ajusta bem aos dados, porém o modelo com os dados originais obteve melhor ajuste.
 
 ## Teste de Hipótese - Não Paramétrico
 
@@ -331,27 +324,26 @@ kruskal.test(result~algorithm,data=data.block.instances)
 
 ## Estimação das magnitudes das diferenças
 
-Para a estimativa do intervalo de confiança, utilizou-se o teste de Dunnet, sobre os resultados do ANOVA. Note que o intervalo obtido não contém o valor 0, ou seja, a hipótese nula é rejeitada.
+Para a estimativa do intervalo de confiança, utilizou-se o teste de Dunnet sobre os resultados do anova. Note que o intervalo obtido não contém o valor 0, ou seja, a hipótese nula é rejeitada.
 
-```{r DuntestCI, echo = TRUE, fig.width=5,fig.height=3}
+```{r DuntestCI, echo = FALSE, fig.width=5,fig.height=3}
 duntest <- glht(model, linfct = mcp(algorithm = "Dunnett"))
 duntestCI <- confint(duntest)
 par(mar = c(5, 8, 4, 2), las = 1)
-plot(duntestCI, xlab = "Diferença média")
+plot(duntestCI, xlab = "Mean difference (log scale)")
 ```
 
 O teste de Wilcoxon [@wilcoxte69:online], por ser não-paramétrico e válido para o caso da comparação entre duas populações, é aplicado para a estimativa de intervalo de confiança.
 
-```{r testWilcox, echo = TRUE}
-wilcox.test(result ~ algorithm ,data=data.block.instances, conf.int = TRUE,
-            alternative='two.sided', conf.level=0.95, paired=FALSE)
+```{r testWilcox, echo = FALSE}
+wilcox.test(result ~ algorithm ,data=data.block.instances, conf.int = TRUE, alternative='two.sided', conf.level=0.95, paired=FALSE)
 ```
 
 Note que, conforme esperado, o intervalo de confiança contém o valor 0, ou seja, não podemos rejeitar a hipótese nula de que as médias são iguais.
 
 # Conclusão
 
-O presente trabalho realizou o delineamento do experimento que testou o desempenho de duas configurações diferentes de um algogirtmo DE. Como não foi possível validar todas as premissas com precisão, optou-se por realizar os testes paramétricos, considerando leves desvios de normalidade e homocedasticidade, e os testes não paramétricos, que não precisam das premissas.
+O presente trabalho realizou o delineamento do experimento que testou o desempenho de duas configurações diferentes de um algoritmo DE. Como não foi possível validar todas as premissas com precisão, optou-se por realizar os testes paramétricos, considerando leves desvios de normalidade e homocedasticidade, e os testes não paramétricos, que não precisam das premissas.
 
 Após a realização dos testes verificou-se que, provavelemente, devido à não validação das premissas e à influência das instâncias nos resultados, não foi possível chegar à mesma conclusão pelos testes paramétrico e não paramétrico.
 
