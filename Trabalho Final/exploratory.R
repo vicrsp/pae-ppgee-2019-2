@@ -61,6 +61,9 @@ ggplot(data, aes(x=mes, y=VarTempoProcesso, fill = turma)) +
 #ggplot(data, aes(x = VarTempoProcesso, y = mes, fill = turma)) + geom_density_ridges() +
 #  geom_density_ridges() + theme(legend.position="bottom")
 
+#scatter
+ggplot(data, aes(x=VarConsumo_Quimica, y=VarConsumo_Eletrica, color=mes)) + geom_point() +  facet_grid(cols = vars(turma), scales = "free_y")
+
 
 # Raw
 anv <- aov((VarTempoProcesso) ~ turma + mes, data = data)
