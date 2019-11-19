@@ -357,8 +357,14 @@ Após a realização dos testes verificou-se que, provavelemente, devido à não
 
 Enquanto o teste paramétrico apresenta evidências de rejeição da igualdade das médias (p-valor < 0.05), o teste não paramétrico leva a concluir que não há diferença entre os resultados dos dois algoritmos (p-valor = `r krus.test$p.value`) para a significância especificada.
 
-## Apêndice A
-### Geração de configuração
+# Divisão das Atividades
+
+* Victor - Coordenador
+* Maressa - Verificador e Monitor
+* Gilmar - Relator
+
+# Apêndice A
+## Geração de configuração
 ```{r config_generation, eval = FALSE}
 # Load packages -----------------------------------------------------------
 if (!require(ExpDE, quietly = TRUE)){
@@ -413,7 +419,7 @@ write.csv(x.config.all.shuffled.gilmar, 'rcbd.config.gilmar.csv', row.names=FALS
 write.csv(x.config.all.shuffled.maressa, 'rcbd.config.maressa.csv', row.names=FALSE)
 ```
 
-### Execução de configuração
+## Execução de configuração
 ```{r config_execution, eval = FALSE}
 # Load packages -----------------------------------------------------------
 if (!require(ExpDE, quietly = TRUE)){
