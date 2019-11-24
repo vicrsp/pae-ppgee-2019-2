@@ -62,6 +62,17 @@ if (!require(multcomp, quietly = TRUE)){
   install.packages("multcomp")
 }
 
+if (!require(knitr, quietly = TRUE)){
+  install.packages("knitr")
+}
+
+if (!require(mvoutlier, quietly = TRUE)){
+  install.packages("mvoutlier")
+}
+
+if (!require(reshape, quietly = TRUE)){
+  install.packages("reshape")
+}
 
 ```
 
@@ -91,33 +102,73 @@ data.materials$turno = as.factor(data.materials$Turno)
 - Resultados
 - Conclusão
 
-## Introdução 
+## Introdução | <footnote content="Disponível em https://www.newsteelconstruction.com/wp/an-introduction-to-steelmaking/"> Rotas de produção de aço</footnote>
 
-<footnote content="Imagem disponível em http://www.acobrasil.org.br/site2015/images/fluxo.jpg"> O fluxo de produção de aço pode ser visto na figura abaixo</footnote>
 
-<img src="fluxo_aco.jpg" alt="drawing" class="center"/>
+<img src="steel_making.gif" alt="drawing" class="center"/>
+
+## Introdução | <footnote content="Disponível em https://www.steelconstruction.info/Steel_manufacture"> Processo do Forno Elétrico</footnote>
+
+<img src="eaf_diagram.png" alt="drawing" class="center"/>
+
+## Descrição dos Dados {.smaller}
+
+* Os dados consistem de KPIs medidos de processo de produção de aço em um forno elétrico, coletados entre Janeiro e Outubro de 2019: consumo de energia elétrica, consumo de oxigênio e tempo de parada. 
+* Cada instância representa uma execução independente do processo. 
+* Instâncias consideradas como outliers (erros de medição, valores absurdos) foram removidas
+* Os dados foram normalizados por uma constante aleatória, por questões de confidencialidade exigidas para os valores reais
+
+```{r table_ex, echo=FALSE}
+kable(data.materials[1:3, c('turma', 'material', 'mes', 'VarConsumo_Quimica', 'VarConsumo_Eletrica','VarTempoProcesso')] )
+```
 
 
 ## Planejamento do Experimento | Objetivo {.smaller}
 
-O objetivo é comparar o desempenho entre turmas ...
+O objetivo é comparar o desempenho das turmas $T$ em relação aos três KPIs do processo,  considerando também diferentes materiais $M$ produzidos para a comparação.
+
+Portanto, um experimento fatorial será realizado para os fatores **Turma** e **Material**. Além disso, a blocagem será realizada para o fator **Mês**, objetivando remover efeitos de sazonalidade dos dados.
 
 ## Planejamento do Experimento | Hipóteses {.smaller}
 
-Para a análise comparativa entre as configurações do algoritmo DE, determinou-se as seguintes hipóteses a serem testadas.
-$$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
-Onde $\mu_{1}$ e $\mu_{2}$ são as médias amostrais das configurações 1 e 2 dos algoritmos, respectivamente. 
+Fator Turma:
+$$\begin{cases} H_0: \tau_{i} = 0, \forall i &\\H_1:\exists \tau_{i} \neq 0 \end{cases}$$
 
-Além disso, foram definidos os seguintes parâmetros experimentais: 
+Fator Material:
+$$\begin{cases} H_0: \beta_{j} = 0, \forall j &\\H_1:\exists \beta_{j} \neq 0 \end{cases}$$
+Efeito de interação:
+$$\begin{cases} H_0: (\tau\beta)_{ij} = 0, \forall i,j &\\H_1:\exists (\tau\beta)_{ij} \neq 0 \end{cases}$$
+
+## Planejamento do Experimento | Parâmetros experimentais {.smaller}
 
 * Significância desejada: $\alpha = 0.05$.
 * Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.5$
 * Potência mínima desejada $\pi = 1 - \beta = 0.8$
 
-## Descrição dos Dados {.smaller}
 
-* Os dados consistem de corridas de processo de produção de aço em um forno elétrico, coletados entre Janeiro e Outubro de 2019
-* Cada instância representa uma execução do processo
+## Planejamento do Experimento | Cálculo do número de amostras {.smaller}
+
+
+
+## Análise Exploratória  {.smaller}
+
+Número de amostras para os fatores considerados.
+```{r heat_count, echo=FALSE, fig.width=8,fig.height=5, fig.align='center'}
+
+ggplot(data.materials, aes(x=mes, y=VarConsumo_Eletrica)) + 
+  geom_boxplot() + facet_grid(cols = vars(turma), rows=vars(material), scales = "free_y")
+
+```
+
+## Análise Exploratória  {.smaller}
+
+```{r heat_count_table, echo=FALSE, fig.width=8,fig.height=5, fig.align='center'}
+
+invisible(data.count <- cast(data.materials, turma ~ material, value='turno', fun.aggregate = length))
+colnames(data.count)[colnames(data.count)=="turma"] <- "turma/material"
+kable(data.count)
+
+```
 
 ## Análise Exploratória  {.smaller}
 
@@ -129,7 +180,6 @@ ggplot(data, aes(x=mes, y=VarConsumo_Eletrica, fill = turma)) +
 
 ## Análise Exploratória {.smaller}
 
-
 ```{r plot_quimica, echo=FALSE, fig.width=7,fig.height=5, fig.align='center', fig.cap="Boxplot da variável química"}
 ggplot(data, aes(x=mes, y=VarConsumo_Quimica, fill = turma)) + 
   geom_boxplot() 
@@ -137,7 +187,6 @@ ggplot(data, aes(x=mes, y=VarConsumo_Quimica, fill = turma)) +
 ```
 
 ## Análise Exploratória {.smaller}
-
 
 ```{r plot_tempo, echo=FALSE, fig.width=7,fig.height=5, fig.align='center',  fig.cap="Boxplot do tempo de parada"}
 ggplot(data, aes(x=mes, y=VarTempoProcesso, fill = turma)) + 
@@ -147,16 +196,30 @@ ggplot(data, aes(x=mes, y=VarTempoProcesso, fill = turma)) +
 
 ## Validação das premissas | Normalidade {.smaller}
 
-```{r assum_norm, echo = FALSE, fig.width=7,fig.height=4, fig.align='center',  fig.cap="QQ plot para resíduos"}
-anv <- aov((VarConsumo_Quimica) ~  turno * material, data = data.materials)
+```{r assum_norm, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="QQ plot para resíduos"}
+anv.quim <- aov((VarConsumo_Quimica) ~  turno * material + mes, data = data.materials)
+anv.ener <- aov((VarConsumo_Eletrica) ~  turno * material + mes, data = data.materials)
+anv.temp <- aov((VarTempoProcesso) ~  turno * material + mes, data = data.materials)
 
-invisible(qqPlot(anv$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarConsumo_Quimica"))
+par(mfrow=c(1,3))
+invisible(qqPlot(anv.quim$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarConsumo_Quimica"))
+invisible(qqPlot(anv.ener$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarConsumo_Eletrica"))
+invisible(qqPlot(anv.temp$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarTempoProcesso"))
+
 ```
 
 ## Validação das premissas | Homocedasticidade {.smaller}
 
-```{r assum_homoc, echo = FALSE, fig.width=7,fig.height=4, fig.align='center',  fig.cap="Residuals vs Fitted"}
-plot(anv)
+```{r assum_homoc, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="Residuals vs Fitted"}
+par(mfrow=c(1,3))
+plot(anv.quim$fitted.values, anv.quim$residuals)
+abline(lm(anv.quim$residuals ~ anv.quim$fitted.values), col="red")
+
+plot(anv.ener$fitted.values, anv.ener$residuals)
+abline(lm(anv.ener$residuals ~ anv.ener$fitted.values), col="red")
+
+plot(anv.temp$fitted.values, anv.temp$residuals)
+abline(lm(anv.temp$residuals ~ anv.temp$fitted.values), col="red")
 
 ```
 
@@ -164,8 +227,34 @@ plot(anv)
 
 ## Resultados {.smaller}
 
-```{r summ_anv, echo = TRUE}
-summary(anv)
+```{r summ_anv_quim, echo = TRUE}
+summary(anv.quim)
+```
+
+```{r summ_anv_ener, echo = TRUE}
+summary(anv.ener)
+```
+
+
+## Resultados {.smaller}
+
+```{r inter_plot_elet, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
+interaction.plot(data.materials$turma, data.materials$material, data.materials$VarConsumo_Eletrica, type="b", col=c(1:4),
+   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'turma', trace.label = 'material')
+```
+
+## Resultados {.smaller}
+
+```{r inter_plot_quim, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
+interaction.plot(data.materials$turma, data.materials$material, data.materials$VarConsumo_Quimica, type="b", col=c(1:4),
+   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'turma', trace.label = 'material')
+```
+
+## Resultados {.smaller}
+
+```{r inter_plot_tempo, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
+interaction.plot(data.materials$turma, data.materials$material, data.materials$VarTempoProcesso, type="b", col=c(1:4),
+   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'turma', trace.label = 'material')
 ```
 
 ## Conclusão
