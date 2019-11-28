@@ -138,3 +138,28 @@ tukey.test.CI <- confint(tukey.test, level = 0.95)
 par(mar = c(5, 8, 4, 2), las = 1)
 par(mfrow=c(1,1))
 plot(tukey.test.CI, xlab = "Tempo de processo")
+
+## Sample sizes
+a <- 4
+b <- 9
+d <- 1
+alpha <- 0.05
+beta <- 0.2
+
+tau <- c(-d, d, rep(0, a - 2)) # define tau vector
+n <- 2
+
+tb <- data.frame(n = rep(-1, 50), ratio = rep(-1,50), phi = rep(-1,50))
+
+for(i in seq(1,40,by=2)){
+  
+  n <- i + 2
+  f1 <- qf(1 - alpha, a - 1, a*b*(n - 1))
+  f2 <- qf(beta, a - 1, a*b*(n - 1), (a*n*sum(tau^2)/b))
+  phi <- a*n*sum(tau^2)/b
+  
+  tb[i, ] = c(n, f1/f2, phi)
+}
+
+n_b <- min((tb %>% filter(ratio <= 1 & ratio > 0))$n)
+tb %>% filter(ratio > 0)
