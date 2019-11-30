@@ -37,6 +37,7 @@ css: styles.css
 
 ```{r setup, include=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+options("kableExtra.html.bsTable" = T)
 
 if (!require(ggplot2, quietly = TRUE)){
   install.packages("ggplot2")
@@ -78,6 +79,11 @@ if (!require(effects, quietly = TRUE)){
   install.packages("effects")
 }
 
+if (!require(kableExtra, quietly = TRUE)){
+  install.packages("kableExtra")
+}
+
+
 ```
 
 
@@ -111,19 +117,19 @@ data.materials$turno = as.factor(data.materials$Turno)
 
 ## Descrição dos Dados {.smaller}
 
-* Os dados consistem de KPIs medidos de processo de produção de aço em um forno elétrico, coletados entre Janeiro e Outubro de 2019: consumo de energia elétrica, consumo de oxigênio e tempo de parada. 
+* Os dados consistem no consumo de oxigênio registrado para um processo produção de aço em um forno elétrico, coletados entre Janeiro e Outubro de 2019
 * Cada instância representa uma execução independente do processo. 
 * Instâncias consideradas como outliers (erros de medição, valores absurdos) foram removidas
 * Os dados foram normalizados por uma constante aleatória, por questões de confidencialidade exigidas para os valores reais
 
 ```{r table_ex, echo=FALSE}
-kable(data.materials[1:3, c('turma', 'material', 'mes', 'VarConsumo_Quimica')] )
+kable(data.materials[1:3, c('turma', 'material', 'mes', 'VarConsumo_Quimica')]) %>% kable_styling(c("bordered","striped"), full_width = F)
 ```
 
 
 ## Planejamento do Experimento | Objetivo {.smaller}
 
-O objetivo é comparar o desempenho das turmas $T$ em relação ao consumo de energia elétrica do processo, considerando também diferentes materiais $M$ produzidos para a comparação.
+O objetivo é comparar o desempenho de 4 turmas em relação ao consumo de oxigênio do processo, considerando também 9 diferentes materiais (tipos de aço) produzidos para a comparação.
 
 Portanto, um experimento fatorial será realizado para os fatores **Turma** e **Material**. Além disso, a blocagem será realizada para o fator **Mês**, objetivando remover efeitos de sazonalidade dos dados. 
 
@@ -174,11 +180,13 @@ for(i in seq(10,30,by=3)){
 }
 
 n_a <- min((tb %>% filter(ratio <= 1 & ratio > 0))$n)
-kable(tb %>% filter(ratio >= 0.5))
+#kable(tb %>% filter(ratio >= 0.5))
+tb %>% filter(ratio >= 0.5) %>% kable() %>% kable_styling(c("bordered","striped"), full_width = F) %>% row_spec(6, bold = T, color = "red")
+
 ```
 
 ## Análise Exploratória {.smaller}
-
+Número de amostras
 ```{r heat_count_table, echo=FALSE, fig.width=8,fig.height=5, fig.align='center'}
 
 replications(VarConsumo_Quimica ~  turma * material + mes, data = data.materials)
@@ -189,11 +197,11 @@ replications(VarConsumo_Quimica ~  turma * material + mes, data = data.materials
 ```
 
 
-## Análise Exploratória {.smallest}
+## Análise Exploratória {.smaller}
 
-```{r heat_count, echo=FALSE, fig.width=8,fig.height=5, fig.align='center'}
+```{r heat_count, echo=FALSE, fig.width=8,fig.height=4, fig.align='center'}
 
-ggplot(data.materials, aes(x=mes, y=VarConsumo_Quimica, fill=turno)) + 
+ggplot(data.materials, aes(x=mes, y=VarConsumo_Quimica, fill=turma)) + 
   geom_boxplot() + facet_grid(rows=vars(material), scales = "free_y")
 
 
@@ -201,7 +209,6 @@ data.materials <- data.materials %>% filter(Material != 13)
 
 ```
 O material 13 será removido por ter sido produzio somente em alguns meses do ano.
-
 
 ## Análise Exploratória  {.smaller}
 
@@ -232,19 +239,19 @@ abline(lm(anv.quim$residuals ~ anv.quim$fitted.values), col="red")
 
 ## Validação das premissas | Independência {.smaller}
 
+* Cada execução do processo é independente da outra
+* Existem intâncias de diferentes meses e dias, o que garante ainda mais a independência
+* Pode existir certa dependência se as instâncias forem analisadas de forma sequencial. Isso só seria observado dentro de uma mesma turma.
+
+
 ## Resultados {.smaller}
 
 ```{r summ_anv_quim, echo = TRUE}
 summary(anv.quim)
 ```
 
-## Resultados {.smaller}
-
-```{r inter_plot_elet, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
-interaction.plot(data.materials$turma, data.materials$material, data.materials$VarConsumo_Quimica, type="b", col=c(1:4),
-   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'Turma', trace.label = 'Material')
-```
-
+* Fatores Turma, Mês e Turma x Material possuem pelo menos uma diferença significativa
+* Não há diferenças significativas entre os dados do fator Material
 
 ## Resultados {.smaller}
 
@@ -258,7 +265,7 @@ plot(ener.effs)
 ```{r effects_mpc_o2_turma, echo = FALSE, warning=FALSE,  fig.width=7,fig.height=5, fig.align='center'}
 mcp.quim <- glht(anv.quim, linfct = mcp(turma = "Tukey"))
 mcp.quim.CI <- confint(mcp.quim, level= 1 - alpha)
-plot(mcp.quim.CI)
+plot(mcp.quim.CI, main = 'intervalos de confiança - Turma')
 ```
 
 ## Resultados {.smaller}
@@ -266,7 +273,7 @@ plot(mcp.quim.CI)
 ```{r effects_mpc_o2_material, echo = FALSE, warning=FALSE, fig.width=7,fig.height=5, fig.align='center'}
 mcp.quim <- glht(anv.quim, linfct = mcp(material = "Tukey"))
 #summary(mcp.quim)
-plot(mcp.quim)
+plot(mcp.quim, main = 'Intervalos de confiança - Material')
 ```
 
 
@@ -285,14 +292,13 @@ model2 <- aov(VarConsumo_Quimica ~ mes + interfac, data = data.materials)
 
 # Multiple comparisons
 mcp.inter <- glht(model2, linfct = mcp(interfac = "Dunnett"))
-plot(mcp.inter)
+plot(mcp.inter, main = 'Intervalos de confiança - Turma.Material')
 ```
 
 
 ## Conclusão
 
 * Não existem diferenças de consumo significativas ao se considerar somente o fator material
-* A turma 3 possui pior desempenho melhor do que a 2 e 0, porém o mesmo não pode ser concluído em relaçao à turma 1 para a significância especificada.
-* A turma 2 possui o melhor desempenho de todas. Embora em relação à turma 0 não podemos concluir diferenças estatisticamente relevantes, o intervalo de confiança predominantemente negativo sugere uma maior probabilidade dela ter um menor consumo.
+* A turma 3 possui diferença significativa em relação à 2 e 0, porém o mesmo não pode ser concluído para a 1.
 
 ## Referências
