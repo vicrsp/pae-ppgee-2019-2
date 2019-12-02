@@ -1,17 +1,18 @@
 ---
 title: "Trabalho Final"
 author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
-date: "03/12/2019"
-output:
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
   ioslides_presentation:
-    fig_caption: yes
+    fig_caption: true
     logo: logo_ufmg.png
-  slidy_presentation: default
+  
   html_document:
     df_print: paged
+    
+bibliography: refsTF.bib
 csl: ieee.csl
 css: styles.css
-bibliography: refsTF.bib
 ---
 
 <script src="jquery.min.js"></script>
@@ -36,6 +37,7 @@ bibliography: refsTF.bib
 
 ```{r setup, include=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+options("kableExtra.html.bsTable" = T)
 
 if (!require(ggplot2, quietly = TRUE)){
   install.packages("ggplot2")
@@ -73,17 +75,20 @@ if (!require(reshape, quietly = TRUE)){
   install.packages("reshape")
 }
 
+if (!require(effects, quietly = TRUE)){
+  install.packages("effects")
+}
+
+if (!require(kableExtra, quietly = TRUE)){
+  install.packages("kableExtra")
+}
+
+
 ```
 
 
 ```{r data_loading, include=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
-data <- read.csv('data_pre_processed_raw.csv')
 data.materials <- read.csv('data_pre_processed_filt_materials.csv')
-
-data$turma = as.factor(data$Turma)
-data$material = as.factor(data$Material)
-data$mes = as.factor(data$Mês)
-data$turno = as.factor(data$Turno)
 
 data.materials$turma = as.factor(data.materials$Turma)
 data.materials$material = as.factor(data.materials$Material)
@@ -94,6 +99,7 @@ data.materials$turno = as.factor(data.materials$Turno)
 ## Agenda
 
 - Introdução
+- Revisão de literatura
 - Planejamento do Experimento
 - Descrição dos Dados
 - Análise Exploratória
@@ -110,23 +116,37 @@ data.materials$turno = as.factor(data.materials$Turno)
 
 <img src="eaf_diagram.png" alt="drawing" class="center"/>
 
+
 ## Descrição dos Dados {.smaller}
 
-* Os dados consistem de KPIs medidos de processo de produção de aço em um forno elétrico, coletados entre Janeiro e Outubro de 2019: consumo de energia elétrica, consumo de oxigênio e tempo de parada. 
-* Cada instância representa uma execução independente do processo. 
-* Instâncias consideradas como outliers (erros de medição, valores absurdos) foram removidas
-* Os dados foram normalizados por uma constante aleatória, por questões de confidencialidade exigidas para os valores reais
+* Os dados consistem no consumo de oxigênio registrado no processo de produção de aço em um forno elétrico;
+* Dados - Janeiro e Outubro de 2019;
+* Cada instância representa uma execução independente do processo;
+* Instâncias consideradas como outliers (erros de medição, valores absurdos) foram removidas;
+* Os dados foram normalizados por uma constante aleatória, por questões de confidencialidade.
 
 ```{r table_ex, echo=FALSE}
-kable(data.materials[1:3, c('turma', 'material', 'mes', 'VarConsumo_Quimica', 'VarConsumo_Eletrica','VarTempoProcesso')] )
+kable(data.materials[1:3, c('turma', 'material', 'mes', 'VarConsumo_Quimica')]) %>% kable_styling(c("bordered","striped"), full_width = F)
 ```
+
+## Revisão de Literatura {.smaller}
+
+* **Blocagem** - Usada para eliminar ruídos conhecidos e controláveis [@Montgomery:2006:applied] - Será usada para retirar a Sazonalidade dos dados;
+
+* **Experimento Fatorial** - Eficiente para estudo de efeitos de dois ou mais fatores [@Montgomery:2006:applied] - Será usado para analisar os dois fatores material e turma, e a interação entre eles.
+
+<img src="Design_Experiment.png" alt="drawing" class="center"/>
 
 
 ## Planejamento do Experimento | Objetivo {.smaller}
 
-O objetivo é comparar o desempenho das turmas $T$ em relação aos três KPIs do processo,  considerando também diferentes materiais $M$ produzidos para a comparação.
+O objetivo é comparar o desempenho de 4 turmas em relação ao consumo de oxigênio do processo, considerando também 9 diferentes materiais (tipos de aço) produzidos para a comparação.
 
-Portanto, um experimento fatorial será realizado para os fatores **Turma** e **Material**. Além disso, a blocagem será realizada para o fator **Mês**, objetivando remover efeitos de sazonalidade dos dados.
+Portanto, um experimento fatorial será realizado para os fatores **Turma** e **Material**. Além disso, a blocagem será realizada para o fator **Mês**, objetivando remover efeitos de sazonalidade dos dados. 
+
+Isso resulta no seguinte modelo linear [@montgomery2007applied]:
+
+$$\begin{equation}y_{ijk} = \mu + \tau_i + \beta_j + (\tau\beta)_{ij} + \delta_k +  \epsilon_{ijk}  \end{equation}$$
 
 ## Planejamento do Experimento | Hipóteses {.smaller}
 
@@ -141,88 +161,103 @@ $$\begin{cases} H_0: (\tau\beta)_{ij} = 0, \forall i,j &\\H_1:\exists (\tau\beta
 ## Planejamento do Experimento | Parâmetros experimentais {.smaller}
 
 * Significância desejada: $\alpha = 0.05$.
-* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.5$
+* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.3$
 * Potência mínima desejada $\pi = 1 - \beta = 0.8$
 
 
 ## Planejamento do Experimento | Cálculo do número de amostras {.smaller}
 
+```{r blockcalculation_a, echo = FALSE}
+a <- 4 # turmas
+b <- 9 # materiais
+d <- 0.3 # diferenca minima padrao
+alpha <- 0.05
+beta <- 0.2
 
+tau <- c(-d, d, rep(0, a - 2)) # define tau vector
+n <- 2
 
-## Análise Exploratória  {.smaller}
+tb <- data.frame(n = rep(-1, 100), ratio = rep(-1,100), phi = rep(-1,100))
 
-Número de amostras para os fatores considerados.
-```{r heat_count, echo=FALSE, fig.width=8,fig.height=5, fig.align='center'}
+for(i in seq(10,30,by=3)){
 
-ggplot(data.materials, aes(x=mes, y=VarConsumo_Eletrica)) + 
-  geom_boxplot() + facet_grid(cols = vars(turma), rows=vars(material), scales = "free_y")
+  n <- i + 4
+  f1 <- qf(1 - alpha, a - 1, a*b*(n - 1))
+  phi <- b*n*sum(tau^2)/a
+  f2 <- qf(beta, a - 1, a*b*(n - 1), phi)
+  
+  
+  tb[i, ] = c(n, f1/f2, phi)
+}
+
+n_a <- min((tb %>% filter(ratio <= 1 & ratio > 0))$n)
+#kable(tb %>% filter(ratio >= 0.5))
+tb %>% filter(ratio >= 0.5) %>% kable() %>% kable_styling(c("bordered","striped"), full_width = F) %>% row_spec(6, bold = T, color = "red")
 
 ```
 
-## Análise Exploratória  {.smaller}
-
+## Análise Exploratória {.smaller}
+Número de amostras
 ```{r heat_count_table, echo=FALSE, fig.width=8,fig.height=5, fig.align='center'}
 
-invisible(data.count <- cast(data.materials, turma ~ material, value='turno', fun.aggregate = length))
-colnames(data.count)[colnames(data.count)=="turma"] <- "turma/material"
-kable(data.count)
+replications(VarConsumo_Quimica ~  turma * material + mes, data = data.materials)
+#invisible(data.count <- cast(data.materials, turma ~ material, value='turno', fun.aggregate = length))
+#colnames(data.count)[colnames(data.count)=="turma"] <- "turma/material"
+#kable(data.count)
 
 ```
+
+
+## Análise Exploratória {.smaller}
+
+```{r heat_count, echo=FALSE, fig.width=8,fig.height=4, fig.align='center'}
+
+ggplot(data.materials, aes(x=mes, y=VarConsumo_Quimica, fill=turma)) + 
+  geom_boxplot() + facet_grid(rows=vars(material), scales = "free_y")
+
+
+data.materials <- data.materials %>% filter(Material != 13)
+
+```
+O material 13 será removido por ter sido produzio somente em alguns meses do ano.
 
 ## Análise Exploratória  {.smaller}
 
-```{r plot_eletrica, echo=FALSE, fig.width=7,fig.height=5, fig.align='center', fig.cap="Boxplot da variável elétrica"}
-ggplot(data, aes(x=mes, y=VarConsumo_Eletrica, fill = turma)) + 
-  geom_boxplot() 
-
-```
-
-## Análise Exploratória {.smaller}
-
-```{r plot_quimica, echo=FALSE, fig.width=7,fig.height=5, fig.align='center', fig.cap="Boxplot da variável química"}
-ggplot(data, aes(x=mes, y=VarConsumo_Quimica, fill = turma)) + 
-  geom_boxplot() 
-
-```
-
-## Análise Exploratória {.smaller}
-
-```{r plot_tempo, echo=FALSE, fig.width=7,fig.height=5, fig.align='center',  fig.cap="Boxplot do tempo de parada"}
-ggplot(data, aes(x=mes, y=VarTempoProcesso, fill = turma)) + 
+```{r plot_eletrica, echo=FALSE, fig.width=7,fig.height=5, fig.align='center', fig.cap="Boxplot da variável química"}
+ggplot(data.materials, aes(x=mes, y=VarConsumo_Quimica, fill = turma)) + 
   geom_boxplot() 
 
 ```
 
 ## Validação das premissas | Normalidade {.smaller}
+Teste de Shapiro-Wilk - p-value = 8.472e-10
 
 ```{r assum_norm, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="QQ plot para resíduos"}
-anv.quim <- aov((VarConsumo_Quimica) ~  turno * material + mes, data = data.materials)
-anv.ener <- aov((VarConsumo_Eletrica) ~  turno * material + mes, data = data.materials)
-anv.temp <- aov((VarTempoProcesso) ~  turno * material + mes, data = data.materials)
+anv.quim <- aov(VarConsumo_Quimica ~  turma * material + mes, data = data.materials)
+anv.quim.log <- aov(log(VarConsumo_Quimica) ~  turma * material + mes, data = data.materials)
 
-par(mfrow=c(1,3))
+#shapiro.test(anv.quim$residuals)
+
 invisible(qqPlot(anv.quim$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarConsumo_Quimica"))
-invisible(qqPlot(anv.ener$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarConsumo_Eletrica"))
-invisible(qqPlot(anv.temp$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarTempoProcesso"))
 
 ```
+
+
 
 ## Validação das premissas | Homocedasticidade {.smaller}
 
 ```{r assum_homoc, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="Residuals vs Fitted"}
-par(mfrow=c(1,3))
+
 plot(anv.quim$fitted.values, anv.quim$residuals)
 abline(lm(anv.quim$residuals ~ anv.quim$fitted.values), col="red")
-
-plot(anv.ener$fitted.values, anv.ener$residuals)
-abline(lm(anv.ener$residuals ~ anv.ener$fitted.values), col="red")
-
-plot(anv.temp$fitted.values, anv.temp$residuals)
-abline(lm(anv.temp$residuals ~ anv.temp$fitted.values), col="red")
-
 ```
 
 ## Validação das premissas | Independência {.smaller}
+
+* Cada execução do processo é independente da outra
+* Existem intâncias de diferentes meses e dias, o que garante ainda mais a independência
+* Pode existir certa dependência se as instâncias forem analisadas de forma sequencial. Isso só seria observado dentro de uma mesma turma.
+
 
 ## Resultados {.smaller}
 
@@ -230,54 +265,53 @@ abline(lm(anv.temp$residuals ~ anv.temp$fitted.values), col="red")
 summary(anv.quim)
 ```
 
-```{r summ_anv_ener, echo = TRUE}
-summary(anv.ener)
+
+## Resultados {.smaller}
+
+```{r effects_plot_o2, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
+ener.effs <- allEffects(anv.quim)
+plot(ener.effs)
+```
+
+## Resultados {.smaller}
+
+```{r effects_mpc_o2_turma, echo = FALSE, warning=FALSE,  fig.width=7,fig.height=5, fig.align='center'}
+mcp.quim <- glht(anv.quim, linfct = mcp(turma = "Tukey"))
+mcp.quim.CI <- confint(mcp.quim, level= 1 - alpha)
+plot(mcp.quim.CI, main = 'Intervalos de confiança - Turma')
+```
+
+## Resultados {.smaller}
+
+```{r effects_mpc_o2_material, echo = FALSE, warning=FALSE, fig.width=7,fig.height=5, fig.align='center'}
+mcp.quim <- glht(anv.quim, linfct = mcp(material = "Tukey"))
+#summary(mcp.quim)
+plot(mcp.quim, main = 'Intervalos de confiança - Material')
 ```
 
 
 ## Resultados {.smaller}
 
-```{r inter_plot_elet, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
-interaction.plot(data.materials$turma, data.materials$material, data.materials$VarConsumo_Eletrica, type="b", col=c(1:4),
-   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'turma', trace.label = 'material')
+```{r effects_mpc_o2_inter, echo = FALSE, warning=FALSE, fig.width=7,fig.height=5, fig.align='center'}
+# Create meta-factor for interaction groups
+interfac <- with(data.materials,interaction(turma, material))
+
+# Use group with the smallest sample mean as the reference
+ref <- with(data.materials, which.min(tapply(VarConsumo_Quimica, interfac, mean)))
+
+interfac <- relevel(interfac, ref = "3.4")
+# ReFit model
+model2 <- aov(VarConsumo_Quimica ~ mes + interfac, data = data.materials)
+
+# Multiple comparisons
+mcp.inter <- glht(model2, linfct = mcp(interfac = "Dunnett"))
+plot(mcp.inter, main = 'Intervalos de confiança - Turma.Material')
 ```
 
-## Resultados {.smaller}
-
-```{r inter_plot_quim, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
-interaction.plot(data.materials$turma, data.materials$material, data.materials$VarConsumo_Quimica, type="b", col=c(1:4),
-   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'turma', trace.label = 'material')
-```
-
-## Resultados {.smaller}
-
-```{r inter_plot_tempo, echo = FALSE,  fig.width=7,fig.height=5, fig.align='center'}
-interaction.plot(data.materials$turma, data.materials$material, data.materials$VarTempoProcesso, type="b", col=c(1:4),
-   leg.bty="o", leg.bg="beige", lwd=2, pch=c(18,24,22), xlab = 'turma', trace.label = 'material')
-```
-
-
-## Resultados {.smaller}
-
-```{r multicomparison1}
-tk_test_quim <-  glht(anv.quim, linfct = mcp(material = "Tukey"))
-plot(tk_test_quim)
-```
-
-## Resultados {.smaller}
-
-```{r multicomparison2}
-tk_test_ener <-  glht(anv.ener, linfct = mcp(material = "Tukey"))
-plot(tk_test_ener)
-```
-
-## Resultados {.smaller}
-
-```{r multicomparison2}
-tk_test_temp <-  glht(anv.temp, linfct = mcp(material = "Tukey"))
-plot(tk_test_temp)
-```
 
 ## Conclusão
+
+* Não existem diferenças de consumo significativas ao se considerar somente o fator material
+* A turma 3 possui diferença significativa em relação à 2 e 0, porém o mesmo não pode ser concluído para a 1.
 
 ## Referências
