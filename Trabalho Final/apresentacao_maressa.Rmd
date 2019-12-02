@@ -230,13 +230,15 @@ ggplot(data.materials, aes(x=mes, y=VarConsumo_Quimica, fill = turma)) +
 ```
 
 ## Validação das premissas | Normalidade {.smaller}
-Teste de Shapiro-Wilk - p-value = 8.472e-10
-
-```{r assum_norm, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="QQ plot para resíduos"}
+```{r normalidade}
 anv.quim <- aov(VarConsumo_Quimica ~  turma * material + mes, data = data.materials)
 anv.quim.log <- aov(log(VarConsumo_Quimica) ~  turma * material + mes, data = data.materials)
 
-#shapiro.test(anv.quim$residuals)
+pS = (shapiro.test(anv.quim$residuals))$p.value
+```
+Teste de Shapiro-Wilk - p-value = `r pS` 
+
+```{r assum_norm, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="QQ plot para resíduos"}
 
 invisible(qqPlot(anv.quim$residuals, dist='norm',envelope=.95, las = 1, pch = 16, ylab = "VarConsumo_Quimica"))
 
@@ -245,11 +247,25 @@ invisible(qqPlot(anv.quim$residuals, dist='norm',envelope=.95, las = 1, pch = 16
 
 
 ## Validação das premissas | Homocedasticidade {.smaller}
+```{r homocedasticidade}
+#teste
+month = data.materials$mes
+Materials = data.materials$Material
+class = data.materials$Turma
+Chemistry = data.materials$VarConsumo_Quimica
+
+#fligner.test(Chemistry ~ interaction(Materials, class), data = data.materials)
+pF = (fligner.test(Chemistry ~ interaction(Materials, class), data = data.materials))$p.value
+
+```
+Teste de Fligner - p-value = `r pF`
 
 ```{r assum_homoc, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="Residuals vs Fitted"}
 
 plot(anv.quim$fitted.values, anv.quim$residuals)
 abline(lm(anv.quim$residuals ~ anv.quim$fitted.values), col="red")
+
+
 ```
 
 ## Validação das premissas | Independência {.smaller}
