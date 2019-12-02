@@ -161,9 +161,10 @@ $$\begin{cases} H_0: (\tau\beta)_{ij} = 0, \forall i,j &\\H_1:\exists (\tau\beta
 ## Planejamento do Experimento | Parâmetros experimentais {.smaller}
 
 * Significância desejada: $\alpha = 0.05$.
-* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.3$
+* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.3$ 
 * Potência mínima desejada $\pi = 1 - \beta = 0.8$
 
+O  $d^* = 0.3$ foi escolhido para detectar diferenças "médias" na magnitude [@10.1093/jpepsy/jsp004].
 
 ## Planejamento do Experimento | Cálculo do número de amostras {.smaller}
 
@@ -238,6 +239,9 @@ anv.quim.log <- aov(log(VarConsumo_Quimica) ~  turma * material + mes, data = da
 
 shap.orig <- shapiro.test(anv.quim$residuals)
 shap.log <- shapiro.test(anv.quim.log$residuals)
+
+interfac <- with(data.materials,interaction(turma, material))
+flig.log <- fligner.test(log(VarConsumo_Quimica) ~ interfac, data = data.materials)
 ```
 
 ## Validação das premissas | Normalidade {.smaller}
@@ -259,6 +263,8 @@ invisible(qqPlot(anv.quim.log$residuals, dist='norm',envelope=.95, las = 1, pch 
 
 ## Validação das premissas | Homocedasticidade {.smaller}
 
+Teste de Fligner p-valor: `r flig.log$p.value`
+
 ```{r assum_homoc, echo = FALSE, fig.width=8,fig.height=4, fig.align='center',  fig.cap="Residuals vs Fitted"}
 
 plot(anv.quim.log$fitted.values, anv.quim.log$residuals)
@@ -277,7 +283,9 @@ abline(lm(anv.quim.log$residuals ~ anv.quim.log$fitted.values), col="red")
 ```{r summ_anv_quim, echo = TRUE}
 summary(anv.quim.log)
 ```
-
+```{r summ_anv_quim_lm, echo = TRUE}
+summary.lm(anv.quim.log)$r.squared
+```
 
 ## Resultados {.smaller}
 
@@ -312,7 +320,7 @@ interfac <- with(data.materials,interaction(turma, material))
 # Use group with the smallest sample mean as the reference
 ref <- with(data.materials, which.min(tapply(log(VarConsumo_Quimica), interfac, mean)))
 
-interfac <- relevel(interfac, ref = "3.4")
+interfac <- relevel(interfac, ref = "3.1")
 # ReFit model
 model2 <- aov(log(VarConsumo_Quimica) ~ mes + interfac, data = data.materials)
 
@@ -324,6 +332,7 @@ plot(mcp.inter, main = 'Intervalos de confiança - Turma.Material')
 
 ## Conclusão
 
+* O modelo possui um $R^2$ muito baixo: os fatores turma e material sozinhos conseguem explicar 6% da variância dos dados. Mesmo assim, os resultados do ANOVA não deixar de ser significativos, já que não estamos interessados na predição do consumo [@HowtoInt53:online].
 * Não existem diferenças de consumo significativas ao se considerar somente o fator material
 * A turma 3 possui diferença significativa em relação à 2 e 0, porém o mesmo não pode ser concluído para a 1.
 
