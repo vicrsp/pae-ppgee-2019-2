@@ -1,0 +1,503 @@
+---
+title: 'Estudo de caso: Grupo D 3'
+author: "Gilmar Pereira, Maressa Tavares e Victor Ruela"
+date: "30 de Setembro, 2019"
+output:
+  pdf_document:
+    fig_caption: yes
+    number_sections: yes
+header-includes:
+  \usepackage{float}
+  \floatplacement{figure}{H}
+
+bibliography: refsCS03.bib
+csl: ieee.csl
+---
+
+
+```{r setup,results='hide',warning=FALSE,echo=FALSE, message=FALSE, include=FALSE}
+# A few initial definitions just to make sure all required packages are installed. Change as needed.
+# NOTE: It may echo some weird messages to the PDF on the first compile (package installation messages). Run twice and the problem will (hopefully) go away.
+if (!require(ggplot2, quietly = TRUE)){
+      install.packages("ggplot2")
+      }
+if (!require(devtools, quietly = TRUE)){
+      install.packages("devtools")
+      }
+ if (!require(broom, quietly = TRUE)){
+       devtools::install_github("dgrtwo/broom")
+      }
+if (!require(GGally, quietly = TRUE)){
+      install.packages("GGally")
+}
+
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
+
+if (!require(car, quietly = TRUE)){
+  install.packages("car")
+}
+
+if (!require(boot, quietly = TRUE)){
+  install.packages("boot")
+}
+
+if (!require(dplyr, quietly = TRUE)){
+  install.packages("boot")
+}
+
+if (!require(pwr, quietly = TRUE)){
+  install.packages("pwr")
+}
+
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+if (!require(CAISEr, quietly = TRUE)){
+  install.packages("CAISEr")
+}
+
+if (!require(knitr, quietly = TRUE)){
+  install.packages("knitr")
+}
+
+if (!require(ggridges, quietly = TRUE)){
+  install.packages("ggridges")
+}
+
+if (!require(multcomp, quietly = TRUE)){
+  install.packages("multcomp")
+}
+
+if (!require(dunn.test, quietly = TRUE)){
+  install.packages("dunn.test")
+}
+
+```
+
+# Summary
+
+O presente trabalho realizou o delineamento e executou os testes estatísticos para avaliar o desempenho médio do algoritmo conhecido como Evoluçao Diferencial [@storn1997differential].O algoritmo foi desenvolvido no ano de 1997 por Storn e Price e é um algoritmo simples de otimização multimodal, primeiramente desenvolvido para otimização de funções continuas e variaveis numéricas discretas [@price2013differential].  
+
+Para este trabalho o algoritmo DE (Differential Evolution) é equipado com duas configurações alterando a forma de recombinação e mutação dos algoritmos. As classes de funções para este experimento foi composta por funções Rosenbrock [@rosenbrock1960automatic] de dimensões entre 2 e 250. Para se analisar os dados utilizou-se da técnica de blocagem determinando a quantidade de blocos e seus tamanhos, assim como o número de amostras por instância.
+
+Realizou-se cálculo do número de blocos de acordo com [@Campelo2018] e o número de instâncias de acordo com [@articlefcampelo]. Para teste das premissas de normalidade utilizou-se a ferramenta qqplot e o teste de shapiro-wilk. Para o teste da homogeniedade de variancia utilizou-se o teste F. Para análise da hipotese nula utilizou-se o teste não paramétrico de Friedman.
+
+# Planejamento do Experimento
+
+Nesta seção é apresentado o planejamento do experimento, descrevendo os objetivos e o delineamento do experimento.
+
+## Objetivo do Experimento
+
+O objetivo deste experimento é analisar se exite alguma deferença entre duas configuração do algoritmo DE dentre as classes de funções, determinando a configuração de melhor desempenho ressaltando as magnitudes das diferenças encontradas.
+
+## Delineamento
+
+Para o seguinte experimento serão realizados as seguintes etapas: 
+
+* Formulação das hipoteses de teste; 
+* Cálculo dos tamanhos amostrais, determinando a quantidades de instâncias e número de iterações do algortimo; 
+* Coleta e tabulação dos dados, 
+* Realização dos teste de hipoteses; 
+* Estimação da magnitude das diferenças;
+* Validação das premissas; 
+* Resultados e Conclusões.
+
+## Hipóteses
+
+Para a análise comparativa entre as configurações do algortimo DE, determinou-se a seguintes hipoteses a serem testadas.
+$$\begin{cases} H_0: \mu_{1} = \mu_{2}&\\H_1: \mu_{1} \neq \mu_{2}\end{cases}$$
+Onde $\mu_{1}$ e $\mu_{2}$ são as médias amostras das configurações 1 e 2, respectivamente. 
+
+Além disso, foram definidos os seguintes parâmetros experimentais: 
+
+* Significância desejada: $\alpha = 0.05$.
+* Mínima diferença de importância prática (padronizada): $d^* = \delta^*/\sigma = 0.5$
+* Potência mínima desejada $\pi = 1 - \beta = 0.8$
+
+## Coleta dos Dados
+
+Neste trabalho, cada amostra consiste em uma execução do algoritmo DE, para cada instância (dimensão da função objetivo) e configuração do algoritmo em questão (níveis). Foram escolhidas $N = 30$ repetições de cada par instância-configuração, conforme recomendado como suficiente em [@articlefcampelo]. A coleta de dados foi divida em duas etapas, descritas nas seções a seguir. O código utilizado para a coleta de dados está disponível no apêndice deste trabalho.
+
+### Geração de arquivo de configuração do experimento
+
+Esta etapa consiste em permitir que seja gerada um arquivo .csv contendo a configuração descrita a seguir. As rotinas foram implementadas de forma a permitir que seja criada a configuração para qualquer número de repetições $N$, instâncias $I$, grupos $b$ e níveis $a$. Um último passo consiste em randomizar o arquivo de configuração e dividí-lo em 3 arquivos separados, a serem executados por cada membro do grupo. Isso garante que as amostras geradas são independentes e que o experimento seja completamente randomizado. Como o algoritmo demora um tempo considerável para sua execução, a divisão entre os participantes permitiu a sua execução em paralelo para otimizar o tempo necessário para gerar todos os dados. A tabela abaixo exibe um exemplo de arquivo de configuração gerado.
+
+```{r config_file, echo=FALSE}
+fname = 'rcbd.config.victor.csv'
+Z <- read.csv(fname)
+Z[,"result"] = -1
+kable(Z[5:9, 1:6], caption = 'Exemplo de arquivo de configuração', align = 'l')
+```
+
+### Execução de arquivo de configuração
+
+Com o arquivo de configuração disponível, o experimento está pronto para ser executado. A rotina desenvolvida carrega um arquivo informado e executa cada linha em sequência, para os seus respectivos parâmetros. À medida em que uma amostra é finalizada, o resultado é salvo no próprio arquivo de configuração, na coluna `result`. Isso garante com que seja possível continuar a execução do arquivo sem perder as amostras realizadas anteriormente, caso ocorra algum problema.
+
+# Análise Exploratória dos Dados
+
+Nesta seção é apresentado uma análise exploratória dos dados, verificando normalidade, homocedasticidade, independencia e realizando a validação das premissas.
+
+Como o estudo consiste na comparação entre resultados da execução de um algoritmo de otimização, a dimensão da função objetivo é um fator importante. Logo, a análise exploratória será feita considerando exemplos de instâncias de baixa, média e alta dimensão. Inicialmente, os dados do experimento são carregados, sendo as instâncias 4, 50 e 100 escolhidas para avaliação, e um gráfico boxplot é criado para uma análise preliminar.
+
+```{r read_data}
+sample.all <- read.csv('data.all.instances.csv', header = TRUE)
+sample.all$configuration <- as.factor(sample.all$algorithm)
+sample.all <- sample.all %>% mutate(logresult = log(result))
+
+sample.all.eda <- sample.all %>% filter(instance == 100 | instance == 50 | instance == 4)
+```
+```{r plot_boxplot, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Boxplot dos dados\\label{fig:boxplot}"}
+ggplot(sample.all.eda, aes(x=configuration, y=result)) + 
+  geom_boxplot() +  facet_grid(rows = vars(instance), scales = "free_y")
+```
+
+Através deste gráfico, as seguintes observações podem ser feitas:
+
+* Os valores da função objetivo final possuem magnitudes muito diferentes dependendo da dimensão. Portanto, uma normalização dos dados para uma escala comum pode ser necessária para correta análise dos experimentos.
+* Há algumas repetições do algoritmo que poderiam ser considerados outliers. Elas devem ser removidas de forma a não prejudicar os testes de hipótese e validação das premissas.
+* A configuração 2 parece obter melhores resultados para dimensões baixas, quase sempre chegando o mínimo da função. Entretanto, o mesmo não pode ser afirmado para dimensões maiores.
+
+## Cálculo do número de blocos
+
+De acordo com [@Campelo2018], o número de blocos ideal é calculado variando a quantidade de blocos enquanto a relação
+
+$$F(1-\alpha) \leq F(\beta,\phi)$$
+é respeitada. Onde $\phi$ é o parâmetro de não-centralidade, definido por:
+
+$$\phi = \frac{b \sum^{a}_{i=1}\tau_i}{a\sigma^2}$$
+De acordo com a definição do experimento, temos que $a = 2$, tamanho de efeito normalizado $d = 0.5$, potência desejada de $\pi = 0.8$ e significância $\alpha = 0.05$. Logo, é possível calcular o número de blocos $b$ de acordo com a rotina abaixo.
+
+```{r blockcalculation, echo = TRUE}
+a <- 2
+d <- 0.5
+alpha <- 0.05
+beta <- 0.2
+
+tau <- c(-d, d, rep(0, a - 2)) # define tau vector
+b <- 5
+
+tb <- data.frame(b = rep(-1, 50), ratio = rep(-1,50), phi = rep(-1,50))
+
+for(i in seq(1,40,by=2)){
+
+  b <- i + 5
+  f1 <- qf(1 - alpha, a - 1, (a - 1)*(b - 1))
+  f2 <- qf(beta, a - 1, (a - 1)*(b - 1), (b*sum(tau^2)/a))
+  phi <- b*sum(tau^2)/a
+  
+  tb[i, ] = c(b, f1/f2, phi)
+}
+
+b <- min((tb %>% filter(ratio <= 1 & ratio > 0))$b)
+```
+
+Portanto, o número mínimo de blocos necessários $b$ é de `r b`. As iterações podem ser vistas na tabela abaixo.
+
+```{r tabledisplay, echo = FALSE}
+kable(tb[seq(1,40,by=4),] %>% filter(b > 0), col.names = c("Blocos","Razão","Phi"), caption = 'Iterações para cálculo do número de blocos', align = 'l')
+```
+
+Portanto, devemos escolher $b$ blocos aleatoriamente das instâncias disponíveis.
+
+```{r block_instances, echo=TRUE}
+data.all.instances.log <- sample.all %>% group_by(instance) %>% 
+  mutate(Max = max(result), Min = min(result), Std = sd(result), Avg = mean(result)) %>% 
+  mutate(resultLog = log(result))
+
+set.seed(1234)
+random.blocks <- sample(5:150, b)
+data.block.instances <- data.all.instances.log %>%  filter(instance %in% random.blocks)
+
+data.block.instances$instance = as.factor(data.block.instances$instance)
+data.block.instances$algorithm = as.factor(data.block.instances$algorithm)
+
+```
+A figura \ref{fig:lineblocks} exibe os valores obtidos para as instâncias selecionadas. Na figura \ref{fig:ridge} é possível ver o respectivo gráfico de Ridge.
+
+```{r block_instances_plot1, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Instâncias selecionadas\\label{fig:lineblocks}"}
+
+ggplot(data.block.instances, aes(x = instance, 
+                            y = result, 
+                            group = (algorithm), 
+                            colour = (algorithm))) + geom_line(linetype=2) + geom_point(size=2) + theme(legend.position="bottom")
+
+```
+
+
+```{r block_instances_plot2, echo=FALSE, fig.width=7,fig.height=4, fig.cap="Ridge plot dos dados\\label{fig:ridge}"}
+
+ggplot(data.block.instances, aes(x = result, y = instance, fill = algorithm)) + geom_density_ridges() +
+  geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) + theme(legend.position="bottom")
+
+```
+
+## Validação das premissas
+
+Para realizar as inferências estatísticas sobre as duas configurações do algoritmo de otimização é necessário validar as premissas antes de executar o teste. Neste caso, como tratam-se de duas configurações em um espectro amplo de dimensões, existe um fator conhecido e controlável que pode influenciar no resultado do teste. Então, para eliminar o efeito desse fator indesejável uma opção é realizar a blocagem [@montgomery2007applied]. A seguir são apresentados os testes realizados para validar as premissas exigidas pelo teste.
+
+\textbf{A - Normalidade}
+
+Para a validação desta premissa, aplicou-se o teste ANOVA aos dados e depois foram avaliados os resíduos obtidos pelo modelo. O gráfico quantil-quantil e teste de shapiro-wilk também foram utilizados nessa validação, como apresentados a seguir.
+
+```{r res_blocks, echo=FALSE, fig.width=7,fig.height=5, fig.cap="Resultados do ANOVA para transformação logarítmica \\label{fig:qqres}"}
+res.aov <- aov(result ~ algorithm + instance, data = data.block.instances)
+par(mfrow=c(2,2))
+plot(res.aov)
+shapiro.test(res.aov$residuals)
+```
+
+Pelo gráfico quantil-quantil e teste de Shapiro-Wilk, é possível ver que a premissa de normalidade é violada. Nota-se que o gráfico quantil-quantil apresenta um desvio da normalidade maior à esquerda, o que pode ser explicado pela grande variabilidade das amostras em dimensões menores, conforme visto na figura \ref{fig:ridge}. Logo, uma transformação logarítmica é aplicada aos dados como forma de tentar levá-los à normalidade e também reduzir os efeitos da diferença de magnitude dos resultados de cada instância.
+
+```{r res_blocks_log, echo=FALSE, fig.width=7,fig.height=5, fig.cap="Resultados do ANOVA para transformação logarítmica \\label{fig:qqreslog}"}
+res.aov <- aov(resultLog ~ algorithm + instance, data = data.block.instances)
+par(mfrow=c(2,2))
+plot(res.aov)
+shapiro.test(res.aov$residuals)
+```
+
+Aplicando essa transformação, é possível notar que o desvio da normalidade é ainda mais evidenciado, conforme pode ser visto no gráfico quantil-quantil. Portanto, a premissa é novamente violada e testes de hipótese não-paramétricos deverão ser utilizados para se obter resultados mais confiáveis.
+
+\textbf{B - Igualdade de Variâncias}
+
+Para validação dessa premissa utilizou-se o teste homogeniedade de variâncias no qual a hipotese nula é razão entre as variancias igual 1. Para isso, analisou-se as duas configurações com as instâncias selecionadas anteriormente. O resultado por ser visto na tabela 6.
+
+```{r vatest, echo = FALSE, fig.cap="\\label{fig:varteste2}"}
+sw.test.result <- data.frame("p.value" = rep(0,b), instance =  rep(0,b))
+for (i in seq(1,b)){
+  bi <- sort(random.blocks)[i]
+  data.block.algo1 <- data.block.instances %>% filter(instance == bi & algorithm == 1)
+  data.block.algo2 <- data.block.instances %>% filter(instance == bi & algorithm == 2)
+  
+  sw.test.result[i,] <- c(var.test(data.block.algo1$result, data.block.algo2$result)$p.value,bi)
+}
+
+kable(sw.test.result[,c(2,1)], col.names = c("Instância","p-valor"), caption = 'p-valores do teste F', align = 'l')
+```
+
+Verifica-se que para diferentes valores de instâncias, dimensões, o p-valor é maior que o nível de significancia pré-estabelecido. Observa-se que a igualdade de variâncias é em sua maioria respeitada para dimensões maiores. Desta forma não se pode rejeitar a hipotese nula de que as variancias são iguais. Analisando de forma geral verifica-se que é possível que as variancias entre as duas configurações são iguais, conforme pode ser visto no gráfico ``Residuals vs Fitted`` na figura \ref{fig:qqres}.
+
+\textbf{C - Independência}
+
+Como descrito anteriormente, a coleta de dados foi meticulosamente planejada de forma a garantir a independência entre as amostras. As características de cada amostras foram geradas e coletadas de modo aleatório, a fim de evnitar qualquer iterção entre a amostra e a instância avaliada. Desse modo, é possível garantir a independância entre as amostras.
+
+# Resultados
+
+Nesta seção são apresentados os resultados realizando os testes de hipoteses e a determinação da melhor configuração juntamente com a estimação das magnitudes das diferenças.
+
+Como as premissas do teste paramétrico (ANOVA) foram parcialmente validadas, optou-se por realizar os testes paramétricos e não-paramétricos a fim de comparar os resultados. Os resultados das duas aborgagens são apresentados e discutidos nas próximas seções.
+
+## Teste de Hipótese - Paramétrico
+
+O teste paramétrico usado para avaliar a blocagem é o ANOVA
+```{r anova, echo = TRUE}
+model <- aov(result~algorithm+instance,
+             data = data.block.instances)
+summary(model)
+summary.lm(model)$r.squared
+```
+
+De acordo com o resultado do teste (p-valor < 0.05) existem evidências de que a média dos dois algoritmos não são iguais. Além disso, o modelo obteve um ajuste satisfatório com o $r^2 = 0.974$, isto é, o modelo explica mais de 97% dos resultados dos dois algoritmos.
+
+Assim como na validação, foi realizado o teste de hipótese considerando uma transformação logarítmica dos resultados.
+
+```{r anova2, echo = TRUE}
+model_log <- aov(resultLog~algorithm+instance,
+             data = data.block.instances)
+summary(model_log)
+summary.lm(model_log)$r.squared
+
+```
+
+Pela análise dos resultados, pode-se concluir que o modelo também ajusta bem aos dados, porém o modelo com os dados originais obteve melhor ajuste.
+
+## Teste de Hipótese - Não Paramétrico
+
+Verificando que os dados gerados pelas duas configurações não são normais e que não há a garantia de homegeniedade entre as variâncias, utilizou-se também um teste não paramétrico. O teste utilizado para verificar a igualdade das médias entre as duas configurações foi o teste de Kruskal-Wallis [@kruskalt58:online]. 
+
+```{r kruskal, echo = TRUE}
+kruskal.test(result~algorithm,data=data.block.instances)
+```
+É importante ressaltar que o teste de Kruskal-Wallis não inclui os efeitos da blocagem. Pelos resultados obtidos (p-valor > 0.05), é possível concluir que a hipótese nula não pode ser rejeitada. Logo, diferente da conclusão obtida com a utilização do ANOVA, neste caso podemos afirmar que a mediana da diferença dos algoritmos é similar.
+
+## Estimação das magnitudes das diferenças
+
+Para a estimativa do intervalo de confiança, utilizou-se o teste de Dunnet sobre os resultados do anova. Note que o intervalo obtido não contém o valor 0, ou seja, a hipótese nula é rejeitada.
+
+```{r DuntestCI, echo = FALSE, fig.width=5,fig.height=3}
+duntest <- glht(model, linfct = mcp(algorithm = "Dunnett"))
+duntestCI <- confint(duntest)
+par(mar = c(5, 8, 4, 2), las = 1)
+plot(duntestCI, xlab = "Mean difference (log scale)")
+```
+
+O teste de Wilcoxon [@wilcoxte69:online], por ser não-paramétrico e válido para o caso da comparação entre duas populações, é aplicado para a estimativa de intervalo de confiança.
+
+```{r testWilcox, echo = FALSE}
+wilcox.test(result ~ algorithm ,data=data.block.instances, conf.int = TRUE, alternative='two.sided', conf.level=0.95, paired=FALSE)
+```
+
+Note que, conforme esperado, o intervalo de confiança contém o valor 0, ou seja, não podemos rejeitar a hipótese nula de que as médias são iguais.
+
+# Conclusão
+
+O presente trabalho realizou o delineamento do experimento que testou o desempenho de duas configurações diferentes de um algoritmo DE. Como não foi possível validar todas as premissas com precisão, optou-se por realizar os testes paramétricos, considerando leves desvios de normalidade e homocedasticidade, e os testes não paramétricos, que não precisam das premissas.
+
+Após a realização dos testes verificou-se que, provavelemente, devido à não validação das premissas e à influência das instâncias nos resultados, não foi possível chegar à mesma conclusão pelos testes paramétrico e não paramétrico.
+
+Enquanto o teste paramétrico apresenta evidências de rejeição da igualdade das médias (p-valor < 0.05), o teste não paramétrico leva a concluir que não há diferença entre os resultados dos dois algoritmos (p-valor = 0.0457).
+
+No caso do teste paramétrico, que aponta diferença entre os algoritmos, o teste de Dunnet aponta uma leve superioridade da configuração 2.
+
+## Apêndice
+### Geração de configuração
+```{r config_generation, eval = FALSE}
+# Load packages -----------------------------------------------------------
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
+
+
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+
+if (!require(CAISEr, quietly = TRUE)){
+  install.packages("CAISEr")
+}
+
+
+# RCBD functions ----------------------------------------------------
+set.seed(15632) # set a random seed
+instances <- seq(2, 150) # number of instances
+N <- 30 # number of replicates per instance
+
+rcbd.configuration.generator <- function(level, b, instances, N){
+  nrows <- length(instances) * N
+  n.instances <- length(instances)
+  instance <- sort(rep(instances, N))
+  groups <- sapply(instance, function(i){ ceiling(i/(n.instances/b))  })
+    
+  X <- data.frame("algorithm" = rep(level, nrows), 
+                  "replicate" = rep(seq(1,N), n.instances),
+                  "instance" = instance,
+                  "group" =  groups,
+                  "result" = rep(-1, nrows))
+  return(X)
+}
+
+
+x.config.1 <- rcbd.configuration.generator(1, b, instances, N)
+x.config.2 <- rcbd.configuration.generator(2, b, instances, N)
+x.config.all <- rbind(x.config.1, x.config.2)
+x.config.all.shuffled <- x.config.all[sample(nrow(x.config.all)), ]
+
+split.size <- (nrow(x.config.all.shuffled)/3)
+x.config.all.shuffled$member <- ceiling((1:nrow(x.config.all.shuffled))/split.size)
+
+x.config.all.shuffled.victor <- x.config.all.shuffled[x.config.all.shuffled$member == 1,1:5]
+x.config.all.shuffled.gilmar <- x.config.all.shuffled[x.config.all.shuffled$member == 2,1:5]
+x.config.all.shuffled.maressa <- x.config.all.shuffled[x.config.all.shuffled$member == 3,1:5]
+
+write.csv(x.config.all.shuffled.victor, 'rcbd.config.victor.csv', row.names=FALSE)
+write.csv(x.config.all.shuffled.gilmar, 'rcbd.config.gilmar.csv', row.names=FALSE)
+write.csv(x.config.all.shuffled.maressa, 'rcbd.config.maressa.csv', row.names=FALSE)
+```
+
+### Execução de configuração
+```{r config_execution, eval = FALSE}
+# Load packages -----------------------------------------------------------
+if (!require(ExpDE, quietly = TRUE)){
+  install.packages("ExpDE")
+}
+
+
+if (!require(smoof, quietly = TRUE)){
+  install.packages("smoof")
+}
+
+# Execute a RCBD test configuration ------------------------------------------
+
+# Define a class to store the levels configuration
+level.config <- function(mp, rp, id) {
+  value <- list(mutparsX = mp, recparsX = rp, id = id)
+  class(value) <- append(class(value),"level.config")
+  return(value)
+}
+
+## Equipe D
+## Config 1
+recpars1 <- list(name = "recombination_blxAlphaBeta", alpha = 0.4, beta = 0.4)
+mutpars1 <- list(name = "mutation_rand", f = 4)
+
+## Config 2
+recpars2 <- list(name = "recombination_eigen", othername = "recombination_bin", cr = 0.9)
+mutpars2 <- list(name = "mutation_best", f = 2.8)
+
+config.1 <- level.config(mutpars1, recpars1, 1)
+config.2 <- level.config(mutpars2, recpars2, 2)
+
+
+fname = 'rcbd.config.victor.csv'
+Z <- read.csv(fname)
+set.seed(15632) # set a random seed
+
+my.ExpDE <- function(mutp, recp, dim){
+  
+  fn.current <- function(X){
+    if(!is.matrix(X)) X <- matrix(X, nrow = 1) # <- if a single vector is passed as Z
+    
+    Y <- apply(X, MARGIN = 1, FUN = smoof::makeRosenbrockFunction(dimensions = dim))
+    return(Y)
+  }
+  
+  
+  assign("fn", fn.current, envir = .GlobalEnv)
+  
+  selpars <- list(name = "selection_standard")
+  stopcrit <- list(names = "stop_maxeval", maxevals = 5000 * dim, maxiter = 100 * dim)
+  probpars <- list(name = "fn", xmin = rep(-5, dim), xmax = rep(10, dim))
+  popsize = 5 * dim
+  
+  out <- ExpDE(mutpars = mutp,
+               recpars = recp,
+               popsize = popsize,
+               selpars = selpars,
+               stopcrit = stopcrit,
+               probpars = probpars,
+               showpars = list(show.iters = "none"))
+  
+  return(list(value = out$Fbest))
+}
+
+for (row in 1:nrow(Z)){
+  
+  if(Z[row, "result"] == -1){ # start from the last execution
+    dim <- Z[row, "instance"]
+    algo <- Z[row, "algorithm"]
+    replicate <- Z[row, "replicate"]
+    
+    if(algo == 1)
+      algo.config <- config.1
+    else
+      algo.config <- config.2
+
+    print(paste("Started Instance:", dim, "; Algo:", algo, "; Repetition:", replicate))
+    
+    out <- my.ExpDE(algo.config$mutparsX, algo.config$recparsX, dim)
+    
+    Z[row, "result"] <- out$value
+    print(paste("Finished. Instance:", dim, "; Algo:", algo, "; 
+                Repetition:", replicate, "; Result=", out$value))
+    print(paste("Progress = ", 100 * row / nrow(Z) , "%"))    
+    write.csv(Z, fname)
+    
+  }
+}
+```
+
+
+## Referências
