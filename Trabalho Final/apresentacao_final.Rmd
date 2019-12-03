@@ -99,9 +99,9 @@ data.materials$turno = as.factor(data.materials$Turno)
 ## Agenda
 
 - Introdução
+- Descrição dos Dados
 - Revisão de literatura
 - Planejamento do Experimento
-- Descrição dos Dados
 - Análise Exploratória
 - Validação das premissas
 - Resultados
