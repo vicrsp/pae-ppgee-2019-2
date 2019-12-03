@@ -116,6 +116,10 @@ data.materials$turno = as.factor(data.materials$Turno)
 
 <img src="eaf_diagram.png" alt="drawing" class="center"/>
 
+## Introdução | Objetivo
+
+Análise do desempenho das turma de operários em relação ao consumo de oxigênio no processo de produção do aço usando um forno elétrico.
+
 
 ## Descrição dos Dados {.smaller}
 
@@ -131,22 +135,40 @@ kable(data.materials[1:3, c('turma', 'material', 'mes', 'VarConsumo_Quimica')]) 
 
 ## Revisão de Literatura {.smaller}
 
-* **Blocagem** - Usada para eliminar ruídos conhecidos e controláveis [@Montgomery:2006:applied] - Será usada para retirar a Sazonalidade dos dados;
+* **Blocagem** - Usada para eliminar ruídos conhecidos e controláveis [@Montgomery:2006:applied] - Será usada para retirar a Sazonalidade dos dados em relação aos meses;
 
 * **Experimento Fatorial** - Eficiente para estudo de efeitos de dois ou mais fatores [@Montgomery:2006:applied] - Será usado para analisar os dois fatores material e turma, e a interação entre eles.
 
 <img src="Design_Experiment.png" alt="drawing" class="center"/>
 
 
-## Planejamento do Experimento | Objetivo {.smaller}
+## Planejamento do Experimento | Objetivo do Experimento {.smaller}
 
-O objetivo é comparar o desempenho de 4 turmas em relação ao consumo de oxigênio do processo, considerando também 9 diferentes materiais (tipos de aço) produzidos para a comparação.
+O objetivo do experimento é comparar o desempenho de 4 turmas em relação ao consumo de oxigênio do processo, considerando também 9 diferentes materiais (tipos de aço) produzidos para a comparação.
 
-Portanto, um experimento fatorial será realizado para os fatores **Turma** e **Material**. Além disso, a blocagem será realizada para o fator **Mês**, objetivando remover efeitos de sazonalidade dos dados. 
+**Experimento:**
 
-Isso resulta no seguinte modelo linear [@montgomery2007applied]:
+Portanto, um **experimento fatorial** será realizado para os fatores **Turma** e **Material**. Além disso, a blocagem será realizada para o fator **Mês**, objetivando remover efeitos de sazonalidade dos dados, 
+
+Desta forma, aplica-se o testa **ANOVA** utilizando um modelo linear [@montgomery2007applied].
+
+## Planejamento do Experimento | Modelo {.smaller}
 
 $$\begin{equation}y_{ijk} = \mu + \tau_i + \beta_j + (\tau\beta)_{ij} + \delta_k +  \epsilon_{ijk}  \end{equation}$$
+
+Onde:
+
+$\mu$ : média geral;
+
+$\tau_i$ : efeito do fator turma $i$;
+
+$\beta_j$ : efeito do fator material $j$;
+
+$(\tau\beta)_{ij}$ : efeito da iteração da turma $i$ com o material $j$;
+
+$\delta_k$ : efeito da blocagem do mês;
+
+$\epsilon_{ijk}$ : residos.
 
 ## Planejamento do Experimento | Hipóteses {.smaller}
 
@@ -168,6 +190,8 @@ O  $d^* = 0.3$ foi escolhido para detectar diferenças "médias" na magnitude [@
 
 ## Planejamento do Experimento | Cálculo do número de amostras {.smaller}
 
+$$ \frac{F_{(1- \alpha)}^{a-1}}{F_{\beta, \phi}^{ab(n-1)}} = 1$$
+
 ```{r blockcalculation_a, echo = FALSE}
 a <- 4 # turmas
 b <- 9 # materiais
@@ -181,7 +205,7 @@ n <- 2
 tb <- data.frame(n = rep(-1, 100), ratio = rep(-1,100), phi = rep(-1,100))
 
 for(i in seq(10,30,by=3)){
-
+  
   n <- i + 4
   f1 <- qf(1 - alpha, a - 1, a*b*(n - 1))
   phi <- b*n*sum(tau^2)/a
@@ -193,7 +217,8 @@ for(i in seq(10,30,by=3)){
 
 n_a <- min((tb %>% filter(ratio <= 1 & ratio > 0))$n)
 #kable(tb %>% filter(ratio >= 0.5))
-tb %>% filter(ratio >= 0.5) %>% kable() %>% kable_styling(c("bordered","striped"), full_width = F) %>% row_spec(6, bold = T, color = "red")
+tb %>% filter(ratio >= 0.5 ) %>% kable() %>% kable_styling(c("bordered","striped"), full_width = F) %>% row_spec(6, bold = T, color = "red")
+
 
 ```
 
